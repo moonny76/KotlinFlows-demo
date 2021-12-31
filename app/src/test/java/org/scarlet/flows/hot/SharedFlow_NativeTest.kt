@@ -25,10 +25,10 @@ class SharedFlow_NativeTest {
         val emptyFlow = MutableSharedFlow<Int>()
 
         /**
-         * Looks like firstOrNull never returns Null in hot flow ... just wait for new value ....
+         * Looks like firstOrNull never returns null in hot flow ... just wait for new value ....
          */
         try {
-            withTimeout(1000) {
+            withTimeoutOrNull(1000) {
                 val value = emptyFlow.first()
                 assertThat(value).isNull()
             }
@@ -53,18 +53,6 @@ class SharedFlow_NativeTest {
 
     // This job has not completed yet
     @Test
-    fun `empty SharedFlow - collect - runBlockingTest`() = runBlockingTest {
-        val emptyFlow = MutableSharedFlow<Int>()
-
-        emptyFlow.collect {
-            println("try collect ...")
-        }
-
-        println("Done.")
-    }
-
-    // This job has not completed yet
-    @Test
     fun `empty SharedFlow - collect in launch - runBlockingTest`() = runBlockingTest {
         val emptyFlow = MutableSharedFlow<Int>()
 
@@ -78,7 +66,7 @@ class SharedFlow_NativeTest {
     }
 
     @Test
-    fun `replay - SharedFlow`() = runBlocking {
+    fun `replay - SharedFlow`() = runBlockingTest {
         val sharedFlow =
             MutableSharedFlow<Int>(replay = 1) // replay = 1, then OK
 
@@ -91,66 +79,76 @@ class SharedFlow_NativeTest {
     }
 
     @Test
-    fun `Scenario1-two-collectors-and-three-events`() = runBlockingTest{
+    fun `emit waits for unready collector - SharedFlow`() =
+        runBlockingTest {
+            val sharedFlow = MutableSharedFlow<String>(replay = 0)
+
+            val emitter = launch(start = CoroutineStart.LAZY) {
+
+                delay(10) // need to allow time for collector to subscribe: when runBlockingTest
+
+                println("2. Emitter started: Subscription count = ${sharedFlow.subscriptionCount.value}, try to send event ...")
+                sharedFlow.emit("Event 1")
+                println("3. Emitter: Event 1 sent")
+
+                println("4. Emitter: try to send Event 2")
+                sharedFlow.emit("Event 2")
+                println("6. Emitter: Event 2 sent")
+            }
+
+            val collector = launch {
+                println("1. Starts the emitter and subscribes collector which suspends 2000ms")
+                emitter.start()
+
+                sharedFlow.collect {
+                    delay(2000)
+                    if (it == "Event 1")
+                        println("5. collected value = $it")
+                    else
+                        println("7. collected value = $it")
+                }
+            }
+
+            delay(5000)
+
+            collector.cancelAndJoin()
+            println("Done.")
+        }
+
+    @Test
+    fun `collectors start to receive data after subscription - no replay`() = runBlockingTest {
         val sharedFlow = MutableSharedFlow<Int>()
 
+        // Emitter
         launch {
             repeat(3) {
                 println("# subscribers = ${sharedFlow.subscriptionCount.value}")
                 println("Emit: $it")
-                sharedFlow.emit(it)  // when there are no subscribers
+                sharedFlow.emit(it)
                 println("Emit: $it done")
-                delay(2000)
+                delay(200)
             }
         }
 
         val collector1 = launch {
-            delay(1000)
+            delay(100) // start after 100ms
             println("${spaces(4)}Collector1 subscribes...")
             sharedFlow.collect {
+                delay(500)
                 println("${spaces(4)}Collector1: $it")
-                delay(5000) // suspended
             }
         }
 
         val collector2 = launch {
-            delay(3000)
+            delay(300) // start after 300ms
             println("${spaces(8)}Collector2 subscribes...")
             sharedFlow.collect {
                 println("${spaces(8)}Collector2: $it")
             }
         }
 
-        delay(10000)
+        delay(2000)
         collector1.cancelAndJoin()
         collector2.cancelAndJoin()
     }
-
-    @Test
-    fun `emit waits for unready collector - SharedFlow`() =
-        runBlockingTest {
-            val sharedFlow = MutableSharedFlow<String>(replay = 0)
-
-            val emitter = launch(start = CoroutineStart.LAZY) {
-//                delay(10) // need to allow time for collector to subscribe: when runBlockingTest
-                println("Subscription count = ${sharedFlow.subscriptionCount.value}")
-                println("Emitter: Event 1")
-                sharedFlow.emit("Event 1")
-            }
-
-            val collector = launch {
-                emitter.start()
-                println("Collector starts emitter and subscribes...")
-                sharedFlow.collect {
-                    delay(2000)
-                    println("collected value = $it")
-                    assertThat(it).isEqualTo("Event 1")
-                }
-            }
-
-            delay(3000)
-
-            collector.cancelAndJoin()
-            println("Done.")
-        }
 }

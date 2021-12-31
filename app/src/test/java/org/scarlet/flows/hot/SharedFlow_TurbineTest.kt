@@ -31,10 +31,6 @@ class SharedFlow_TurbineTest {
         }
     }
 
-    /**
-     * emit is suspended if there exists subscribed collectors which is not ready to collect yet.
-     */
-
     @Test
     fun `rightTest - SharedFlow`() = runBlockingTest {
         val hotFlow = MutableSharedFlow<Int>(replay = 0)
@@ -48,81 +44,68 @@ class SharedFlow_TurbineTest {
         }
     }
 
-    @Test(expected = TimeoutCancellationException::class)
-    fun `collect from shared flow - fail`() = runBlockingTest {
-        val sharedFlow = MutableSharedFlow<String>(replay = 0)
-
-        sharedFlow.emit("Event 1")
-
-        sharedFlow.test {
-            assertThat(awaitItem()).isEqualTo("Event 1")
-        }
-    }
+    /**
+     * emit is suspended if there exist any subscribed collectors which are not ready to collect yet.
+     */
 
     @Test
-    fun `collect from shared flow - collector subscribed, but not ready yet`() = runBlocking {
-        val sharedFlow = MutableSharedFlow<String>(replay = 0)
+    fun `collect from shared flow - collector subscribed, but not ready yet - hard to test using turbine`() = runBlocking {
+        val sharedFlow = MutableSharedFlow<Int>(replay = 0)
 
-        launch {
-            println("Subscription count = ${sharedFlow.subscriptionCount.value}")
-            sharedFlow.emit("Event 1") // block emission until ready if not ready subscriber exits
-        }
-
-        delay(100) // Uncomment to make no collectors subscribed yet
-
-        sharedFlow.test {
-            delay(500) // simulate subscribed, but not ready to collect
-            println(awaitItem())
-            println("Done.")
-        }
-    }
-
-    @Test
-    fun `collect from shared flow - collector subscribed, and ready`() = runBlocking {
-        val sharedFlow = MutableSharedFlow<String>(replay = 0)
-
-        val job = launch(start = CoroutineStart.LAZY) {
-            println("Subscription count = ${sharedFlow.subscriptionCount.value}")
-            sharedFlow.emit("Event 1")
+        val emitter = launch(start = CoroutineStart.LAZY) {
+            repeat(3) {
+                println("# subscribers = ${sharedFlow.subscriptionCount.value}")
+                println("Emitter: try to send $it")
+                sharedFlow.emit(it)
+                println("Emitter: Event $it sent")
+            }
         }
 
         sharedFlow.test {
-            job.start()
-            println(awaitItem())
-            println("Done.")
+            println("\t\tCollector subscribes and starts the emitter")
+            emitter.start()
+
+            repeat(3) {
+                delay(500) // simulate subscribed, but not ready to collect
+                println("\t\tCollector received value = ${awaitItem()}")
+            }
         }
+
+        println("Done.")
     }
 
     @Test
-    fun `Scenario1-two-collectors-and-three-events`() = runBlockingTest{
+    fun `collectors start to receive data after subscription - no replay`() = runBlockingTest {
         val sharedFlow = MutableSharedFlow<Int>()
 
         launch {
             repeat(3) {
-                println("Emit value $it")
+                println("# subscribers = ${sharedFlow.subscriptionCount.value}")
+                println("Emit: $it")
                 sharedFlow.emit(it)  // when there are no subscribers
-                delay(2000)
+                println("Emit $it done")
+                delay(200)
             }
         }
 
         launch {
-            delay(1000)
+            delay(100)
             println("${spaces(4)}Collector1 subscribes...")
             sharedFlow.test {
-                delay(5000) // suspended
                 println("${spaces(4)}Collector1: got ${awaitItem()}")
+                delay(500)
                 println("${spaces(4)}Collector1: got ${awaitItem()}")
             }
         }
 
         launch {
-            delay(3000)
+            delay(300)
             println("${spaces(8)}Collector2 subscribes...")
             sharedFlow.test {
                 println("${spaces(8)}Collector2: got ${awaitItem()}")
             }
         }
 
-        delay(10000)
+        delay(3000)
     }
 }

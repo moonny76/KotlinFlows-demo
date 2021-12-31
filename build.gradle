@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext.kotlin_version = '1.6.10'
-    ext.navigation_version = '2.4.0-rc01'
+    ext.navigation_version = '2.4.0-alpha02' // rc01 cause build error
     ext.gradle_version = '4.2.2'
 
     repositories {

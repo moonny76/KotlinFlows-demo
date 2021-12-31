@@ -5,6 +5,7 @@ import org.scarlet.flows.basics.DataSource.genToken
 import org.scarlet.flows.basics.DataSource.tokens
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Test
 
@@ -12,122 +13,180 @@ import org.junit.Test
 class StateFlow_NativeTest {
 
     @Test
-    fun `stateFlow never completes`() = runBlocking {
+    fun `StateFlow test`() = runBlockingTest {
         val stateFlow = MutableStateFlow(0)
 
-        val job = launch {
-            stateFlow
-                .onCompletion { ex -> println("ON COMPLETE: ${ex?.javaClass?.name}") }
-                .collect {
-                    println(it)
-                }
+        launch {
+            repeat(3) {
+                println("emit time = $currentTime")
+                stateFlow.value = it + 1
+                delay(200) // change this 200, 1000
+            }
         }
 
-        delay(100)
+        val collector = launch {
+            stateFlow.collect {
+                println("\t\t\t\tcollect time = $currentTime")
+                println("\t\t\t\tvalue = $it")
+                delay(500)
+            }
+        }
 
-        // If not manually canceled, will hang forever
-        job.cancelAndJoin()
+        delay(2000)
+        collector.cancelAndJoin()
     }
 
     @Test
-    fun `StateFlow - realistic test`() = runBlocking {
+    fun `stateFlow never completes`() = runBlockingTest {
+        val stateFlow = MutableStateFlow(0)
+
+        stateFlow
+            .onCompletion { ex -> println("ON COMPLETE: ${ex?.javaClass?.name}") }
+            .collect {
+                println(it)
+            }
+    }
+
+    @Test
+    fun `StateFlow - lost initial state`() = runBlocking {
+        val hotFlow = MutableStateFlow(42)
+
+        hotFlow.emit(1)
+
+        val value = hotFlow.first()
+        assertThat(value).isNotEqualTo(42)
+        assertThat(value).isEqualTo(1)
+    }
+
+    @Test
+    fun `StateFlow - init value collected`() = runBlockingTest {
+        val hotFlow = MutableStateFlow(42)
+
+        val list = mutableListOf<Int>()
+        val job = launch {
+            hotFlow.collect {
+                list.add(it)
+            }
+        }
+
+        hotFlow.emit(1)
+
+        delay(100)
+
+        job.cancelAndJoin()
+        assertThat(list).isEqualTo(listOf(42, 1))
+    }
+
+    @Test
+    fun `StateFlow - realistic test`() = runBlockingTest {
         val gen = launch {
             genToken() // infinite flow
-        }.apply { invokeOnCompletion { println("Emitter done: exception = $it") }}
+        }.apply { invokeOnCompletion { println("Emitter completes: ex = $it") } }
 
         val collector = launch {
             tokens.collect {
                 println("collected value = $it")
             }
-        }.apply { invokeOnCompletion { println("Collector done: exception = $it") }}
-
-        delay(500)
-
-        collector.cancel()
-        gen.cancel()
-    }
-
-    /**
-     * The root cause is that stateIn does not always subscribe to the upstream flow when its downstream subscriber gets initial value and cancels too fast.
-     */
-
-    // What's the problem?
-    @Test
-    fun testEmission_What_is_Wrong() = runBlocking {
-        val payload = 0
-        val given = flow {
-//            println("here i am")
-//            delay(1) // Need delay to prevent conflation
-            emit(payload)
-//            println("emitted $payload")
-        }
-//            .onEach { delay(1) }
-            .stateIn(
-            scope = this,
-            // Only Eagerly works! - deadlock?
-//            started = SharingStarted.Eagerly,
-            started = SharingStarted.WhileSubscribed(),
-//            started = SharingStarted.Lazily,
-            initialValue = null
-        )
-
-        println("subscribe ...")
-        val flowOutputs = given.take(2).toList()
-
-        assertThat(flowOutputs[0]).isNull()
-        assertThat(flowOutputs[1]).isEqualTo(payload)
-    }
-
-    @Test
-    fun testEmission_Solution() = runBlocking {
-        val payload = 0
-        val given = flow {
-            delay(200)
-            emit(payload)
-        }.stateIn(
-            scope = this + Job(), // GlobalScope also works
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = null
-        )
-
-        val flowOutputs: MutableList<Int?> = mutableListOf()
-
-        delay(100)
-
-        val collector = launch {
-            given.take(2).toList(flowOutputs)
-        }
-
-        delay(1000)
-
-        assertThat(flowOutputs.get(0)).isNull()
-        assertThat(flowOutputs.get(1)).isEqualTo(payload)
-
-        collector.cancelAndJoin()
-    }
-
-    // What's the problem?
-    @Test
-    fun testEmission4() = runBlockingTest {
-        val payload = 0
-        val given = flow {
-            delay(120) // need this to allow time gap
-            emit(payload)
-        }.stateIn(
-            scope = this + Job(),
-            started = SharingStarted.WhileSubscribed(),
-            initialValue = null
-        )
-
-        val job = launch {
-            given.collect {
-                println("value = $it")  // How to assert two consecutive values?
+        }.apply {
+            invokeOnCompletion {
+                println("Collector completes: ex = $it")
+//            gen.cancel()
             }
         }
 
         delay(1000)
-        job.cancelAndJoin()
+
+        collector.cancel()
     }
+
+    @Test
+    fun `suspending function version - stateIn`() = runBlockingTest {
+        val payload = 0
+        val given = flow {
+            emit(payload)
+        }.stateIn(scope = this)
+
+        val subscriber1 = launch {
+            assertThat(given.first()).isEqualTo(payload)
+        }
+
+        val subscriber2 = launch {
+            assertThat(given.first()).isEqualTo(payload)
+        }
+
+        joinAll(subscriber1, subscriber2)
+    }
+
+    /**/
+
+    @Test
+    fun `stateIn - runBlockingTest`() = runBlockingTest {
+        val payload = 0
+        val given = flow {
+            emit(payload)
+        }.stateIn(
+            scope = this,
+            started = SharingStarted.Lazily,
+            initialValue = null
+        )
+
+        val result = mutableListOf<Int?>()
+        val job = launch {
+            given.take(2).toList(result)
+        }
+
+        delay(100)
+        job.cancelAndJoin()
+
+        assertThat(result).containsExactly(0)
+    }
+
+    @Test
+    fun `stateIn - runBlocking`() = runBlocking<Unit> {
+        val payload = 0
+        val given = flow {
+            emit(payload)
+        }.stateIn(
+            scope = this,
+            started = SharingStarted.Lazily,
+            initialValue = null
+        )
+
+        val result = mutableListOf<Int?>()
+        val job = launch {
+            given.take(2).toList(result)
+        }
+
+        delay(100)
+        job.cancelAndJoin()
+
+        assertThat(result).containsExactly(null, 0)
+    }
+
+    @Test
+    fun `stateIn - runBlockingTest - V2`() = runBlocking<Unit> {
+        val payload = 0
+        val given = flow {
+            emit(payload)
+        }.stateIn(
+            scope = this,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = null
+        )
+
+        val result = mutableListOf<Int?>()
+        val job = launch {
+            given.collect {
+                result.add(it)
+            }
+        }
+
+        delay(100)
+        job.cancelAndJoin()
+
+        assertThat(result).containsExactly(null, 0)
+    }
+
 
 
 }
