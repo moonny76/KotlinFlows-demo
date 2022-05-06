@@ -1,8 +1,8 @@
-package org.scarlet.flows.advanced.exceptions
+package org.scarlet.flows.advanced.a4exceptions
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-
+import org.scarlet.util.log
 
 object TryCatch_Review {
     @JvmStatic
@@ -12,7 +12,7 @@ object TryCatch_Review {
         } catch (ex: Throwable) {
             showErrorMessage(ex)
         }
-        println("Done.")
+        log("Done.")
     }
 }
 
@@ -50,7 +50,7 @@ object HandleException_Inside_Flow {
             .handleErrors()
             .collect { value -> updateUI(value) }
 
-        println("Done.")
+        log("Done.")
     }
 }
 
@@ -66,7 +66,7 @@ object ExceptionThrown_As_Expected {
         } catch (e: Throwable) {
             showErrorMessage(e)
         }
-        println("Done.")
+        log("Done.")
     }
 }
 
@@ -99,7 +99,7 @@ object Exception_Swallowed {
             .handleErrors()
             .collect { error("Failed") }
 
-        println("Done.")
+        log("Done.")
         // java.lang.IllegalStateException: Failed
         // Done. <-- completes normally!!
     }

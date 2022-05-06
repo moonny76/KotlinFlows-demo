@@ -5,6 +5,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.scarlet.util.log
 
 object Buffering {
     @JvmStatic
@@ -12,10 +13,12 @@ object Buffering {
 
         // create buffered channel
         val channel = Channel<Int>(4)
+
         val sender = launch { // launch sender coroutine
             repeat(10) {
-                println("Sending $it") // print before sending each element
+                log("Sending $it") // print before sending each element
                 channel.send(it) // will suspend when buffer is full
+                log("$it sent") // print before sending each element
             }
         }
 
@@ -31,20 +34,21 @@ object Closing_Sender_Waits_until_Received {
     fun main(args: Array<String>) = runBlocking{
 
         // create buffered channel
-        val channel = Channel<Int>(4).apply { invokeOnClose { println("Channel closed") } }
-        val sender = launch { // launch sender coroutine
+        val channel = Channel<Int>(4).apply { invokeOnClose { log("Channel closed") } }
+
+        launch { // launch sender coroutine
             repeat(10) {
-                println("Sending $it") // print before sending each element
+                log("Sending $it") // print before sending each element
                 channel.send(it) // will suspend when buffer is full
             }
-            println("Closing channel ...")
+            log("Closing channel ...")
             channel.close()
         }
 
-        delay(1000)
+        delay(3000)
 
         for (value in channel) {
-            println(value)
+            log("$value received")
         }
 
     }

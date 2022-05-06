@@ -1,7 +1,8 @@
-package org.scarlet.flows.advanced.launching_and_cancellation
+package org.scarlet.flows.advanced.a6launching_and_cancellation
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * Flow cancellation checks:
@@ -14,7 +15,7 @@ import kotlinx.coroutines.flow.*
 object Flow_Cancellation {
     private fun foo() = flow {
         for (i in 1..5) {
-            println("Emitting $i")
+            log("Emitting $i")
             emit(i)
         }
     }
@@ -24,10 +25,10 @@ object Flow_Cancellation {
         try {
             foo().collect { value ->
                 if (value == 3) cancel()
-                println(value)
+                log(value)
             }
         } catch (ex: Exception) {
-            println("Exception $ex caught")
+            log("Exception $ex caught")
         }
     }
 }
@@ -45,7 +46,7 @@ object UncooperativeFlow_Cause_Failed_Cancellation {
     fun main(args: Array<String>) = runBlocking {
         (1..5).asFlow().collect { value ->
             if (value == 3) cancel()
-            println(value)
+            log(value)
         }
     }
 
@@ -71,10 +72,10 @@ object CooperativeFlow_Makes_Flow_Cancellable_Demo1 {
                 .onEach { coroutineContext.ensureActive() }
                 .collect { value ->
                     if (value == 3) cancel()
-                    println(value)
+                    log(value)
                 }
         } catch (ex: Exception) {
-            println("Exception $ex caught")
+            log("Exception $ex caught")
         }
     }
 }
@@ -85,10 +86,10 @@ object CooperativeFlow_Makes_Flow_Cancellable_Demo2 {
         try {
             (1..5).asFlow().cancellable().collect { value ->
                 if (value == 3) cancel()
-                println(value)
+                log(value)
             }
         } catch(ex: Exception) {
-            println("Exception $ex caught")
+            log("Exception $ex caught")
         }
     }
 }

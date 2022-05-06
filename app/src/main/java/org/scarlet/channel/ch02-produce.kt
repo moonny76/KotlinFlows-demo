@@ -3,13 +3,14 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.channels.produce
+import org.scarlet.util.log
 
 @ExperimentalCoroutinesApi
 object Produce_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        demoWithPlain()
-//        demoWithProduce()
+//        demoWithPlain()
+        demoWithProduce()
     }
 
     suspend fun demoWithPlain() = coroutineScope {
@@ -17,16 +18,16 @@ object Produce_Demo {
 
         // Producer
         launch {
-            repeat(10) {
+            repeat(5) {
                 channel.send(it)
             }
-            channel.close()
+            channel.close() // do not forget to close the channel
         }
 
         // Consumer
         launch {
             for (value in channel) {
-                println(value)
+                log(value)
             }
         }
     }
@@ -35,9 +36,8 @@ object Produce_Demo {
      * `produce` is a producer coroutine builder.
      */
     suspend fun demoWithProduce() = coroutineScope {
-        // Producer
         val channel: ReceiveChannel<Int> = produce {
-            (0..10).forEach {
+            repeat(5) {
                 channel.send(it)
             }
         }
@@ -45,7 +45,7 @@ object Produce_Demo {
         // Receiver
         launch {
             for (value in channel) {
-                println(value)
+                log(value)
             }
         }
     }
@@ -66,8 +66,8 @@ object ChannelProducers {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val squares = produceSquares()
-        squares.consumeEach { println(it) } // extension fun
-        println("Done!")
+        squares.consumeEach { log(it) } // extension fun
+        log("Done!")
     }
 }
 

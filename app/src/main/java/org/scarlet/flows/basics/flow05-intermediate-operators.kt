@@ -3,6 +3,7 @@ package org.scarlet.flows.basics
 import org.scarlet.util.delim
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * Intermediate flow operators:
@@ -21,7 +22,7 @@ object Map_Demo {
     private fun intermediateOp() = runBlocking {
         (1..3).asFlow() // a flow of requests
             .map { request -> performRequest(request) }
-            .collect { response -> println(response) }
+            .collect { response -> log(response) }
     }
 
     @JvmStatic
@@ -33,7 +34,7 @@ object Map_Demo {
 /**
  * Transform operator:
  *
- * `transform` can be used to imitate simple transformations like map and filter,
+ * `transform` can be used to imitate simple transformations like `map` and `filter`,
  *  as well as implement more complex transformations. Using the `transform` operator,
  *  we can emit arbitrary values an arbitrary number of times.
  */
@@ -52,7 +53,7 @@ object Transform_Demo {
             }
 
         source.collect { response ->
-            println(response)
+            log(response)
         }
     }
 
@@ -78,19 +79,19 @@ object Take_Demo {
         try {
             emit(1)
             emit(2)
-            println("This line will not execute")
+            log("This line will not execute")
             emit(3)
         } catch (ex: Exception) {
-            println("Exception $ex caught")
+            log("Exception $ex caught")
         } finally {
-            println("Finally in numbers")
+            log("Finally in numbers()")
         }
     }
 
     private fun takeOp() = runBlocking {
         numbers()
             .take(2) // take only the first two
-            .collect { value -> println(value) }
+            .collect { value -> log(value) }
     }
 
     @JvmStatic

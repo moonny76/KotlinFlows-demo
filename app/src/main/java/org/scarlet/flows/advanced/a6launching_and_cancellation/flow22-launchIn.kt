@@ -1,7 +1,8 @@
-package org.scarlet.flows.advanced.launching_and_cancellation
+package org.scarlet.flows.advanced.a6launching_and_cancellation
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * Launching flow:
@@ -23,10 +24,10 @@ object Flow_Collection_Using_Lonely_Collect {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
         events()
-            .onEach { event -> println("Event: $event") }
+            .onEach { event -> log("Event: $event") }
             .collect() // <--- Collecting the flow waits
 
-        println("Done")
+        log("Done")
     }
 }
 
@@ -55,10 +56,10 @@ object Flow_Collection_Using_LaunchIn {
     fun main(args: Array<String>) = runBlocking{
 
         events()
-            .onEach { event -> println("Event: $event") }
+            .onEach { event -> log("Event: $event") }
             .launchIn(this) // <--- Launching the flow in a separate coroutine
 
-        println("Done: I will be printed first ...")
+        log("Done: I will be printed first ...")
     }
 }
 

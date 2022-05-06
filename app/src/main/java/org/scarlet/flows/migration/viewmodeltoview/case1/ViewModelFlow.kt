@@ -1,5 +1,7 @@
 package org.scarlet.flows.migration.viewmodeltoview.case1
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
@@ -16,48 +18,27 @@ class ViewModelFlow(
     private val repository: Repository
 ) : ViewModel() {
 
-//    // TODO: Change LiveData to StateFlow
-//    private val _recipes = MutableLiveData<Resource<List<Recipe>>>()
-//    val recipes: LiveData<Resource<List<Recipe>>> = _recipes
-//
-//    init {
-//        _recipes.value = Resource.Loading
-//        viewModelScope.launch {
-//            val result = repository.getRecipes(query)
-//            _recipes.value = result
-//        }
-//    }
+    // TODO: Change LiveData to StateFlow
+    private val _recipes = MutableLiveData<Resource<List<Recipe>>>()
+    val recipes: LiveData<Resource<List<Recipe>>> = _recipes
 
-//    // 1. StateFlow
+    init {
+        _recipes.value = Resource.Loading
+        viewModelScope.launch {
+            val result = repository.getRecipes(query)
+            _recipes.value = result
+        }
+    }
+
+    // 1. StateFlow
 //    private val _recipes = MutableStateFlow<Resource<List<Recipe>>>(Resource.Loading)
-//    val recipes: StateFlow<Resource<List<Recipe>>> = _recipes
+//    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
 //
 //    init {
-//        viewModelScope.launch {
-//            _recipes.value = repository.getRecipes(query)
-//        }
+//        TODO()
 //    }
 
-//    // 2. SharedFlow
-//    private val _recipes = MutableSharedFlow<Resource<List<Recipe>>>(1)
-//    val recipes: SharedFlow<Resource<List<Recipe>>> = _recipes.apply {
-//        tryEmit(Resource.Loading)
-//        distinctUntilChanged()
-//    }
-//
-//    init {
-//        viewModelScope.launch {
-//            _recipes.emit(repository.getRecipes(query))
-//        }
-//    }
-
-    // 3. stateIn
-    val recipes: SharedFlow<Resource<List<Recipe>>> = flow {
-        emit(repository.getRecipes(query))
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.Lazily,
-        initialValue = Resource.Loading
-    )
+    // 2. stateIn
+//    val recipes: SharedFlow<Resource<List<Recipe>>> = TODO()
 
 }

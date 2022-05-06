@@ -1,9 +1,10 @@
-package org.scarlet.flows.advanced.context
+package org.scarlet.flows.advanced.a3context
 
 import org.scarlet.util.spaces
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.swing.Swing
+import org.scarlet.util.log
 
 // Flow invariant is violated
 object Why_Context_Preservation {
@@ -30,11 +31,11 @@ object Why_Context_Preservation {
     }
 
     private fun initDisplay() {
-        println("Init Display")
+        log("Init Display")
     }
 
     private fun updateDisplay(value: Int) {
-        println("display updated with = $value")
+        log("display updated with = $value")
     }
 }
 
@@ -49,11 +50,8 @@ object Why_Context_Preservation {
 
 object ContextPreservation_Demo {
 
-    private fun log(indent: Int, msg: String) =
-        println("${spaces(indent)}[${Thread.currentThread().name}] $msg")
-
-    private fun simple(indent: Int, tag: String): Flow<Int> = flow {
-        log(indent, "Started flow for $tag")
+    private fun simple(tag: String): Flow<Int> = flow {
+        log("Started flow for $tag")
         for (i in 1..3) {
             emit(i)
         }
@@ -62,28 +60,26 @@ object ContextPreservation_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
-        demoOne()
-//        demoTwo()
+//        demoOne()
+        demoTwo()
 
-        println("Done")
+        log("Done")
     }
 
     private suspend fun demoOne() = coroutineScope {
         launch {
-            log(0, "child: collect")
-            simple(2, "child").collect { value -> log(0, "child: $value") }
+            log(0, "collector: collect")
+            simple("collector").collect { value -> log("collector: $value") }
         }
     }
 
     private suspend fun demoTwo() = coroutineScope {
         launch {
-            log(0, "child1: collect")
-            simple(2, "child1").collect { value -> log(0, "child1: $value") }
+            simple("Collector1").collect { value -> log("Collector1: $value") }
         }
 
         launch(Dispatchers.Default) {
-            log(5, "child2: collect")
-            simple(10, "child2").collect { value -> log(5, "child2: $value") }
+            simple("Collector2").collect { value -> log("Collector2: $value") }
         }
     }
 

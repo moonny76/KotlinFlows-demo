@@ -5,6 +5,7 @@ import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.runBlocking
+import org.scarlet.util.log
 
 /**
  * This starts an actor that runs on the default dispatcher and records
@@ -23,8 +24,8 @@ object Actor_Demo {
                 messages.add(msg)
             }
 
-            println("from thread ${Thread.currentThread()}")
-            println(messages.joinToString(", "))
+            log("from thread ${Thread.currentThread()}")
+            log(messages.joinToString(", "))
         }
 
         repeat(10) { i ->

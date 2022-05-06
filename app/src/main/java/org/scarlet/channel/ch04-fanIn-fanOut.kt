@@ -5,34 +5,35 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
+import org.scarlet.util.log
 
 @ExperimentalCoroutinesApi
 object FanOut {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
         // Single producer
-        val channel: ReceiveChannel<Int> = produceNumbers()
+        val producer: ReceiveChannel<Int> = produceNumbers()
 
         // Multiple consumers
         repeat(5) {
-            launchConsumer(it, channel)
+            launchProcessor(it, producer)
         }
 
         delay(950)
-        channel.cancel()
+        producer.cancel() // cancel producer coroutine and thus kill them all
     }
 
     private fun CoroutineScope.produceNumbers(): ReceiveChannel<Int> = produce {
         var x = 1 // start from 1
         while (true) {
             send(x++) // produce next
-            delay(100) // wait 0.1s
+            delay(100)
         }
     }
 
-    private fun CoroutineScope.launchConsumer(id: Int, channel: ReceiveChannel<Int>) = launch {
+    private fun CoroutineScope.launchProcessor(id: Int, channel: ReceiveChannel<Int>) = launch {
         for (msg in channel) {
-            println("Consumer #$id received $msg")
+            log("Processor #$id received $msg")
         }
     }
 }
@@ -48,7 +49,7 @@ object FanIn {
 
         // Single consumer
         repeat(10) { // receive first six
-            println(channel.receive())
+            log(channel.receive())
         }
 
         coroutineContext.cancelChildren() // cancel all children to let main finish

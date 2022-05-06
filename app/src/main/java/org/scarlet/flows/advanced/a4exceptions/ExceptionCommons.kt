@@ -1,14 +1,13 @@
-package org.scarlet.flows.advanced.exceptions
+package org.scarlet.flows.advanced.a4exceptions
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.scarlet.util.log
 import java.lang.RuntimeException
 
-internal fun dataFlow(): Flow<Int> {
-    return flow {
-        for (i in 1..3) {
-            emit(i)
-        }
+internal fun dataFlow(): Flow<Int> = flow {
+    for (i in 1..3) {
+        emit(i)
     }
 }
 
@@ -19,9 +18,9 @@ internal fun dataFlowThrow() = flow {
 }
 
 internal fun showErrorMessage(ex: Throwable) {
-    println(ex)
+    log(ex)
 }
 
 internal fun updateUI(value: Int) {
-    println("updateUI $value")
+    log("updateUI $value")
 }

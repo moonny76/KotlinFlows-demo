@@ -2,6 +2,7 @@ package org.scarlet.flows.basics
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * Flows are cold
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.*
  */
 
 fun simple(): Flow<Int> = flow {
-    println("Flow started")
+    log("Flow started")
     for (i in 1..3) {
         delay(100)
         emit(i)
@@ -21,18 +22,18 @@ fun simple(): Flow<Int> = flow {
 object ColdFlow_Demo1 {
     @JvmStatic
     fun main(args: Array<String>) {
-        println("Calling simple function...")
+        log("Calling simple function...")
         val flow = simple()
-        println("Nothing happens...")
+        log("Nothing happens...")
     }
 }
 
 object ColdFlow_Demo2 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        println("Calling collect ...")
+        log("Calling collect ...")
         val flow = simple()
-        flow.collect { value -> println(value) }
+        flow.collect { value -> log(value) }
     }
 }
 
@@ -41,15 +42,15 @@ object ColdFlow_Demo3 {
     fun main(args: Array<String>) = runBlocking {
         val flow = simple()
 
-        println("Calling collect first time ...")
-        flow.collect { value -> println(value) }
+        log("Calling collect first time ...")
+        flow.collect { value -> log(value) }
 
-        println("Calling collect second time ...")
-        flow.collect { value -> println(value) }
+        log("Calling collect second time ...")
+        flow.collect { value -> log(value) }
     }
 }
 
-object ColdFlow_Demo４ {
+object ColdFlow_Demo4 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val simple = flow {
@@ -61,16 +62,16 @@ object ColdFlow_Demo４ {
 
         coroutineScope {
             launch {
-                println("Collector1")
-                simple.collect { value -> println(value) }
+                log("Collector1")
+                simple.collect { value -> log(value) }
             }
 
             launch {
-                println("\t\t\tCollector2")
-                simple.collect { value -> println("\t\t\t$value") }
+                log("\t\t\tCollector2")
+                simple.collect { value -> log("\t\t\t$value") }
             }
         }
 
-        println("Done")
+        log("Done")
     }
 }

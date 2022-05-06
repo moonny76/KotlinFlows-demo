@@ -1,7 +1,8 @@
-package org.scarlet.flows.advanced.completion
+package org.scarlet.flows.advanced.a5completion
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * Flow completion:
@@ -29,8 +30,8 @@ object Flow_Completion_Declaratively_Demo1 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         simple()
-            .onCompletion { println("Done") }
-            .collect { value -> println(value) }
+            .onCompletion { log("Done") }
+            .collect { log(it) }
     }
 }
 
@@ -47,9 +48,9 @@ object Flow_Completion_Declaratively_Demo2 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         simpleFailure() // `onCompletion` and `catch` order is SIGNIFICANT!
-            .onCompletion { cause -> if (cause != null) println("Flow completed exceptionally") }
-            .catch { exception -> println("Caught exception $exception") }
-            .collect { value -> println(value) }
+            .onCompletion { cause -> if (cause != null) log("Flow completed exceptionally") }
+            .catch { exception -> log("Caught exception $exception") }
+            .collect { log(it) }
     }
 
     /**
@@ -72,14 +73,14 @@ object Flow_Completion_Declaratively3 {
     fun main(args: Array<String>) = runBlocking {
         try {
             simple()
-                .onCompletion { cause -> println("Flow completed with $cause") }
-                .catch { ex -> println("${ex.javaClass.simpleName} caught") }   // only catch upstream exception
+                .onCompletion { cause -> log("Flow completed with $cause") }
+                .catch { ex -> log("${ex.javaClass.simpleName} caught") }   // only catch upstream exception
                 .collect { value ->
                     check(value <= 1) { "Collected $value" }
-                    println(value)
+                    log(value)
                 }
         } catch (ex: Exception) {
-            println("Exception caught in catch block: ${ex.javaClass.simpleName}")
+            log("Exception caught in catch block: ${ex.javaClass.simpleName}")
         }
     }
 }
@@ -96,9 +97,9 @@ object Flow_Completion_Imperatively {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
-            simple().collect { value -> println(value) }
+            simple().collect { log(it) }
         } finally {
-            println("Done")
+            log("Done")
         }
     }
 

@@ -2,6 +2,7 @@ package org.scarlet.flows.basics
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 import kotlin.system.*
 
 /**
@@ -10,10 +11,10 @@ import kotlin.system.*
 
 object Buffering {
     fun simple(): Flow<Int> = flow {
+        log(currentCoroutineContext())
         for (i in 1..10) {
             delay(100) // pretend we are asynchronously waiting 100 ms
             emit(i)
-//            println(currentCoroutineContext())
         }
     }
 
@@ -23,11 +24,12 @@ object Buffering {
             simple()
 //                .buffer()
                 .collect { value ->
-                    println(value)
+                    log(value)
                     delay(100) // pretend we are processing it for 300 ms
-//                    println(coroutineContext)
+                }.apply {
+                    log(coroutineContext)
                 }
         }
-        println("Collected in $time ms")
+        log("Collected in $time ms")
     }
 }

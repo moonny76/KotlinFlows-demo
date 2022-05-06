@@ -2,6 +2,8 @@ package org.scarlet.flows.basics
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
+import org.scarlet.util.onCompletion
 import kotlin.system.*
 
 /**
@@ -17,7 +19,7 @@ object CollectLatestDemo {
 
     fun simple(): Flow<Int> = flow {
         for (i in 1..2) {
-            println("Emit: $i")
+            log("Emit: $i")
             emit(i) // emit next value
             delay(100) // pretend we are asynchronously waiting 100 ms
         }
@@ -31,15 +33,17 @@ object CollectLatestDemo {
         val time = measureTimeMillis {
             simple()
                 .collectLatest { value -> // cancel & restart on the latest value
+                    currentCoroutineContext().job.onCompletion("collectLatest: value = $value")
+
                     try {
-                        println("\tCollecting $value")
+                        log("\tCollecting $value")
                         delay(150)  // pretend we are processing it for 150 ms
-                        println("\tDone $value")
+                        log("\tDone $value")
                     } catch(ex: Exception) {
-                        println("Caught: ${ex.javaClass.simpleName}")
+                        log("\tCaught: ${ex.javaClass.simpleName}")
                     }
                 }
         }
-        println("Collected in $time ms")
+        log("Collected in $time ms")
     }
 }

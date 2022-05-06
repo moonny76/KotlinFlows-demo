@@ -2,6 +2,8 @@ package org.scarlet.flows.basics
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
+import org.scarlet.util.onCompletion
 
 /**
  * Flow cancellation basics:
@@ -15,9 +17,16 @@ import kotlinx.coroutines.flow.*
 
 private fun conFlow(): Flow<Int> = flow {
     repeat(Int.MAX_VALUE) {
-        println("Emitting $it")
-        emit(it)
-        delay(100)
+        try {
+            log("Emitting $it")
+            emit(it)
+            delay(1000)
+        } catch (ex: Exception) {
+            if (ex is CancellationException) {
+                log("Flow cancelled")
+                throw ex
+            }
+        }
     }
 }
 
@@ -26,27 +35,38 @@ object Flow_Timeout1 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
-        withTimeoutOrNull(500) { // Timeout after 500ms
-            conFlow().collect { value -> println(value) }
+        withTimeoutOrNull(3000) {
+            coroutineContext.job.invokeOnCompletion { ex ->
+                log("Collector completed: isCancelled = ${coroutineContext.job.isCancelled}, ex = $ex")
+            }
+            conFlow().collect { value -> log(value) }
         }
-        println("Done")
+
+        log("Done")
     }
 
 }
 
 object Flow_Timeout2 {
     private fun slowFlow(): Flow<Int> = flow {
-        delay(Long.MAX_VALUE) // very very long-running computation
-        emit(42)
+        try {
+            delay(Long.MAX_VALUE) // very very long-running computation
+            emit(42)
+        } catch (ex: Exception) {
+            if (ex is CancellationException) {
+                log("Flow cancelled")
+                throw ex
+            }
+        }
     }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
         withTimeout(500) { // Timeout after 500ms
-            slowFlow().collect { value -> println(value) }
+            slowFlow().collect { value -> log(value) }
         }
-        println("Done")
+        log("Done")
     }
 
 }
@@ -57,15 +77,13 @@ object Explicit_Collector_Cancellation {
     fun main(args: Array<String>) = runBlocking {
 
         val collector = launch {
-            conFlow().collect { value -> println(value) }
-        }
+            conFlow().collect { value -> log(value) }
+        }.onCompletion("collector")
 
         delay(1000)
         collector.cancelAndJoin()
 
-        println("Done")
-
-        delay(2000) // To check whether emitter is still alive...
+        log("Done")
     }
 
 }
@@ -74,14 +92,12 @@ object Cancellation_when_Separate_Coroutines_Also_Works {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
         val collector = launch {
-            conFlow().flowOn(Dispatchers.Default).collect { value -> println(value) }
-        }
+            conFlow().flowOn(Dispatchers.Default).collect { value -> log(value) }
+        }.onCompletion("Collector")
 
-        delay(1000)
+        delay(3000)
         collector.cancelAndJoin()
 
-        println("Done")
-
-        delay(2000)
+        log("Done")
     }
 }

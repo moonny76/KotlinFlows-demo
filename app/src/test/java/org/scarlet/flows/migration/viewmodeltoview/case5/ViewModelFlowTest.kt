@@ -1,9 +1,7 @@
 package org.scarlet.flows.migration.viewmodeltoview.case5
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.junit.*
 

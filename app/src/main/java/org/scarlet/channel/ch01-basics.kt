@@ -4,6 +4,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
+import org.scarlet.util.log
+import org.scarlet.util.onCompletion
 import kotlin.random.Random
 
 @JvmInline
@@ -16,36 +18,36 @@ suspend fun makeItem(): Item {
 
 object Motivations {
     suspend fun getItems() = buildList {
-        println("Building first")
+        log("Building first")
         add(makeItem())
-        println("Building second")
+        log("Building second")
         add(makeItem())
-        println("Building third")
+        log("Building third")
         add(makeItem())
     }
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
+    fun main(args: Array<String>) = runBlocking {
         val startTime = System.currentTimeMillis()
 
         val items = getItems()
 
         repeat(items.size) {
             if (it == 0) {
-                println("time = ${System.currentTimeMillis() - startTime}")
+                log("time = ${System.currentTimeMillis() - startTime}")
             }
-            println("Do something with ${items[it]}")
+            log("Do something with ${items[it]}")
         }
     }
 }
 
 object Basics {
     suspend fun getItems(channel: Channel<Item>) {
-        println("Sending first")
+        log("Sending first")
         channel.send(makeItem())
-        println("Sending second")
+        log("Sending second")
         channel.send(makeItem())
-        println("Sending third")
+        log("Sending third")
         channel.send(makeItem())
     }
 
@@ -62,9 +64,9 @@ object Basics {
         repeat(3) {
             val item = channel.receive()
             if (it == 0) {
-                println("time = ${System.currentTimeMillis() - startTime}")
+                log("time = ${System.currentTimeMillis() - startTime}")
             }
-            println("\t\tDo something with $item")
+            log("\t\tDo something with $item")
         }
     }
 }
@@ -74,34 +76,39 @@ object Sender_Suspends_If_No_Receivers {
     fun main(args: Array<String>) = runBlocking<Unit> {
         val channel = Channel<Int>()
 
-        launch {
-            repeat(1) {
-                println("Sending $it ...")
-                channel.send(42)
-            }
+        val sender = launch {
+            log("Sending 42 ...")
+            channel.send(42)
+            log("This never prints")
         }
+
+        delay(1000)
+        sender.cancelAndJoin()
     }
 }
 
 object Receiver_Suspends_If_No_Senders {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = Channel<Int>(10)
+    fun main(args: Array<String>) = runBlocking {
+        val channel = Channel<Int>()
 
         launch {
-            repeat(9) {
-                println("Wait for sending ${it}-th ...")
+            repeat(2) {
+                log("Try to send ${it}-th ...")
                 channel.send(it)
-                println("Sent $it")
+                log("Sent $it")
             }
-        }
+        }.onCompletion("Sender")
 
-        launch {
-            repeat(10) {
-                println("Wait for receiving ${it}-th ...")
-                println("${channel.receive()} received")
+        val receiver = launch {
+            repeat(3) {
+                log("Wait for receiving ${it}-th ...")
+                log("${channel.receive()} received")
             }
-        }
+        }.onCompletion("Receiver")
+
+        delay(2000)
+        receiver.cancelAndJoin()
     }
 }
 
@@ -110,7 +117,7 @@ object Receiving_and_Closing_Channel {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val channel = Channel<Int>().apply {
-            invokeOnClose { println("Channel closed with cause = $it") }
+            invokeOnClose { log("Channel closed with cause = $it") }
         }
 
         launch {
@@ -119,38 +126,38 @@ object Receiving_and_Closing_Channel {
                 delay(50)
             }
             channel.close() // comment it out to see what happen?
-            println("Is channel closed for receive? ${channel.isClosedForReceive}") // make buffer = 5
-            println("Is channel closed for send? ${channel.isClosedForSend}")
-        }.apply { invokeOnCompletion { println("Sender completes with ex = $it") } }
+            log("Is channel closed for receive? ${channel.isClosedForReceive}") // make buffer = 5
+            log("Is channel closed for send? ${channel.isClosedForSend}")
+        }.onCompletion("Sender")
 
-        receiveOneByOne(channel)
-        receiveByIterable(channel)
+//        receiveOneByOne(channel)
+//        receiveByIterable(channel)
         receiveByConsumeEach(channel)
     }
 
     suspend fun receiveOneByOne(channel: ReceiveChannel<Int>) {
         while (!channel.isClosedForReceive) {
-            println(channel.receive())
+            log("${channel.receive()} received")
             delay(100)
         }
-        println("Is channel closed for receive? ${channel.isClosedForReceive}")
+        log("Is channel closed for receive? ${channel.isClosedForReceive}")
     }
 
     suspend fun receiveByIterable(channel: ReceiveChannel<Int>) {
         // here we print received values using `for` loop (until the channel is closed)
         for (item in channel) {
-            println(item)
+            log("${item} received")
             delay(100)
         }
-        println("Is channel closed for receive? ${channel.isClosedForReceive}")
+        log("Is channel closed for receive? ${channel.isClosedForReceive}")
     }
 
     suspend fun receiveByConsumeEach(channel: ReceiveChannel<Int>) {
         channel.consumeEach {
-            println(it)
+            log("${it} received")
             delay(100)
         }
-        println("Is channel closed for receive? ${channel.isClosedForReceive}")
+        log("Is channel closed for receive? ${channel.isClosedForReceive}")
     }
 
 }
@@ -158,45 +165,35 @@ object Receiving_and_Closing_Channel {
 @ExperimentalCoroutinesApi
 object ReceiverCancellingRendezvousChannel {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking {
+    fun main(args: Array<String>) = runBlocking<Unit> {
 
         val channel = Channel<Int>().apply {
             invokeOnClose { ex ->
-                println("Channel closed with ex = $ex")
+                log("Channel closed with ex = $ex")
             }
         }
 
-        val receiver1 = launch {
+        launch {
             while (!channel.isClosedForReceive) {
                 delay(50)
-                println("Receiver 1:received = " + channel.receive())
+                log("Receiver 1:received = " + channel.receive())
             }
-        }.apply {
-            invokeOnCompletion { println("Receiver 1 completed with ex = $it") }
-        }
+        }.onCompletion("Receiver 1")
 
-        val receiver2 = launch {
-            println("Receiver 2: received = " + channel.receive())
+        launch {
+            log("Receiver 2: received = " + channel.receive())
             delay(500)
-            println("Receiver 2 calls cancel")
+            log("Receiver 2 calls cancel")
             channel.cancel()
-        }.apply {
-            invokeOnCompletion { println("Receiver 2 completed with ex = $it") }
-        }
+        }.onCompletion("Receiver 2")
 
-        val sender = launch {
+        launch {
             while (!channel.isClosedForSend) {
                 channel.send(Random.nextInt())
                 delay(100)
             }
-            println("Is channel closed for send? ${channel.isClosedForSend}")
-        }.apply {
-            invokeOnCompletion { println("Sender completed with ex = ${it?.javaClass?.name}") }
-        }
+            log("Is channel closed for send? ${channel.isClosedForSend}")
+        }.onCompletion("Sender")
 
     }
 }
-
-
-
-

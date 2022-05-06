@@ -1,7 +1,8 @@
-package org.scarlet.flows.advanced.exceptions
+package org.scarlet.flows.advanced.a4exceptions
 
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
+import org.scarlet.util.log
 
 /**
  * Flow exceptions:
@@ -13,14 +14,14 @@ import kotlinx.coroutines.runBlocking
 /**
  * Everything is caught:
  *
- * The following examples actually catche any exception happening in the emitter
+ * The following examples actually catch any exception happening in the emitter
  * or in any intermediate or terminal operators
 */
 
 object TryCatch_Demo1 {
     fun simple() = flow {
         for (i in 1..3) {
-            println("Emitting $i")
+            log("Emitting $i")
             emit(i) // emit next value
         }
     }
@@ -29,11 +30,11 @@ object TryCatch_Demo1 {
     fun main(args: Array<String>) = runBlocking {
         try {
             simple().collect { value ->
-                println(value)
+                log(value)
                 check(value <= 1) { "Collected $value" }
             }
         } catch (e: Throwable) {
-            println("Caught $e")
+            log("Caught $e")
         }
     }
 }
@@ -42,7 +43,7 @@ object TryCatch_Demo2 {
 
     fun simple(): Flow<String> = flow {
         for (i in 1..3) {
-            println("Emitting $i")
+            log("Emitting $i")
             emit(i) // emit next value
         }
     }.map { value ->
@@ -53,9 +54,9 @@ object TryCatch_Demo2 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
-            simple().collect { value -> println(value) }
+            simple().collect { value -> log(value) }
         } catch (e: Throwable) {
-            println("Caught $e")
+            log("Caught $e")
         }
     }
 }

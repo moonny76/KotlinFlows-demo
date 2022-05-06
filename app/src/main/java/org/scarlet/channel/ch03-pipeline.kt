@@ -1,26 +1,23 @@
 package org.scarlet.channel
 
-import org.scarlet.util.coroutineInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
+import org.scarlet.util.log
+import org.scarlet.util.onCompletion
 
 @ExperimentalCoroutinesApi
 object ChannelPipelines {
     fun CoroutineScope.produceNumbers(): ReceiveChannel<Int> = produce {
-        coroutineInfo(0)
-        currentCoroutineContext().job.invokeOnCompletion { ex ->
-            println("produceNumber completes with $ex")
-        }
+        coroutineContext.job.onCompletion("produceNumber")
+
         var x = 1
         while (true) send(x++) // infinite stream of integers starting from 1
     }
 
     fun CoroutineScope.square(numbers: ReceiveChannel<Int>): ReceiveChannel<Double> = produce {
-        coroutineInfo(0)
-        currentCoroutineContext().job.invokeOnCompletion { ex ->
-            println("square completes with $ex")
-        }
+        coroutineContext.job.onCompletion("square")
+
         for (x in numbers) send((x * x).toDouble())
     }
 
@@ -30,10 +27,10 @@ object ChannelPipelines {
         val squares = square(numbers) // squares integers
 
         repeat(5) {
-            println(squares.receive()) // print first five
+            log(squares.receive()) // print first five
         }
 
-        println("Done!") // we are done
+        log("Done!") // we are done
         coroutineContext.cancelChildren() // cancel children coroutines
     }
 }
@@ -56,8 +53,31 @@ object PipelineExample_Primes {
     fun main(args: Array<String>) = runBlocking{
         var cur = numbersFrom(2)
         repeat(10) {
-            cur = filter(cur, cur.receive().also { println(it) })
+            val prime = cur.receive()
+            log(prime)
+            cur = filter(cur, prime)
         }
         coroutineContext.cancelChildren() // cancel all children to let main finish
+    }
+}
+
+object PipelineExample_Primes_With_Sequence {
+    private fun numbersFrom(start: Int): Sequence<Int> = sequence {
+        var x = start
+        while (true) yield(x++) // infinite stream of integers from start
+    }
+
+    private fun filter(numbers: Sequence<Int>, prime: Int) = sequence {
+        for (x in numbers) if (x % prime != 0) yield(x)
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking{
+        var cur: Sequence<Int> = numbersFrom(2)
+        repeat(10) {
+            val prime = cur.first()
+            println(prime)
+            cur = filter(cur, prime)
+        }
     }
 }

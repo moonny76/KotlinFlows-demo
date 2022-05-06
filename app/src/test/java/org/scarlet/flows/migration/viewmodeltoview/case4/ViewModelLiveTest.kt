@@ -63,7 +63,7 @@ class ViewModelLiveTest {
         liveData.observeForever(mockObserver)
 
         // Act (When)
-        advanceUntilIdle()
+        // TODO
 
         // Act (Then)
         verifyOrder {
@@ -81,7 +81,8 @@ class ViewModelLiveTest {
 
         // Act (When)
         viewModel.favorites.captureValues {
-            advanceUntilIdle()
+
+            // TODO
 
             // Act (Then)
             assertThat(values).containsExactly(

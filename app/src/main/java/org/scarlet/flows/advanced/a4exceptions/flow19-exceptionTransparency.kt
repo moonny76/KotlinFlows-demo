@@ -1,7 +1,8 @@
-package org.scarlet.flows.advanced.exceptions
+package org.scarlet.flows.advanced.a4exceptions
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * Exception transparency:
@@ -28,7 +29,7 @@ object Exception_Transparency_Demo1 {
     fun simple(): Flow<String> =
         flow {
             for (i in 1..3) {
-                println("Emitting $i")
+                log("Emitting $i")
                 emit(i) // emit next value
             }
         }.map { value ->
@@ -40,7 +41,7 @@ object Exception_Transparency_Demo1 {
     fun main(args: Array<String>) = runBlocking {
         simple()
             .catch { exception -> emit("Caught ... $exception") } // emit on exception
-            .collect { value -> println(value) }
+            .collect { value -> log(value) }
     }
 }
 
@@ -63,10 +64,10 @@ object ExceptionHandling_Using_Catch_Operator {
                 .handleErrors() // inline this
                 .collect { error("Failed") }
         } catch (ex: Exception) {
-            println("Exception $ex caught .. outside collect")
+            log("Exception $ex caught .. outside collect")
         }
 
-        println("Done.")
+        log("Done.")
     }
 }
 
@@ -87,7 +88,7 @@ object ExceptionHandling_Declaratively {
             .catch { e -> showErrorMessage(e) }
             .collect()
 
-        println("Done.")
+        log("Done.")
     }
 }
 
@@ -100,15 +101,17 @@ object ExceptionHandling_Declaratively {
 object ExceptionHandling_together_with_launchIn {
 
     @JvmStatic
-    fun main(args: Array<String>) {
+    fun main(args: Array<String>) = runBlocking{
         val scope = CoroutineScope(Job())
 
-        dataFlowThrow()
+        val job = dataFlowThrow()
             .onEach { value -> updateUI(value) }
             .catch { e -> showErrorMessage(e) }
             .launchIn(scope)
 
-        println("Done.")
+        job.join()
+
+        log("Done.")
     }
 }
 

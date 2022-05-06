@@ -3,6 +3,9 @@ package org.scarlet.channel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.selects.select
+import org.scarlet.channel.Selecting_from_channels.buzz
+import org.scarlet.channel.Selecting_from_channels.fizz
+import org.scarlet.util.log
 import kotlin.random.Random
 
 /**
@@ -13,14 +16,14 @@ import kotlin.random.Random
 @ExperimentalCoroutinesApi
 object Selecting_from_channels {
 
-    fun CoroutineScope.fizz() = produce<String> {
+    fun CoroutineScope.fizz(): ReceiveChannel<String> = produce {
         while (true) { // sends "Fizz" every 300 ms
             delay(300)
             send("Fizz")
         }
     }
 
-    fun CoroutineScope.buzz() = produce<String> {
+    fun CoroutineScope.buzz(): ReceiveChannel<String> = produce {
         while (true) { // sends "Buzz!" every 500 ms
             delay(500)
             send("Buzz!")
@@ -30,10 +33,10 @@ object Selecting_from_channels {
     suspend fun selectFizzBuzz(fizz: ReceiveChannel<String>, buzz: ReceiveChannel<String>) {
         select<Unit> { // <Unit> means that this select expression does not produce any result
             fizz.onReceive { value ->  // this is the first select clause
-                println("fizz -> '$value'")
+                log("fizz -> '$value'")
             }
             buzz.onReceive { value ->  // this is the second select clause
-                println("buzz -> '$value'")
+                log("buzz -> '$value'")
             }
         }
     }
@@ -52,8 +55,8 @@ object Selecting_from_channels {
 }
 
 /**
- * The `onReceive` clause in select fails when the channel is closed causing the
- * corresponding select to throw an exception. We can use `onReceiveCatching` clause
+ * The `onReceive` clause in `select` fails when the channel is closed causing the
+ * corresponding `select` to throw an exception. We can use `onReceiveCatching` clause
  * to perform a specific action when the channel is closed.
  */
 @ExperimentalCoroutinesApi
@@ -61,7 +64,7 @@ object Selecting_on_Close {
 
     suspend fun selectAorB(a: ReceiveChannel<String>, b: ReceiveChannel<String>): String =
         select {
-            a.onReceiveCatching { it: ChannelResult<String> ->
+            a.onReceiveCatching {
                 val value = it.getOrNull()
                 if (value != null) {
                     "a -> '$value'"
@@ -69,7 +72,7 @@ object Selecting_on_Close {
                     "Channel 'a' is closed"
                 }
             }
-            b.onReceiveCatching { it ->
+            b.onReceiveCatching {
                 val value = it.getOrNull()
                 if (value != null) {
                     "b -> '$value'"
@@ -94,10 +97,10 @@ object Selecting_on_Close {
     }
 
     /**
-     * First of all, select is biased to the first clause. When several clauses
+     * First of all, `select` is biased to the first clause. When several clauses
      * are selectable at the same time, the first one among them gets selected.
      *
-     * The second observation, is that onReceiveCatching gets immediately
+     * The second observation, is that `onReceiveCatching` gets immediately
      * selected when the channel is already closed.
      */
 }
@@ -136,15 +139,15 @@ object Selecting_to_Send_Demo {
 
         launch {
             worker1.consumeEach {
+                log("worker1: $it")
                 delay(100)
-                println("worker1: $it")
             }
         }
 
         launch {
             worker2.consumeEach {
-                delay(100)
-                println("\t\tworker2: $it")
+                log("\t\tworker2: $it")
+                delay(200)
             }
         }
     }
@@ -153,9 +156,9 @@ object Selecting_to_Send_Demo {
 @ExperimentalCoroutinesApi
 object Selecting_to_Send {
 
-    fun CoroutineScope.produceNumbers(side: SendChannel<Int>) = produce {
+    fun CoroutineScope.produceNumbers(side: SendChannel<Int>): ReceiveChannel<Int> = produce {
         for (num in 1..10) { // produce 10 numbers from 1 to 10
-            delay(100) // every 100 ms
+            delay(100)
             select<Unit> {
                 onSend(num) {} // Send to the primary channel
                 side.onSend(num) {} // or to the side channel
@@ -170,16 +173,59 @@ object Selecting_to_Send {
          */
         val side = Channel<Int>() // allocate side channel
         launch { // this is a very fast consumer for the side channel
-            side.consumeEach { println("Side channel has $it") }
+            side.consumeEach { log("Side channel has $it") }
         }
 
         produceNumbers(side).consumeEach {
-            println("Consuming $it")
+            log("Consuming $it")
             delay(250) // let us digest the consumed number properly, do not hurry
         }
 
-        println("Done consuming")
+        log("Done consuming")
         coroutineContext.cancelChildren()
     }
 
+}
+
+@ExperimentalCoroutinesApi
+@ObsoleteCoroutinesApi
+object MixedChannels {
+    suspend fun selectFizzBuzz(fizz: SendChannel<String>, buzz: ReceiveChannel<String>) {
+        val word = "quick brown fox jumps over the lazy dog"
+
+        select<Unit> { // <Unit> means that this select expression does not produce any result
+            fizz.onSend(word) {   // this is the first select clause
+                log("fizz: -> sent")
+            }
+            buzz.onReceive { value ->  // this is the second select clause
+                log("buzz -> '$value'")
+            }
+        }
+    }
+
+    fun CoroutineScope.fizz(): SendChannel<String> = actor {
+        while (true) { // receives every 300 ms
+            log(receive())
+            delay(300)
+        }
+    }
+
+    fun CoroutineScope.buzz(): ReceiveChannel<String> = produce {
+        while (true) { // sends "Buzz!" every 500 ms
+            send("Buzz!")
+            delay(500)
+        }
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking{
+        val fizz = fizz()
+        val buzz = buzz()
+
+        repeat(7) {
+            selectFizzBuzz(fizz, buzz)
+        }
+
+        coroutineContext.cancelChildren() // cancel fizz & buzz coroutines
+    }
 }

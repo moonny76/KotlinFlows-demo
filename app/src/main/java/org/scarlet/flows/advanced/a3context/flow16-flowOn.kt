@@ -1,7 +1,8 @@
-package org.scarlet.flows.advanced.context
+package org.scarlet.flows.advanced.a3context
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * flowOn operator:
@@ -20,10 +21,8 @@ import kotlinx.coroutines.flow.*
 @ExperimentalStdlibApi
 object FlowOn_Demo {
 
-    private fun log(msg: String) = println("[${Thread.currentThread().name}] $msg")
-
     private fun simple() = flow {
-        println(currentCoroutineContext()[CoroutineDispatcher.Key])
+        log(currentCoroutineContext()[CoroutineDispatcher.Key])
 
         for (i in 1..3) {
             delay(100) // pretend we are computing it in CPU-consuming way
@@ -51,19 +50,23 @@ object ChannelFlow_Demo {
     fun main(args: Array<String>) = runBlocking {
 
         myFlow().collect { value ->
-            println(value)
+            log(value)
         }
     }
 
     private fun myFlow() = channelFlow {
-        launch(Dispatchers.Default) {
+        log("channelFlow context = ${currentCoroutineContext()}")
+
+        launch(CoroutineName("Child1") + Dispatchers.Default) {
+            log("${currentCoroutineContext()}")
             for (i in 1..3) {
                 delay(500) // pretend we are computing it in CPU-consuming way
                 send(i) // emit next value
             }
         }
 
-        launch {
+        launch(CoroutineName("Child2")) {
+            log("${currentCoroutineContext()}")
             for (i in 10..12) {
                 delay(500) // pretend we are computing it in CPU-consuming way
                 send(i) // emit next value

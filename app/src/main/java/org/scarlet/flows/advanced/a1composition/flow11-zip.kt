@@ -1,12 +1,13 @@
-package org.scarlet.flows.advanced.composition
+package org.scarlet.flows.advanced.a1composition
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * Zip:
  *
- * Just like the Sequence.zip extension function in the Kotlin standard library,
+ * Just like the `Sequence.zip` extension function in the Kotlin standard library,
  * flows have a `zip` operator that combines the corresponding values of two flows.
  * Shorter and slower flow determines when to zip, and terminate.
  */
@@ -18,7 +19,7 @@ object Zip_Demo1 {
         val strs = flowOf("one", "two", "three") // strings
 
         nums.zip(strs) { a, b -> "$a -> $b" }
-            .collect { println(it) } // collect and print
+            .collect { log(it) } // collect and print
     }
 }
 
@@ -36,7 +37,7 @@ object Zip_Demo2 {
                 it
             }// strings
 
-        nums.zip(strs) { a, b -> "$a -> $b" } // compose a single string
-            .collect { println(it) } // collect and print
+        nums.zip(strs) { a, b -> "$a -> $b" }
+            .collect { log(it) }
     }
 }

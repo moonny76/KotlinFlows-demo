@@ -76,7 +76,6 @@ class ViewModelLiveTest {
 
         // Act (Then)
         viewModel.favorites.captureValues {
-            // Act (When)
 
             // TODO
 

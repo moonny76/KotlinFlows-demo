@@ -75,18 +75,12 @@ class Flow01_Native_Test {
         println(fibo().dropWhile { it < BigInteger.valueOf(1000) }.take(10).toList())
     }
 
-    @Test
-    fun `empty cold flow`() = runBlocking {
+    @Test(expected = NoSuchElementException::class)
+    fun `empty cold flow`() = runBlocking<Unit> {
 //        val emptyFlow = flowOf<Int>()
         val emptyFlow = emptyFlow<Int>()
 
-        try {
-            emptyFlow.first()
-        } catch (ex: Exception) {
-            println(ex.javaClass.simpleName)
-        }
-
-        println("Done.")
+        emptyFlow.first()
     }
 
     @Test

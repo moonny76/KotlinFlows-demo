@@ -2,6 +2,7 @@ package org.scarlet.channel
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import org.scarlet.util.log
 
 object Channels_Fair_PingPong {
     @JvmStatic
@@ -13,7 +14,7 @@ object Channels_Fair_PingPong {
 
         table.send(Ball(0)) // serve the ball
 
-        delay(1000) // delay 1 second
+        delay(2000)
         coroutineContext.cancelChildren() // game over, cancel them
     }
 
@@ -22,7 +23,7 @@ object Channels_Fair_PingPong {
     suspend fun player(name: String, table: Channel<Ball>) {
         for (ball in table) { // receive the ball in a loop
             ball.hits++
-            println("$name $ball")
+            log("$name $ball")
             delay(300) // wait a bit
             table.send(ball) // send the ball back
         }

@@ -1,8 +1,9 @@
-package org.scarlet.flows.advanced.context
+package org.scarlet.flows.advanced.a3context
 
 import org.scarlet.util.coroutineInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.log
 
 /**
  * Wrong emission `withContext`:
@@ -20,17 +21,17 @@ object ViolationOfContextPreservation {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        coroutineInfo(0)
 
         wrongFlow().collect { value ->
-            println(value)
+            log("$value, ${currentCoroutineContext()}")
         }
     }
 
     // coroutineScope is OK
     private fun okFlow(): Flow<Int> = flow {
         coroutineScope {
-            emit(async(CoroutineName("child1")) { coroutineInfo(1); delay(100); 42 }.await())
+            log("context in flow = ${currentCoroutineContext()}")
+            emit(async { delay(100); 42 }.await())
             emit(async { delay(100); 24 }.await())
         }
     }
@@ -40,6 +41,7 @@ object ViolationOfContextPreservation {
         // GlobalScope.launch { // is prohibited
         // launch(Dispatchers.IO) { // is prohibited
         withContext(Dispatchers.Default) {
+            log("context in flow = ${currentCoroutineContext()}")
             for (i in 1..3) {
                 delay(1000) // pretend we are computing it in CPU-consuming way
                 emit(i) // emit next value
@@ -54,16 +56,14 @@ object Strange {
         emit(1)
         coroutineScope {
             emit(2)
-            launch { // not allowed
-                emit(3)
-            }
+//            launch { // not allowed
+//                emit(3)
+//            }
         }
     }
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        flow.flowOn(Dispatchers.IO).collect {
-            println(it)
-        }
+        flow.collect { log(it) }
     }
 }
 
