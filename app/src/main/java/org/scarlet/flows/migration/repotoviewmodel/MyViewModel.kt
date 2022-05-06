@@ -5,14 +5,15 @@ import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import org.scarlet.util.DefaultDispatchersProvider
+import org.scarlet.util.DispatchersProvider
 
 @ExperimentalCoroutinesApi
 class MyViewModel(
     private val repository: Repository,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.Default
+    private val dispatchers: DispatchersProvider = DefaultDispatchersProvider()
 ) : ViewModel() {
 
     /**
@@ -76,7 +77,7 @@ class MyViewModel(
      * Suspend Transformation
      */
     private suspend fun heavyTransformation(resource: Resource<List<Recipe>>): List<String> =
-        withContext(dispatcher) {
+        withContext(dispatchers.default) {
             delay(1000) // simulate long-computation
             when (resource) {
                 is Resource.Success -> resource.data?.map {

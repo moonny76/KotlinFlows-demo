@@ -6,7 +6,7 @@ import androidx.lifecycle.Observer
 import org.scarlet.flows.CoroutineTestRule
 import io.mockk.MockKAnnotations
 import kotlinx.coroutines.*
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.*
 
 @ExperimentalCoroutinesApi
@@ -26,7 +26,7 @@ class ViewModelLiveTest {
     }
 
     @Test
-    fun `test merge with MediatorLiveData`() = coroutineRule.runBlockingTest {
+    fun `test merge with MediatorLiveData`() = runTest {
         val recipeDataSource = MutableLiveData<String>()
         val categoryDataSource = MutableLiveData<String>()
 
@@ -49,14 +49,14 @@ class ViewModelLiveTest {
         liveData.observeForever(observer)
 
         val job1 = launch {
-            repeat(10) {
+            repeat(5) {
                 recipeDataSource.postValue("Recipe$it")
                 delay(1000)
             }
         }
 
         val job2 = launch {
-            repeat(10) {
+            repeat(5) {
                 categoryDataSource.postValue("Category$it")
                 delay(2000)
             }

@@ -35,7 +35,6 @@ object DataSource {
     suspend fun genToken() {
         while (true) {
             delay(200)
-            println("increment state")
             _tokens.value += 1
         }
     }

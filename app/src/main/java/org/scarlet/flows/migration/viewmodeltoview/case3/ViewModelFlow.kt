@@ -19,7 +19,7 @@ class ViewModelFlow(
 
     // TODO:
     // 1. Change userId from LiveData to Flow.
-    // 2. Change favorites from LiveData to StateFlow. Hint: use `stateIn`
+    // 2. Change favorites from LiveData to StateFlow. Hint: use `mapLatest` and `stateIn`
 
     private val userId: LiveData<String> =
         authManager.observeUser().map { user -> user.id }.asLiveData()

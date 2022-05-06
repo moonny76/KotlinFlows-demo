@@ -9,8 +9,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Test
-import org.scarlet.util.testDispatcher
+import org.scarlet.util.log
+import org.scarlet.util.onCompletion
+import org.scarlet.util.spaces
 import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
@@ -18,119 +21,123 @@ import kotlin.time.ExperimentalTime
 class StateFlow_TurbineTest {
 
     @Test
-    fun `StateFlow test`() = runBlockingTest {
+    fun `StateFlow test`() = runTest {
         val stateFlow = MutableStateFlow(0)
 
         launch {
             repeat(3) {
-                println("emit time = $currentTime")
                 stateFlow.value = it + 1
-                delay(200) // change this 200, 1000
             }
         }
 
         stateFlow.test {
             repeat(3) {
-                println("\t\t\t\tcollect time = $currentTime")
-                println("\t\t\t\tvalue = ${awaitItem()}")
-                delay(500)
+                log("received value = ${awaitItem()}")
             }
-            println(cancelAndConsumeRemainingEvents())
+            log(cancelAndConsumeRemainingEvents())
         }
     }
 
-
     @Test
-    fun `stateFlow never completes - turbine behavior`() = runBlockingTest {
+    fun `stateFlow never completes but - turbine behavior`() = runTest {
         val stateFlow = MutableStateFlow(0)
 
         stateFlow
-            .onCompletion { ex -> println("ON COMPLETE: ${ex?.javaClass?.name}") }
+            .onCompletion { ex -> log("ON COMPLETE: ${ex?.javaClass?.name}") }
             .test {
-                println(awaitItem())
+                log(awaitItem())
             }
     }
 
     @Test
-    fun `StateFlow - lost initial state`() = runBlocking {
+    fun `StateFlow - lost initial state`() = runTest {
         val hotFlow = MutableStateFlow(42)
 
         hotFlow.emit(1)
 
         hotFlow.test {
-            assertThat(awaitItem()).isEqualTo(1)
+            val value = awaitItem()
+            assertThat(value).isNotEqualTo(42)
+            assertThat(value).isEqualTo(1)
         }
     }
 
     @Test
-    fun `StateFlow - init value collected`() = runBlocking {
+    fun `StateFlow - init value collected`() = runTest {
         val hotFlow = MutableStateFlow(42)
 
+        val list = mutableListOf<Int>()
         hotFlow.test {
             hotFlow.emit(1)
 
-            println(awaitItem())
-            println(awaitItem())
-            println("Done.")
+            list.add(awaitItem())
+            list.add(awaitItem())
+            log(list)
         }
     }
 
-    // Test thread keeps running forever ...
     @Test
-    fun `StateFlow - realistic test`() = runBlockingTest {
+    fun `StateFlow - realistic test`() = runTest {
         // Arrange (Given)
         val gen = launch {
             genToken() // infinite flow
-        }
+        }.onCompletion("Emitter")
 
         // Act (When)
         tokens.test {
-            println("token gen launched")
             // Assert (Then)
-            println(awaitItem())
-            println(awaitItem())
-            println(awaitItem())
-
-            gen.cancelAndJoin() // Must use this line.
+            repeat(5) {
+                log(awaitItem())
+            }
         }
+        gen.cancelAndJoin() // Must use this line.
     }
 
     @Test
-    fun `suspending function version - stateIn`() = runBlockingTest {
+    fun `suspending function version - stateIn`() = runTest {
         val payload = 0
-        val given = flow {
+        val given: StateFlow<Int> = flow {
             emit(payload)
+            delay(1000) // what if to move this line one up?
+            emit(payload + 1)
         }.stateIn(scope = this)
 
-        val subscriber1 = launch {
+        launch {
             given.test {
-                assertThat(awaitItem()).isEqualTo(payload)
+                log(awaitItem())
+                cancelAndIgnoreRemainingEvents()
             }
         }
 
-        val subscriber2 = launch {
+        launch {
+            delay(1000)
             given.test {
-                assertThat(awaitItem()).isEqualTo(payload)
+                log(awaitItem())
+                cancelAndIgnoreRemainingEvents()
             }
         }
-
-        joinAll(subscriber1, subscriber2)
     }
 
     @Test
-    fun `stateIn demo`() = runBlockingTest {
+    fun `stateIn demo`() = runTest {
         val payload = 0
-        val given = flow {
+        val given: StateFlow<Int?> = flow {
             emit(payload)
+            emit(payload + 1)
         }.stateIn(
             scope = this,
-            started = SharingStarted.Lazily,
+            started = SharingStarted.Eagerly, // same for Lazily
+//            started = SharingStarted.WhileSubscribed(),
             initialValue = null
         )
 
         given.test {
-            assertThat(awaitItem()).isEqualTo(payload)
+            log(awaitItem())
+            log(awaitItem())
+            log(awaitItem())
         }
+
+//        coroutineContext.cancelChildren()
     }
 
 }

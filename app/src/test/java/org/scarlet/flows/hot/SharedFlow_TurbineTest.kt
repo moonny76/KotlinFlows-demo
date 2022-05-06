@@ -7,6 +7,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
 import org.junit.Test
+import org.scarlet.util.onCompletion
 import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
@@ -21,18 +22,20 @@ class SharedFlow_TurbineTest {
      */
 
     @Test(expected = TimeoutCancellationException::class)
-    fun `wrongTest - SharedFlow`() = runBlockingTest {
+    fun `wrongTest - SharedFlow`() = runTest {
         val hotFlow = MutableSharedFlow<Int>(replay = 0) // replay = 1, then OK
 
         hotFlow.emit(1)
 
-        hotFlow.test {
-            assertThat(awaitItem()).isEqualTo(1) // expectMostRecentItem() of no use
+        withTimeout(1000){
+            hotFlow.test {
+                assertThat(awaitItem()).isEqualTo(1) // expectMostRecentItem() of no use
+            }
         }
     }
 
     @Test
-    fun `rightTest - SharedFlow`() = runBlockingTest {
+    fun `rightTest - SharedFlow`() = runTest {
         val hotFlow = MutableSharedFlow<Int>(replay = 0)
 
         hotFlow.test {
@@ -59,14 +62,14 @@ class SharedFlow_TurbineTest {
                 sharedFlow.emit(it)
                 println("Emitter: Event $it sent")
             }
-        }
+        }.onCompletion("Emitter done")
 
         sharedFlow.test {
             println("\t\tCollector subscribes and starts the emitter")
             emitter.start()
 
             repeat(3) {
-                delay(500) // simulate subscribed, but not ready to collect
+                delay(5000) // simulate subscribed, but not ready to collect
                 println("\t\tCollector received value = ${awaitItem()}")
             }
         }
@@ -75,7 +78,7 @@ class SharedFlow_TurbineTest {
     }
 
     @Test
-    fun `collectors start to receive data after subscription - no replay`() = runBlockingTest {
+    fun `collectors start to receive data after subscription - no replay`() = runBlocking {
         val sharedFlow = MutableSharedFlow<Int>()
 
         launch {
@@ -86,7 +89,7 @@ class SharedFlow_TurbineTest {
                 println("Emit $it done")
                 delay(200)
             }
-        }
+        }.onCompletion("Emitter done")
 
         launch {
             delay(100)
@@ -96,7 +99,7 @@ class SharedFlow_TurbineTest {
                 delay(500)
                 println("${spaces(4)}Collector1: got ${awaitItem()}")
             }
-        }
+        }.onCompletion("Collector1 done")
 
         launch {
             delay(300)
@@ -104,7 +107,7 @@ class SharedFlow_TurbineTest {
             sharedFlow.test {
                 println("${spaces(8)}Collector2: got ${awaitItem()}")
             }
-        }
+        }.onCompletion("Collector2 done")
 
         delay(3000)
     }

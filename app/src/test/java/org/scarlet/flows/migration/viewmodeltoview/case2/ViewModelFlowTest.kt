@@ -9,7 +9,7 @@ import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -40,7 +40,7 @@ class ViewModelFlowTest {
     }
 
     @Test
-    fun `testFlow - without turbine`() = coroutineRule.runBlockingTest {
+    fun `testFlow - without turbine`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelFlow("eggs", repository)
 
@@ -52,7 +52,7 @@ class ViewModelFlowTest {
 
     @ExperimentalTime
     @Test
-    fun `test flow wih turbine`() = coroutineRule.runBlockingTest {
+    fun `test flow wih turbine`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelFlow("eggs", repository)
 

@@ -1,18 +1,24 @@
 package org.scarlet.flows
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.test.*
 import org.junit.rules.TestWatcher
 import org.junit.runner.Description
+import org.scarlet.util.DispatchersProvider
+import org.scarlet.util.log
 
 @ExperimentalCoroutinesApi
 class CoroutineTestRule(
-    val testDispatcher: TestCoroutineDispatcher = TestCoroutineDispatcher()
-) : TestWatcher(), TestCoroutineScope by TestCoroutineScope(testDispatcher){
+    val testDispatcher: TestDispatcher = StandardTestDispatcher()
+) : TestWatcher(){
+
+    val testDispatchersProvider = object : DispatchersProvider {
+        override val main: CoroutineDispatcher = testDispatcher
+        override val io: CoroutineDispatcher = testDispatcher
+        override val default: CoroutineDispatcher = testDispatcher
+    }
 
     override fun starting(description: Description?) {
         super.starting(description)
@@ -24,6 +30,5 @@ class CoroutineTestRule(
         super.finished(description)
 
         Dispatchers.resetMain()
-        cleanupTestCoroutines()
     }
 }

@@ -3,6 +3,10 @@ package org.scarlet.flows.migration.viewmodeltoview.case2
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
@@ -20,4 +24,5 @@ class ViewModelFlow(
         emit(Resource.Loading)
         emit(repository.getRecipes(query))
     }
+
 }

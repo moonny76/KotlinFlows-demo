@@ -14,8 +14,7 @@ import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.resumeDispatcher
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.*
 
 @ExperimentalCoroutinesApi
@@ -47,14 +46,11 @@ class ViewModelLiveTest {
 
         coEvery {
             repository.getFavoriteRecipes(any())
-        } coAnswers {
-            delay(1000)
-            Resource.Success(TestData.mFavorites)
-        }
+        } returns Resource.Success(TestData.mFavorites)
     }
 
     @Test
-    fun `testLiveData - with mock observer`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with mock observer`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelLive(repository, authManager)
 
@@ -62,7 +58,7 @@ class ViewModelLiveTest {
         liveData.observeForever(mockObserver)
 
         // Act (When)
-        resumeDispatcher()
+        // TODO
 
         // Act (Then)
         verifySequence {
@@ -74,15 +70,16 @@ class ViewModelLiveTest {
     }
 
     @Test
-    fun `testLiveData - with captureValues`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with captureValues`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelLive(repository, authManager)
 
+        // Act (Then)
         viewModel.favorites.captureValues {
             // Act (When)
-            resumeDispatcher()
 
-            // Act (Then)
+            // TODO
+
             // Assert (Then)
             assertThat(this.values).containsExactly(
                 Resource.Loading,

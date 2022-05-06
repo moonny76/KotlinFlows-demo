@@ -12,7 +12,7 @@ import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -40,14 +40,11 @@ class ViewModelFlowTest {
 
         coEvery {
             repository.getFavoriteRecipesFlow(any())
-        } coAnswers {
-            delay(1000)
-            flowOf(Resource.Success(TestData.mFavorites))
-        }
+        } returns flowOf(Resource.Success(TestData.mFavorites))
     }
 
     @Test
-    fun testFlow() = coroutineRule.runBlockingTest {
+    fun testFlow() = runTest {
         // Arrange (Given)
         viewModel = ViewModelFlow(repository, authManager)
 
@@ -63,7 +60,7 @@ class ViewModelFlowTest {
 
     @ExperimentalTime
     @Test
-    fun `test flow wih turbine`() = coroutineRule.runBlockingTest {
+    fun `test flow wih turbine`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelFlow(repository, authManager)
 

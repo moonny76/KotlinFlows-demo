@@ -8,7 +8,7 @@ import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -36,7 +36,7 @@ class ViewModelLiveTest {
     }
 
     @Test
-    fun `testLiveData - with mock observer`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with mock observer`() = runTest {
         // Arrange (Given)
 
         // Act (When)
@@ -46,7 +46,7 @@ class ViewModelLiveTest {
     }
 
     @Test
-    fun `testLiveData - with getValueForTest`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with getValueForTest`() = runTest {
         // Arrange (Given)
 
         // Act (When)
@@ -56,7 +56,7 @@ class ViewModelLiveTest {
     }
 
     @Test
-    fun `testLiveData - with captureValues`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with captureValues`() = runTest {
         // Arrange (Given)
 
         // Act (When)

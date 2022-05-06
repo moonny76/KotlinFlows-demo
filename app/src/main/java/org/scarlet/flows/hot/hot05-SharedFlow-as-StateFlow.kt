@@ -1,13 +1,12 @@
 package org.scarlet.flows.hot
 
+import kotlinx.coroutines.*
 import org.scarlet.util.Resource
 import org.scarlet.util.spaces
-import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import org.scarlet.util.delim
+import org.scarlet.util.log
 
 /**
  * Make SharedFlow as StateFLow
@@ -21,28 +20,64 @@ object SharedFlow_As_StateFlow {
     private val _sharedFlow = MutableSharedFlow<Resource<Int>>(
         replay = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    val sharedFlow: SharedFlow<Resource<Int>> = _sharedFlow.apply {
+    ).apply {
         tryEmit(Resource.Empty)
         distinctUntilChanged()
     }
 
+    val sharedFlow: SharedFlow<Resource<Int>> = _sharedFlow
+
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
+        stateFlow_case()
+        delim()
+        sharedFlow_case()
+    }
 
-        val collector1 = launch {
-            println("Collector1 subscribes")
-            sharedFlow.collect {
-                println("Collector1: $it")
+    suspend fun stateFlow_case() = coroutineScope{
+        val subscriber1 = launch {
+            log("Subscriber1 subscribes")
+            stateFlow.collect {
+                log("Subscriber1: $it")
                 delay(200)
             }
         }
 
-        val collector2 = launch {
+        val subscriber2 = launch {
             delay(1000)
-            println("${spaces(7)}Collector2 subscribes after 1000ms")
+            log("${spaces(8)}Subscriber2 subscribes after 1000ms")
+            stateFlow.collect {
+                log("${spaces(8)}Subscriber2: $it")
+                delay(100)
+            }
+        }
+
+        launch {
+            for (i in 0..5) {
+                _stateFlow.value = Resource.Success(i)
+                delay(200)
+            }
+        }
+
+        delay(2000)
+        subscriber1.cancelAndJoin()
+        subscriber2.cancelAndJoin()
+    }
+
+    suspend fun sharedFlow_case() = coroutineScope{
+        val subscriber1 = launch {
+            log("Subscriber1 subscribes")
             sharedFlow.collect {
-                println("${spaces(7)}Collector2: $it")
+                log("Subscriber1: $it")
+                delay(200)
+            }
+        }
+
+        val subscriber2 = launch {
+            delay(1000)
+            log("${spaces(8)}Subscriber2 subscribes after 1000ms")
+            sharedFlow.collect {
+                log("${spaces(8)}Subscriber2: $it")
                 delay(100)
             }
         }
@@ -55,9 +90,8 @@ object SharedFlow_As_StateFlow {
             }
         }
 
-        delay(3000)
-        collector1.cancelAndJoin()
-        collector2.cancelAndJoin()
+        delay(2000)
+        subscriber1.cancelAndJoin()
+        subscriber2.cancelAndJoin()
     }
-
 }

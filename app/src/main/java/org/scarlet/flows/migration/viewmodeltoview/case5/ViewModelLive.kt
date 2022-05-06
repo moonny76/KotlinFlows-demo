@@ -15,9 +15,11 @@ class ViewModelLive : ViewModel() {
         liveDataMerger.addSource(recipeDataSource) {
             liveDataMerger.value = RecipeData(it)
         }
+
         liveDataMerger.addSource(categoryDataSource) {
             liveDataMerger.value = CategoryData(it)
         }
+
         return liveDataMerger
     }
 }

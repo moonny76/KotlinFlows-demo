@@ -20,7 +20,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.*
 
 @ExperimentalCoroutinesApi
@@ -51,14 +51,11 @@ class ViewModelLiveTest {
 
         coEvery {
             repository.getFavoriteRecipesFlow(any())
-        } coAnswers {
-            delay(1000)
-            flowOf(Resource.Success(TestData.mFavorites))
-        }
+        } returns flowOf(Resource.Success(TestData.mFavorites))
     }
 
     @Test
-    fun `testLiveData - with mock observer`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with mock observer`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelLive(repository, authManager)
 
@@ -78,7 +75,7 @@ class ViewModelLiveTest {
     }
 
     @Test
-    fun `testLiveData - with captureValues`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with captureValues`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelLive(repository, authManager)
 

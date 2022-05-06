@@ -6,6 +6,7 @@ import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.util.Resource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import org.scarlet.flows.model.Recipe
 
 /**
  * #4: Observing a stream of data with parameters

@@ -13,10 +13,13 @@ import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.scarlet.util.log
 
 @ExperimentalCoroutinesApi
 class ViewModelLiveTest {
@@ -41,21 +44,19 @@ class ViewModelLiveTest {
 
         coEvery {
             repository.getRecipes(any())
-        } coAnswers {
-            delay(1_000)
-            Resource.Success(TestData.mRecipes)
-        }
+        } returns Resource.Success(TestData.mRecipes)
     }
 
     @Test
-    fun `testLiveData - with mock observer`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with mock observer`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelLive("eggs", repository)
 
         // Act (When)
         val liveData = viewModel.recipes
-        println("start to observe")
         liveData.observeForever(mockObserver)
+
+        // TODO
 
         // Assert (Then)
         verifySequence {
@@ -65,13 +66,16 @@ class ViewModelLiveTest {
     }
 
     @Test
-    fun `testLiveData - with captureValues`() = coroutineRule.runBlockingTest {
+    fun `testLiveData - with captureValues`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelLive("eggs", repository)
 
         // Act (When)
         viewModel.recipes.captureValues {
             // Assert (Then)
+
+            // TODO
+
             assertThat(this.values).containsExactly(
                 Resource.Loading,
                 Resource.Success(TestData.mRecipes)
