@@ -1,4 +1,4 @@
-package org.scarlet.android.currency.case2
+package org.scarlet.android.currency.livedata
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -7,13 +7,11 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import org.scarlet.R
 import org.scarlet.android.currency.FakeCurrencyApi
 import org.scarlet.util.hideKeyboard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import java.math.BigDecimal
 import java.text.DecimalFormat
 
@@ -46,7 +44,6 @@ class CurrencyActivity : AppCompatActivity() {
             } ?: showEmptyAmountWarning()
         }
 
-        viewModel.onCurrency(currentCurrency!!)
         subscribeObservers()
     }
 
@@ -68,46 +65,24 @@ class CurrencyActivity : AppCompatActivity() {
     }
 
     private fun subscribeObservers() {
-
-        //region Version 1: LiveData
-//        viewModel.currencySymbol.observe(this@CurrencyActivity) { symbol ->
-//            symbol?.let {
-//                detailsSymbolTargetCurrency.text = it
-//            }
-//        }
-//
-//        viewModel.exchangeRate.observe(this@CurrencyActivity) { rate ->
-//            rate?.let {
-//                detailsExchangeRate.text = rate.toString()
-//            }
-//        }
-//
-//        viewModel.totalAmount.observe(this@CurrencyActivity) { total ->
-//            total?.let {
-//                detailsTotalAmount.text = format(total)
-//            }
-//        }
-        //endregion
-
-        //region Version 2: Flow
-        lifecycleScope.launchWhenStarted {
-            viewModel.currencySymbol.collect { symbol ->
-                detailsSymbolTargetCurrency.text = symbol
+        viewModel.currencySymbol.observe(this@CurrencyActivity) { symbol ->
+            symbol?.let {
+                detailsSymbolTargetCurrency.text = it
             }
         }
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.exchangeRate.collect { rate ->
+        viewModel.exchangeRate.observe(this@CurrencyActivity) { rate ->
+            rate?.let {
                 detailsExchangeRate.text = rate.toString()
             }
         }
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.totalAmount.collect { total ->
+        viewModel.totalAmount.observe(this@CurrencyActivity) { total ->
+            total?.let {
                 detailsTotalAmount.text = format(total)
             }
         }
-        //endregion
+
     }
 
     private fun format(total: BigDecimal): String {
@@ -117,23 +92,10 @@ class CurrencyActivity : AppCompatActivity() {
 
     fun onRadioButtonClicked(view: View) {
         currentCurrency = when (view.id) {
-            R.id.radio_dollars -> {
-                viewModel.onCurrency("dollar")
-                "dollar"
-            }
-            R.id.radio_pounds -> {
-                viewModel.onCurrency("pound")
-                "pound"
-            }
-            else -> {
-                viewModel.onCurrency("yen")
-                "yen"
-            }
+            R.id.radio_dollars -> "dollar"
+            R.id.radio_pounds -> "pound"
+            else -> "yen"
         }
-    }
-
-    companion object {
-        const val TAG = "Currency"
     }
 
 }

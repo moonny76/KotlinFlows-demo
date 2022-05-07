@@ -31,7 +31,7 @@ class FakeCurrencyApi : CurrencyApi {
 
 
     override suspend fun getExchangeRate(currency: String): Double {
-        delay(2_000) // fake network delay
+        delay(1_000) // fake network delay
 
         return when (currency) {
             "dollar" -> dollars[Random.nextInt(0, 5)]

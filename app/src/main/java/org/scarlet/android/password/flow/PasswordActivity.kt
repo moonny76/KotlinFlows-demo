@@ -9,9 +9,11 @@ import com.google.android.material.snackbar.Snackbar
 import org.scarlet.android.password.flow.PasswordViewModel.*
 import org.scarlet.databinding.ActivityPasswordMainBinding
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.flow.collect
 
 @ExperimentalCoroutinesApi
+@ObsoleteCoroutinesApi
 class PasswordActivity : AppCompatActivity() {
 
     private var _binding: ActivityPasswordMainBinding? = null

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.delay
@@ -43,7 +44,7 @@ class PasswordViewModel : ViewModel() {
     val countFlow: Flow<Int> = _countChannel.receiveAsFlow()
 
     @ObsoleteCoroutinesApi
-    val eventChannel = viewModelScope.actor<Unit> {
+    val eventChannel: SendChannel<Unit> = viewModelScope.actor {
         _countChannel.send(currentCount)
         consumeEach {
             _countChannel.send(++currentCount)

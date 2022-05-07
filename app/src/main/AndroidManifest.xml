@@ -21,10 +21,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="org.scarlet.android.currency.case1.CurrencyActivity"
+        <activity android:name="org.scarlet.android.currency.livedata.CurrencyActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="true"/>
-        <activity android:name="org.scarlet.android.currency.case2.CurrencyActivity"
+        <activity android:name="org.scarlet.android.currency.flow.CurrencyActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="true"/>
         <activity android:name="org.scarlet.android.password.livedata.PasswordActivity"

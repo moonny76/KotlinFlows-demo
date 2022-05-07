@@ -1,4 +1,4 @@
-package org.scarlet.android.currency.case1
+package org.scarlet.android.currency.flow
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,7 +13,6 @@ import org.scarlet.R
 import org.scarlet.android.currency.FakeCurrencyApi
 import org.scarlet.util.hideKeyboard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.collect
 import java.math.BigDecimal
 import java.text.DecimalFormat
 
@@ -67,25 +66,7 @@ class CurrencyActivity : AppCompatActivity() {
     }
 
     private fun subscribeObservers() {
-//        viewModel.currencySymbol.observe(this@CurrencyActivity) { symbol ->
-//            symbol?.let {
-//                detailsSymbolTargetCurrency.text = it
-//            }
-//        }
-//
-//        viewModel.exchangeRate.observe(this@CurrencyActivity) { rate ->
-//            rate?.let {
-//                detailsExchangeRate.text = rate.toString()
-//            }
-//        }
-//
-//        viewModel.totalAmount.observe(this@CurrencyActivity) { total ->
-//            total?.let {
-//                detailsTotalAmount.text = format(total)
-//            }
-//        }
 
-        // Version 2.
         lifecycleScope.launchWhenStarted {
             viewModel.currencySymbol.collect { symbol ->
                 detailsSymbolTargetCurrency.text = symbol
@@ -117,10 +98,6 @@ class CurrencyActivity : AppCompatActivity() {
             R.id.radio_pounds -> "pound"
             else -> "yen"
         }
-    }
-
-    companion object {
-        const val TAG = "Currency"
     }
 
 }
