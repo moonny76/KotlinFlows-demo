@@ -18,15 +18,15 @@ import kotlin.system.*
 object CollectLatestDemo {
 
     fun simple(): Flow<Int> = flow {
-        for (i in 1..2) {
-            log("Emit: $i")
-            emit(i) // emit next value
-            delay(100) // pretend we are asynchronously waiting 100 ms
-        }
+//        log("Emit: $i")
+        emit(1)
+        delay(30)
+        emit(2)
+        delay(30)
+        emit(3)
+        delay(100)
+        emit(4)
     }
-
-    //   emitter:      x        y
-    // collector:        x       <cancel> y
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -35,13 +35,8 @@ object CollectLatestDemo {
                 .collectLatest { value -> // cancel & restart on the latest value
                     currentCoroutineContext().job.onCompletion("collectLatest: value = $value")
 
-                    try {
-                        log("\tCollecting $value")
-                        delay(150)  // pretend we are processing it for 150 ms
-                        log("\tDone $value")
-                    } catch(ex: Exception) {
-                        log("\tCaught: ${ex.javaClass.simpleName}")
-                    }
+                    delay(50)  // pretend we are processing it for 150 ms
+                    log("\t$value collected")
                 }
         }
         log("Collected in $time ms")

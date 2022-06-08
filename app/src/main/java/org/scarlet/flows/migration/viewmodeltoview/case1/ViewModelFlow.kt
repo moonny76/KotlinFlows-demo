@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.*
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
@@ -39,6 +38,6 @@ class ViewModelFlow(
 //    }
 
     // 2. stateIn
-//    val recipes: SharedFlow<Resource<List<Recipe>>> = TODO()
+//    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
 
 }

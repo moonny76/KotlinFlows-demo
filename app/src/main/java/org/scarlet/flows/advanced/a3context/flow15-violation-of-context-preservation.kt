@@ -22,7 +22,7 @@ object ViolationOfContextPreservation {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
-        wrongFlow().collect { value ->
+        okFlow().collect { value ->
             log("$value, ${currentCoroutineContext()}")
         }
     }
@@ -44,7 +44,7 @@ object ViolationOfContextPreservation {
             log("context in flow = ${currentCoroutineContext()}")
             for (i in 1..3) {
                 delay(1000) // pretend we are computing it in CPU-consuming way
-                emit(i) // emit next value
+                emit(i)
             }
         }
     }
@@ -57,6 +57,7 @@ object Strange {
         coroutineScope {
             emit(2)
 //            launch { // not allowed
+//                log("inside launch")
 //                emit(3)
 //            }
         }

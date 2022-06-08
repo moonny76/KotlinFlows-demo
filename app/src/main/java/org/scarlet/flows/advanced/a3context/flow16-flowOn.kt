@@ -18,11 +18,10 @@ import org.scarlet.util.log
  * CoroutineDispatcher in its context.
  */
 
-@ExperimentalStdlibApi
 object FlowOn_Demo {
 
     private fun simple() = flow {
-        log(currentCoroutineContext()[CoroutineDispatcher.Key])
+        log(currentCoroutineContext())
 
         for (i in 1..3) {
             delay(100) // pretend we are computing it in CPU-consuming way
@@ -60,16 +59,16 @@ object ChannelFlow_Demo {
         launch(CoroutineName("Child1") + Dispatchers.Default) {
             log("${currentCoroutineContext()}")
             for (i in 1..3) {
-                delay(500) // pretend we are computing it in CPU-consuming way
-                send(i) // emit next value
+                delay(500)
+                send(i)
             }
         }
 
         launch(CoroutineName("Child2")) {
             log("${currentCoroutineContext()}")
             for (i in 10..12) {
-                delay(500) // pretend we are computing it in CPU-consuming way
-                send(i) // emit next value
+                delay(500)
+                send(i)
             }
         }
     }

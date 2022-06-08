@@ -21,13 +21,13 @@ suspend fun performRequest(request: Int): String {
 object Map_Demo {
     private fun intermediateOp() = runBlocking {
         (1..3).asFlow() // a flow of requests
-            .map { request -> performRequest(request) }
+            .map(::performRequest)
             .collect { response -> log(response) }
     }
 
     @JvmStatic
     fun main(args: Array<String>) {
-        intermediateOp();
+        intermediateOp()
     }
 }
 
@@ -42,7 +42,7 @@ object Map_Demo {
 object Transform_Demo {
     data class Person(val name: String, val age: Int)
 
-    fun transformOp() = runBlocking {
+    private fun transformOp() = runBlocking {
         val source = (1..3).asFlow() // a flow of requests
             .transform { request ->
                 emit("Making request $request")

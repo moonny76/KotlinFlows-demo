@@ -8,6 +8,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.scarlet.flows.CoroutineTestRule
+import org.scarlet.util.testDispatcher
 import java.io.IOException
 
 @DelicateCoroutinesApi
@@ -31,7 +32,7 @@ class LocationServiceTest {
     @Test
     fun `test multi-shot callback - success`() = runTest {
         // Arrange (Given)
-        locationService = FakeLocationService(coroutineContext[CoroutineDispatcher.Key]!!)
+        locationService = FakeLocationService(testDispatcher)
         val request = LocationRequest("me", 5_000L)
 
         // Act (When)
@@ -49,7 +50,7 @@ class LocationServiceTest {
     @ExperimentalStdlibApi
     @Test
     fun `test multi-shot callback - failure`() = runTest {
-        locationService = FakeLocationService(coroutineContext[CoroutineDispatcher.Key]!!,
+        locationService = FakeLocationService(testDispatcher,
             FakeLocationService.Companion.Mode.Fail
         )
         val request = LocationRequest("me", 5_000L)
@@ -70,10 +71,12 @@ class LocationServiceTest {
     @Test
     fun `test callbackFlow - success`() = runTest {
         // Arrange (Given)
-        locationService = FakeLocationService(coroutineContext[CoroutineDispatcher.Key]!!)
+        locationService = FakeLocationService(testDispatcher)
         val request = LocationRequest("me", 1_000L)
 
         // Act (When)
+
+        // Assert (Then)
 
     }
 
@@ -81,12 +84,14 @@ class LocationServiceTest {
     @Test
     fun `test callbackFlow - failure`() = runTest {
         // Arrange (Given)
-        locationService = FakeLocationService(coroutineContext[CoroutineDispatcher.Key]!!,
+        locationService = FakeLocationService(testDispatcher,
             FakeLocationService.Companion.Mode.Fail)
 
         val request = LocationRequest("me", 1_000L)
 
         // Act (When)
+
+        // Assert (Then)
 
     }
 }

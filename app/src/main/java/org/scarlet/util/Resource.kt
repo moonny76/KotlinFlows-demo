@@ -21,9 +21,10 @@ sealed class Resource<out R> {
 fun <T, V> Resource<T>.map(mapper: (T) -> V): Resource<V> {
     return when (this) {
         is Resource.Success<T> -> Resource.Success(this.data?.let { mapper(it) })
-        is Resource.Error -> Resource.Error(this.message)
-        is Resource.Loading -> Resource.Loading
-        is Resource.Empty -> Resource.Empty
+        else -> this as Resource<V>
+//        is Resource.Error -> Resource.Error(this.message)
+//        is Resource.Loading -> Resource.Loading
+//        is Resource.Empty -> Resource.Empty
     }
 }
 

@@ -25,14 +25,9 @@ import org.scarlet.util.log
  * - Exceptions can be ignored, logged, or processed by some other code.
  */
 
-object Exception_Transparency_Demo1 {
+object ExceptionTransparencyDemo1 {
     fun simple(): Flow<String> =
-        flow {
-            for (i in 1..3) {
-                log("Emitting $i")
-                emit(i) // emit next value
-            }
-        }.map { value ->
+        dataFlow().map { value ->
             check(value <= 1) { "Crashed on $value" }
             "string $value"
         }
@@ -53,7 +48,8 @@ object Exception_Transparency_Demo1 {
  * `catch`, but not below it). If the block in `collect { ... }` (placed below
  * `catch`) throws an exception then it escapes:
  */
-object ExceptionHandling_Using_Catch_Operator {
+object CatchOperatorCatchesOnlyUpstreamExceptions {
+
     private fun <T> Flow<T>.handleErrors(): Flow<T> =
         catch { e -> showErrorMessage(e) }
 
@@ -72,19 +68,19 @@ object ExceptionHandling_Using_Catch_Operator {
 }
 
 /**
- * Catching declarative:
+ * Catching declaratively:
  *
  * We can combine the declarative nature of the `catch` operator with a desire
  * to handle all the exceptions, by moving the body of the `collect` operator
  * into `onEach` and putting it before the `catch` operator. Collection of this
  * flow must be triggered by a call to `collect()` without parameters:
  */
-object ExceptionHandling_Declaratively {
+object DeclarativeExceptionHandling {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         dataFlowThrow()
-            .onEach { value -> updateUI(value) }
+            .onEach { value -> updateUI(value) } // move body of `collect` here
             .catch { e -> showErrorMessage(e) }
             .collect()
 
@@ -98,7 +94,7 @@ object ExceptionHandling_Declaratively {
  * turning it into a simple left-to-right sequence of operators:
  */
 
-object ExceptionHandling_together_with_launchIn {
+object ExceptionHandlingTogetherWith_launchIn {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{

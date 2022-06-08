@@ -7,9 +7,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import org.scarlet.R
-import org.scarlet.util.TestData
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
 @ExperimentalCoroutinesApi
 class SafeCollectActivity : AppCompatActivity() {
@@ -70,7 +70,7 @@ class SafeCollectActivity : AppCompatActivity() {
     }
 
     private fun prepareFakeData() {
-        apiService.addRecipes(TestData.mRecipes)
+        apiService.addRecipes(mRecipes)
     }
 
     override fun onStart() {

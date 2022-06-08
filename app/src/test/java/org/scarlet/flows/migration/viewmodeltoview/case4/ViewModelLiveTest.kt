@@ -3,25 +3,21 @@ package org.scarlet.flows.migration.viewmodeltoview.case4
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.google.common.truth.Truth.assertThat
+import io.mockk.*
 import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.AuthManager
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.flows.model.User
 import org.scarlet.util.Resource
-import org.scarlet.util.TestData
 import org.scarlet.util.captureValues
-import io.mockk.MockKAnnotations
-import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.*
+import org.scarlet.flows.model.Recipe.Companion.mFavorites
 
 @ExperimentalCoroutinesApi
 class ViewModelLiveTest {
@@ -50,8 +46,9 @@ class ViewModelLiveTest {
         every { authManager.observeUser() } returns flowOf(User("A001", "Peter Parker", 33))
 
         coEvery {
+            delay(1000)
             repository.getFavoriteRecipesFlow(any())
-        } returns flowOf(Resource.Success(TestData.mFavorites))
+        } returns flowOf(Resource.Success(mFavorites))
     }
 
     @Test
@@ -66,9 +63,9 @@ class ViewModelLiveTest {
         // TODO
 
         // Act (Then)
-        verifyOrder {
+        verifySequence {
             mockObserver.onChanged(Resource.Loading)
-            mockObserver.onChanged(Resource.Success(TestData.mFavorites))
+            mockObserver.onChanged(Resource.Success(mFavorites))
         }
 
         liveData.removeObserver(mockObserver)
@@ -81,13 +78,11 @@ class ViewModelLiveTest {
 
         // Act (When)
         viewModel.favorites.captureValues {
-
             // TODO
 
             // Act (Then)
             assertThat(values).containsExactly(
-                Resource.Loading,
-                Resource.Success(TestData.mFavorites)
+                Resource.Loading, Resource.Success(mFavorites)
             )
         }
 

@@ -6,6 +6,7 @@ import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.util.Resource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
+import org.scarlet.flows.model.Recipe
 
 /**
  * #4: Observing a stream of data with parameters
@@ -19,7 +20,7 @@ class ViewModelLive(
     private val userId: LiveData<String> =
         authManager.observeUser().map { user -> user.id }.asLiveData()
 
-    val favorites = userId.switchMap { newUserId ->
+    val favorites: LiveData<Resource<List<Recipe>>> = userId.switchMap { newUserId ->
         liveData {
             emit(Resource.Loading)
             emitSource(repository.getFavoriteRecipesFlow(newUserId).asLiveData())

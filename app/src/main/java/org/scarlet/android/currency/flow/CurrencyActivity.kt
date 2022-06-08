@@ -11,8 +11,8 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import org.scarlet.R
 import org.scarlet.android.currency.FakeCurrencyApi
-import org.scarlet.util.hideKeyboard
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.scarlet.util.hideKeyboard
 import java.math.BigDecimal
 import java.text.DecimalFormat
 

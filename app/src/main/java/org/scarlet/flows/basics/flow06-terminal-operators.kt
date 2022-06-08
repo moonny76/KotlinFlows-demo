@@ -29,13 +29,17 @@ object ToList_first_last_Demo {
         log("(1..10).asFlow() = ${(1..10).asFlow().toList()}")
         log("first() = ${(1..10).asFlow().first()}")
         log("last() = ${(1..10).asFlow().last()}")
-        log("empty list first() = ${emptyList<Int>().asFlow().first()}")
 
         delim()
 
         log("myFlow = ${myFlow.toList()}")
         log("first() = ${myFlow.first()}")
         log("last() = ${myFlow.last()}")
+
+        delim()
+
+        log("empty list first() = ${emptyList<Int>().asFlow().firstOrNull()}")
+        log("empty list first() = ${emptyList<Int>().asFlow().first()}")
     }
 }
 
@@ -50,6 +54,7 @@ object FirstOrNull_LastOrNull_Demo {
         delim()
 
         log(myFlow.first { it % 5 == 0 })
+        log(myFlow.firstOrNull { it % 13 == 0 })
         log(myFlow.first { it % 13 == 0 })
     }
 }
@@ -59,16 +64,15 @@ object Single_Demo {
     fun main(args: Array<String>) = runBlocking {
 
         log("flowOf(42).single() = ${flowOf(42).single()}")
-        log("flowOf(42, 43).single() = ${flowOf(42).single()}")
-        log("flowOf(42, 43).singleOrNull() = ${flowOf(42).singleOrNull()}") /* oops */
+        log("flowOf(42, 43).singleOrNull() = ${flowOf(42, 43).singleOrNull()}")
+        try {
+            log("flowOf(42, 43).single() = ${flowOf(42, 43).single()}")
+        } catch (ex: Exception) {
+            log(ex.javaClass.simpleName)
+        }
 
         delim()
 
-        try {
-            log("emptyList<Int>().asFlow().single() = ${emptyList<Int>().asFlow().single()}")
-        } catch (ex: Exception) {
-            log("Exception $ex caught")
-        }
         log(
             "emptyList<Int>().asFlow().singleOrNull() = ${
                 emptyList<Int>().asFlow().singleOrNull()
@@ -76,20 +80,20 @@ object Single_Demo {
         )
 
         try {
-            log("(1..10).asFlow().single() = ${(1..10).asFlow().single()}")
+            log("emptyList<Int>().asFlow().single() = ${emptyList<Int>().asFlow().single()}")
         } catch (ex: Exception) {
-            log("Exception $ex caught")
+            log(ex.javaClass.simpleName)
         }
-        log("(1..10).asFlow().singleOrNull() = ${(1..10).asFlow().singleOrNull()}")
 
         delim()
 
+        log("(1..10).asFlow().singleOrNull() = ${(1..10).asFlow().singleOrNull()}")
+
         try {
-            log("myFlow.single() = ${myFlow.single()}")
+            log("(1..10).asFlow().single() = ${(1..10).asFlow().single()}")
         } catch (ex: Exception) {
-            log("Exception $ex caught")
+            log(ex.javaClass.simpleName)
         }
-        log("myFlow.singleOrNull() = ${myFlow.singleOrNull()}")
     }
 }
 

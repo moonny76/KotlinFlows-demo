@@ -17,6 +17,22 @@ object TryCatch_Review {
 }
 
 /**
+ * Think about the properties of the flow that is returned by `handleErrors`:
+ *
+ * val flow = dataFlow().handleErrors()
+ *
+ * It emits some values like any other flow, but it also has an additional property
+ * that other flows do not have — any error in the downstream flow is caught by it.
+ */
+private fun <T> Flow<T>.handleErrors(): Flow<T> = flow {
+    try {
+        collect { value -> emit(value) }
+    } catch (e: Throwable) {
+        showErrorMessage(e)
+    }
+}
+
+/**
  * If we encapsulate this exception-handling logic into an operator on the flow
  * then we can simplify this code, reduce nesting, and make it more readable.
  *
@@ -25,24 +41,7 @@ object TryCatch_Review {
  * just as we did before. It simply abstracts the code we initially wrote.
  * Would it work? Yes, for this particular case. So why exactly this implementation is naive?
  */
-
 object HandleException_Inside_Flow {
-
-    /**
-     * Think about the properties of the flow that is returned by `handleErrors`:
-     *
-     * val flow = dataFlow().handleErrors()
-     *
-     * It emits some values like any other flow, but it also has an additional property
-     * that other flows do not have — any error in the downstream flow is caught by it.
-     */
-    private fun <T> Flow<T>.handleErrors(): Flow<T> = flow {
-        try {
-            collect { value -> emit(value) }
-        } catch (e: Throwable) {
-            showErrorMessage(e)
-        }
-    }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
@@ -85,13 +84,6 @@ object ExceptionThrown_As_Expected {
  */
 
 object Exception_Swallowed {
-    private fun <T> Flow<T>.handleErrors(): Flow<T> = flow {
-        try {
-            collect { value -> emit(value) }
-        } catch (e: Throwable) {
-            showErrorMessage(e)
-        }
-    }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
@@ -100,8 +92,6 @@ object Exception_Swallowed {
             .collect { error("Failed") }
 
         log("Done.")
-        // java.lang.IllegalStateException: Failed
-        // Done. <-- completes normally!!
     }
 }
 

@@ -3,17 +3,16 @@ package org.scarlet.flows.migration.viewmodeltoview.case1
 import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.util.Resource
-import org.scarlet.util.TestData
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.scarlet.flows.model.Recipe.Companion.mRecipes
 import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
@@ -35,7 +34,7 @@ class ViewModelFlowTest {
             repository.getRecipes(any())
         } coAnswers {
             delay(1_000) // simulate network delay
-            Resource.Success(TestData.mRecipes)
+            Resource.Success(mRecipes)
         }
     }
 

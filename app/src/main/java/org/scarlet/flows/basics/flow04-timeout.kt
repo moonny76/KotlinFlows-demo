@@ -63,10 +63,15 @@ object Flow_Timeout2 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
-        withTimeout(500) { // Timeout after 500ms
-            slowFlow().collect { value -> log(value) }
+        try {
+            withTimeout(500) { // Timeout after 500ms
+                slowFlow().collect { value -> log(value) }
+            }
+        } catch (ex: Exception) {
+            log(ex.javaClass.simpleName)
+        } finally {
+            log("Done")
         }
-        log("Done")
     }
 
 }
@@ -80,7 +85,7 @@ object Explicit_Collector_Cancellation {
             conFlow().collect { value -> log(value) }
         }.onCompletion("collector")
 
-        delay(1000)
+        delay(3000)
         collector.cancelAndJoin()
 
         log("Done")
@@ -90,7 +95,7 @@ object Explicit_Collector_Cancellation {
 
 object Cancellation_when_Separate_Coroutines_Also_Works {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         val collector = launch {
             conFlow().flowOn(Dispatchers.Default).collect { value -> log(value) }
         }.onCompletion("Collector")

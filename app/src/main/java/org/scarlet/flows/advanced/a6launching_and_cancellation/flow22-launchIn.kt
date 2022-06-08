@@ -8,7 +8,7 @@ import org.scarlet.util.log
  * Launching flow:
  *
  * It is easy to use flows to represent asynchronous events that are coming from some source.
- * In this case, we need an analogue of the addEventListener function that registers a piece of
+ * In this case, we need an analogue of the `addEventListener` function that registers a piece of
  * code with a reaction for incoming events and continues further work.
  * The `onEach` operator can serve this role. However, `onEach` is an intermediate operator.
  * We also need a terminal operator to collect the flow. Otherwise, just calling `onEach` has no effect.
@@ -17,7 +17,7 @@ import org.scarlet.util.log
  * the flow is collected:
  */
 
-object Flow_Collection_Using_Lonely_Collect {
+object FlowCollection_Using_Lonely_Collect {
     // Imitate a flow of events
     private fun events(): Flow<Int> = (1..3).asFlow().onEach { delay(100) }
 
@@ -48,7 +48,7 @@ object Flow_Collection_Using_Lonely_Collect {
  * Note that `launchIn` also returns a `Job`, which can be used to cancel the corresponding flow
  * collection coroutine only without cancelling the whole scope or to join it.
  */
-object Flow_Collection_Using_LaunchIn {
+object FlowCollection_Using_LaunchIn {
     // Imitate a flow of events
     private fun events(): Flow<Int> = (1..3).asFlow().onEach { delay(100) }
 
@@ -59,7 +59,7 @@ object Flow_Collection_Using_LaunchIn {
             .onEach { event -> log("Event: $event") }
             .launchIn(this) // <--- Launching the flow in a separate coroutine
 
-        log("Done: I will be printed first ...")
+        log("I will be printed first ...")
     }
 }
 

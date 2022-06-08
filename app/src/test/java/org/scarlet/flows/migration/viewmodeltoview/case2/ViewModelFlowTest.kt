@@ -1,9 +1,10 @@
 package org.scarlet.flows.migration.viewmodeltoview.case2
 
+import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.util.Resource
-import org.scarlet.util.TestData
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
@@ -13,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.scarlet.flows.model.Recipe.Companion.mRecipes
 import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
@@ -35,12 +37,12 @@ class ViewModelFlowTest {
             repository.getRecipes(any())
         } coAnswers {
             delay(1_000)
-            Resource.Success(TestData.mRecipes)
+            Resource.Success(mRecipes)
         }
     }
 
     @Test
-    fun `testFlow - without turbine`() = runTest {
+    fun `test flow without turbine`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelFlow("eggs", repository)
 
@@ -57,8 +59,11 @@ class ViewModelFlowTest {
         viewModel = ViewModelFlow("eggs", repository)
 
         // Act (When)
-
-        // Assert (Then)
+        viewModel.recipes.test {
+            // Assert (Then)
+            assertThat(awaitItem()).isEqualTo(Resource.Loading)
+            assertThat(awaitItem()).isEqualTo(Resource.Success(mRecipes))
+        }
 
     }
 }

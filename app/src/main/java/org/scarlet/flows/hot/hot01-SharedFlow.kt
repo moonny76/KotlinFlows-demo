@@ -17,11 +17,10 @@ import org.scarlet.util.onCompletion
  * Shared flow waits for all subscribers to receive. Good fit for event handling.
  */
 
-object SharedFlow_is_like_a_broadcast_channel {
+object SharedFlow_behaves_like_a_broadcast_channel {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val mutableSharedFlow = MutableSharedFlow<String>(replay = 0)
-        // or MutableSharedFlow<String>()
 
         val subscriber1 = launch {
             mutableSharedFlow.collect {
@@ -158,8 +157,8 @@ object SharedFlow_Multiple_Subscribers {
     private val sharedFlow = MutableSharedFlow<Int>(
         replay = 1,
         extraBufferCapacity = 0,
-//        onBufferOverflow = BufferOverflow.SUSPEND
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
+        onBufferOverflow = BufferOverflow.SUSPEND
+//        onBufferOverflow = BufferOverflow.DROP_OLDEST
         // DROP_OLDEST does not guarantee receivers accept all equal values.
         // SO discouraged for multiple subscribers. (Kim's suggestion)
     )
@@ -216,7 +215,7 @@ object SharedFlow_Emits_Duplicated_Values {
             }
         }
 
-        // Populate sharedflow
+        // Populate sharedFlow
         launch {
             for (i in listOf(0, 1, 1, 2, 2, 3, 3)) {
                 sharedFlow.emit(Resource.Success(i))

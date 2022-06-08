@@ -16,47 +16,49 @@ import org.scarlet.util.log
  *
  * The following examples actually catch any exception happening in the emitter
  * or in any intermediate or terminal operators
-*/
+ */
 
 object TryCatch_Demo1 {
-    fun simple() = flow {
-        for (i in 1..3) {
-            log("Emitting $i")
-            emit(i) // emit next value
-        }
-    }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
-            simple().collect { value ->
-                log(value)
+            dataFlow().collect { value ->
                 check(value <= 1) { "Collected $value" }
+                log(value)
             }
-        } catch (e: Throwable) {
-            log("Caught $e")
+        } catch (ex: Throwable) {
+            log("Caught $ex")
         }
     }
 }
 
 object TryCatch_Demo2 {
 
-    fun simple(): Flow<String> = flow {
-        for (i in 1..3) {
-            log("Emitting $i")
-            emit(i) // emit next value
+    fun simple(): Flow<String> = dataFlow()
+        .map { value ->
+            check(value <= 1) { "Crashed on $value" }
+            "string $value"
         }
-    }.map { value ->
-        check(value <= 1) { "Crashed on $value" }
-        "string $value"
-    }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
             simple().collect { value -> log(value) }
-        } catch (e: Throwable) {
-            log("Caught $e")
+        } catch (ex: Throwable) {
+            log("Caught $ex")
+        }
+    }
+}
+
+object TryCatch_Demo3 {
+
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking {
+        try {
+            dataFlowThrow().collect { value -> log(value) }
+        } catch (ex: Throwable) {
+            log("Caught $ex")
         }
     }
 }

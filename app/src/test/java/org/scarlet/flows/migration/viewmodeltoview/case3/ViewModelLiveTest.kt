@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.*
+import org.scarlet.flows.model.Recipe.Companion.mFavorites
 
 @ExperimentalCoroutinesApi
 class ViewModelLiveTest {
@@ -46,7 +47,10 @@ class ViewModelLiveTest {
 
         coEvery {
             repository.getFavoriteRecipes(any())
-        } returns Resource.Success(TestData.mFavorites)
+        } coAnswers {
+            delay(1000)
+            Resource.Success(mFavorites)
+        }
     }
 
     @Test
@@ -63,7 +67,7 @@ class ViewModelLiveTest {
         // Act (Then)
         verifySequence {
             mockObserver.onChanged(Resource.Loading)
-            mockObserver.onChanged(Resource.Success(TestData.mFavorites))
+            mockObserver.onChanged(Resource.Success(mFavorites))
         }
 
         liveData.removeObserver(mockObserver)
@@ -82,7 +86,7 @@ class ViewModelLiveTest {
             // Assert (Then)
             assertThat(this.values).containsExactly(
                 Resource.Loading,
-                Resource.Success(TestData.mFavorites)
+                Resource.Success(mFavorites)
             )
         }
 

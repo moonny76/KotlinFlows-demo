@@ -8,26 +8,21 @@ import retrofit2.Callback
 import retrofit2.Response
 
 @ExperimentalCoroutinesApi
-class DefaultRepository(
-    private val recipeApi: RecipeApi
-) : Repository {
+class DefaultRepository(private val recipeApi: RecipeApi) : Repository {
 
-    override fun getRecipeCallback(
-        recipeId: String,
-        callback: (Resource<Recipe>) -> Unit
-    ) {
+    override fun getRecipeCallback(recipeId: String, callback: RecipeCallback) {
         val call: Call<Recipe> = recipeApi.getRecipe(recipeId)
         call.enqueue(object : Callback<Recipe> {
             override fun onResponse(call: Call<Recipe>, response: Response<Recipe>) {
                 if (response.isSuccessful) {
-                    callback(Resource.Success(response.body()))
+                    callback.onReceive(Resource.Success(response.body()))
                 } else {
-                    callback(Resource.Error(response.message()))
+                    callback.onReceive(Resource.Error(response.message()))
                 }
             }
 
             override fun onFailure(call: Call<Recipe>, t: Throwable) {
-                callback(Resource.Error(t.message))
+                callback.onReceive(Resource.Error(t.message))
             }
         })
     }

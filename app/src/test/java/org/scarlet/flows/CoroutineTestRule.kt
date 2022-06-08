@@ -1,5 +1,6 @@
 package org.scarlet.flows
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
@@ -12,15 +13,23 @@ class CoroutineTestRule(
     val testDispatcher: TestDispatcher = StandardTestDispatcher()
 ) : TestWatcher(){
 
-    val testDispatchersProvider: DispatchersProvider = TODO()
+    val testDispatchersProvider: DispatchersProvider = object : DispatchersProvider {
+        override val main: CoroutineDispatcher
+            get() = testDispatcher
+        override val io: CoroutineDispatcher
+            get() = testDispatcher
+        override val default: CoroutineDispatcher
+            get() = testDispatcher
 
-    override fun starting(description: Description?) {
+    }
+
+    override fun starting(description: Description) {
         super.starting(description)
 
         Dispatchers.setMain(testDispatcher)
     }
 
-    override fun finished(description: Description?) {
+    override fun finished(description: Description) {
         super.finished(description)
 
         Dispatchers.resetMain()

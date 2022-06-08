@@ -2,21 +2,16 @@ package org.scarlet.flows.advanced.a5completion
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.flows.advanced.a4exceptions.dataFlow
+import org.scarlet.flows.advanced.a4exceptions.dataFlowThrow
 import org.scarlet.util.log
 
 /**
  * Flow completion:
  *
  * When flow collection completes (normally or exceptionally) it may need to execute an action.
- * As you may have already noticed, it can be done in two ways: imperative or declarative.
+ * It can be done in two ways: imperative or declarative.
  */
-
-private fun simple(): Flow<Int> = (1..3).asFlow()
-
-private fun simpleFailure(): Flow<Int> = flow {
-    emit(1)
-    throw RuntimeException()
-}
 
 /**
  * Declarative handling:
@@ -25,11 +20,11 @@ private fun simpleFailure(): Flow<Int> = flow {
  * when the flow has completely collected.
  */
 
-object Flow_Completion_Declaratively_Demo1 {
+object DeclarativeFlowCompletion1 {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        simple()
+        dataFlow()
             .onCompletion { log("Done") }
             .collect { log(it) }
     }
@@ -39,15 +34,12 @@ object Flow_Completion_Declaratively_Demo1 {
  * The key advantage of `onCompletion` is a nullable Throwable parameter of the lambda
  * that can be used to determine whether the flow collection was completed normally or
  * exceptionally.
- *
- * In the following example the simple flow throws an exception after emitting the number 1:
  */
-
-object Flow_Completion_Declaratively_Demo2 {
+object DeclarativeFlowCompletion2 {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        simpleFailure() // `onCompletion` and `catch` order is SIGNIFICANT!
+        dataFlowThrow() // `onCompletion` and `catch` order is SIGNIFICANT!
             .onCompletion { cause -> if (cause != null) log("Flow completed exceptionally") }
             .catch { exception -> log("Caught exception $exception") }
             .collect { log(it) }
@@ -60,23 +52,16 @@ object Flow_Completion_Declaratively_Demo2 {
      */
 }
 
-/**
- * Successful completion:
- *
- * Another difference with catch operator is that `onCompletion` sees all exceptions and receives
- * a null exception only on successful completion of the upstream flow (without cancellation or failure).
- */
-
-object Flow_Completion_Declaratively3 {
+object DeclarativeFlowCompletion3 {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
-            simple()
+            dataFlow()
                 .onCompletion { cause -> log("Flow completed with $cause") }
                 .catch { ex -> log("${ex.javaClass.simpleName} caught") }   // only catch upstream exception
                 .collect { value ->
-                    check(value <= 1) { "Collected $value" }
+                    check(value <= 2) { "Crashed on $value" }
                     log(value)
                 }
         } catch (ex: Exception) {
@@ -92,12 +77,12 @@ object Flow_Completion_Declaratively3 {
  * execute an action upon collect completion.
  */
 
-object Flow_Completion_Imperatively {
+object ImperativeFlowCompletion {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
-            simple().collect { log(it) }
+            dataFlow().collect { log(it) }
         } finally {
             log("Done")
         }

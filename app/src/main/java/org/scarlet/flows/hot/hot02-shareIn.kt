@@ -8,6 +8,10 @@ import org.scarlet.util.log
 import org.scarlet.util.onCompletion
 
 /**
+ * Convert cold flow to hot flow.
+ */
+
+/**
  * sharedIn Demo
  */
 
@@ -25,11 +29,11 @@ object sharedIn_Demo {
 
         val sharedFlow: SharedFlow<Resource<Int>> = coldFlow.shareIn(
             scope = this,
-            started = SharingStarted.Eagerly,
-            replay = 0
+            started = SharingStarted.Eagerly, // Eagerly, Lazily, WhileSubscribed
+            replay = 0 // default
         )
 
-        delay(1500)
+        delay(1500) // first subscriber joins 1500ms later
 
         val subscriber1 = launch {
             log("${spaces(4)}Subscriber1 subscribes")
@@ -38,7 +42,7 @@ object sharedIn_Demo {
             }
         }.onCompletion("Subscriber1")
 
-        delay(1000)
+        delay(1000) // second subscriber joins 2500ms later
 
         val subscriber2 = launch {
             log("${spaces(4)}Subscriber2 subscribes")
@@ -47,7 +51,7 @@ object sharedIn_Demo {
             }
         }.onCompletion("Subscriber2")
 
-        delay(1000)
+        delay(1000) // third subscriber joins 3500ms later
 
         val subscriber3 = launch {
             log("${spaces(4)}Subscriber3 subscribes")
@@ -76,6 +80,9 @@ object sharedIn_Eager {
 
         val sharedFlow: SharedFlow<Resource<Int>> = coldFlow.shareIn(
             scope = this,
+            /**
+             * Sharing is started immediately and never stops.
+             */
             started = SharingStarted.Eagerly,
             replay = 0
         )
@@ -108,6 +115,9 @@ object shareIn_Lazy {
 
         val sharedFlow: SharedFlow<Resource<Int>> = coldFlow.shareIn(
             scope = this,
+            /**
+             * Sharing is started when the first subscriber appears and never stops.
+             */
             started = SharingStarted.Lazily,
             replay = 0
         )
@@ -129,7 +139,7 @@ object shareIn_Lazy {
 
 object SharedFlow_WhileSubscribed {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
+    fun main(args: Array<String>) = runBlocking {
         val flow = flowOf("A", "B", "C", "D")
             .onStart { log("Flow started") }
             .onCompletion { log("Flow finished") }
@@ -137,20 +147,27 @@ object SharedFlow_WhileSubscribed {
 
         val sharedFlow = flow.shareIn(
             scope = this,
+            /**
+             * Sharing is started when the first subscriber appears, immediately stops when the last
+             * subscriber disappears (by default), keeping the replay cache forever (by default).
+             */
             started = SharingStarted.WhileSubscribed(),
+            replay = 0 // 1
         )
 
         delay(3000)
 
-        val subscriber1 = launch {
+        launch {
             log("subscriber1 join: ${sharedFlow.first()}")
         }.onCompletion("Subscriber1")
-        val subscriber2 = launch {
+
+        launch {
             log("subscriber2 join: ${sharedFlow.take(2).toList()}")
         }.onCompletion("Subscriber2")
 
         delay(3000)
-        val subscriber3 = launch {
+
+        launch {
             log("subscriber3 join: ${sharedFlow.first()}")
         }.onCompletion("Subscriber3")
 

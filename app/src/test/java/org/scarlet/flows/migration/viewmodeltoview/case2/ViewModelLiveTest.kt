@@ -7,19 +7,16 @@ import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
-import org.scarlet.util.TestData
 import org.scarlet.util.captureValues
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.scarlet.util.log
+import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
 @ExperimentalCoroutinesApi
 class ViewModelLiveTest {
@@ -44,7 +41,10 @@ class ViewModelLiveTest {
 
         coEvery {
             repository.getRecipes(any())
-        } returns Resource.Success(TestData.mRecipes)
+        } coAnswers {
+            delay(1000)
+            Resource.Success(mRecipes)
+        }
     }
 
     @Test
@@ -61,7 +61,7 @@ class ViewModelLiveTest {
         // Assert (Then)
         verifySequence {
             mockObserver.onChanged(Resource.Loading)
-            mockObserver.onChanged(Resource.Success(TestData.mRecipes))
+            mockObserver.onChanged(Resource.Success(mRecipes))
         }
     }
 
@@ -73,12 +73,11 @@ class ViewModelLiveTest {
         // Act (When)
         viewModel.recipes.captureValues {
             // Assert (Then)
-
             // TODO
 
             assertThat(this.values).containsExactly(
                 Resource.Loading,
-                Resource.Success(TestData.mRecipes)
+                Resource.Success(mRecipes)
             )
         }
     }

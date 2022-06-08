@@ -1,11 +1,12 @@
 package org.scarlet.flows.migration.viewmodeltoview.case4
 
+import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.AuthManager
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.User
 import org.scarlet.util.Resource
-import org.scarlet.util.TestData
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.every
@@ -16,6 +17,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.scarlet.flows.model.Recipe.Companion.mFavorites
 import kotlin.time.ExperimentalTime
 
 @ExperimentalCoroutinesApi
@@ -40,21 +42,23 @@ class ViewModelFlowTest {
 
         coEvery {
             repository.getFavoriteRecipesFlow(any())
-        } returns flowOf(Resource.Success(TestData.mFavorites))
+        } coAnswers {
+            delay(1000)
+            flowOf(Resource.Success(mFavorites))
+        }
     }
 
     @Test
-    fun testFlow() = runTest {
+    fun `test flow without turbine`() = runTest {
         // Arrange (Given)
         viewModel = ViewModelFlow(repository, authManager)
 
         // Act (When)
-//        val response = viewModel.favorites.take(2).toList()
+        // TODO() - take, toList
 
         // Assert (Then)
 //        assertThat(response).containsExactly(
-//            Resource.Loading,
-//            Resource.Success(TestData.mFavorites)
+//            Resource.Loading, Resource.Success(mFavorites)
 //        )
     }
 
@@ -65,10 +69,10 @@ class ViewModelFlowTest {
         viewModel = ViewModelFlow(repository, authManager)
 
         // Act (When)
-//        viewModel.favorites.test {
-//            // Assert (Then)
-//            assertThat(awaitItem()).isEqualTo(Resource.Loading)
-//            assertThat(awaitItem()).isEqualTo(Resource.Success(TestData.mFavorites))
-//        }
+        viewModel.favorites.test {
+            // Assert (Then)
+            assertThat(awaitItem()).isEqualTo(Resource.Loading)
+            assertThat(awaitItem()).isEqualTo(Resource.Success(mFavorites))
+        }
     }
 }

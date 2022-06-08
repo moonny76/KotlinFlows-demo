@@ -15,29 +15,29 @@ import org.scarlet.util.log
 object Zip_Demo1 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        val nums = (1..10).asFlow() // numbers 1..3
-        val strs = flowOf("one", "two", "three") // strings
+        val numbers = (1..10).asFlow()
+        val strings = flowOf("one", "two", "three")
 
-        nums.zip(strs) { a, b -> "$a -> $b" }
-            .collect { log(it) } // collect and print
+        numbers.zip(strings) { a, b -> "$a -> $b" }
+            .collect { log(it) }
     }
 }
 
 object Zip_Demo2 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        val nums = (1..10).asFlow().map {
+        val numbers = (1..10).asFlow().map {
             delay(1000)
             it
         } // numbers 1..3
 
-        val strs = flowOf("one", "two", "three")
+        val strings = flowOf("one", "two", "three")
             .map {
                 delay(500)
                 it
             }// strings
 
-        nums.zip(strs) { a, b -> "$a -> $b" }
+        numbers.zip(strings) { a, b -> "$a -> $b" }
             .collect { log(it) }
     }
 }

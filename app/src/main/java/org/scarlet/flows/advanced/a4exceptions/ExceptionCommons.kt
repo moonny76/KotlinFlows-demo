@@ -5,22 +5,22 @@ import kotlinx.coroutines.flow.flow
 import org.scarlet.util.log
 import java.lang.RuntimeException
 
-internal fun dataFlow(): Flow<Int> = flow {
+fun dataFlow(): Flow<Int> = flow {
     for (i in 1..3) {
         emit(i)
     }
 }
 
-internal fun dataFlowThrow() = flow {
+fun dataFlowThrow() = flow {
     emit(1)
     emit(2)
     throw RuntimeException("oops")
 }
 
-internal fun showErrorMessage(ex: Throwable) {
+fun showErrorMessage(ex: Throwable) {
     log(ex)
 }
 
-internal fun updateUI(value: Int) {
+fun updateUI(value: Int) {
     log("updateUI $value")
 }

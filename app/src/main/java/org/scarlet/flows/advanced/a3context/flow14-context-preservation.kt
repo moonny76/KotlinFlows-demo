@@ -1,9 +1,9 @@
 package org.scarlet.flows.advanced.a3context
 
-import org.scarlet.util.spaces
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.swing.Swing
+import org.scarlet.util.delim
 import org.scarlet.util.log
 
 // Flow invariant is violated
@@ -51,7 +51,7 @@ object Why_Context_Preservation {
 object ContextPreservation_Demo {
 
     private fun simple(tag: String): Flow<Int> = flow {
-        log("Started flow for $tag")
+        log("Started flow for $tag in ${currentCoroutineContext()}")
         for (i in 1..3) {
             emit(i)
         }
@@ -60,7 +60,8 @@ object ContextPreservation_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
-//        demoOne()
+        demoOne()
+        delim()
         demoTwo()
 
         log("Done")
@@ -68,7 +69,7 @@ object ContextPreservation_Demo {
 
     private suspend fun demoOne() = coroutineScope {
         launch {
-            log(0, "collector: collect")
+            log("collector: collect")
             simple("collector").collect { value -> log("collector: $value") }
         }
     }

@@ -155,8 +155,6 @@ object Sequence_Demo {
      * a restricted suspending function.
      */
     private fun foo() = sequence {
-        log("[Sequence] ${Thread.currentThread().name}")
-
         var result: Result<String> = compute("A").also {
             log("${spaces(10)}[Sequence] compute A")
         }
@@ -220,7 +218,7 @@ object FlowDemo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         // Launch a concurrent coroutine to check if the main thread is blocked
-        val job = launch {
+        launch {
             for (k in 1..3) {
                 log("Am I blocked? $k")
                 delay(500)
@@ -238,8 +236,6 @@ object FlowDemo {
             log("[Main] request next = $value")
             delay(500)
         }
-
-        job.join()
     }
 }
 
@@ -262,7 +258,7 @@ object Flow_Builders {
         delim()
 
         // Convert an integer range to a flow
-        (1..3).asFlow().collect { value -> log(value) }
+        (1..3).asFlow().collect { log(it) }
 
         delim()
 

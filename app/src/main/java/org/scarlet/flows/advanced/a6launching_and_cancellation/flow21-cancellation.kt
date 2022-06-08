@@ -3,6 +3,8 @@ package org.scarlet.flows.advanced.a6launching_and_cancellation
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
+import org.scarlet.util.onCompletion
+import java.lang.RuntimeException
 
 /**
  * Flow cancellation checks:
@@ -12,24 +14,23 @@ import org.scarlet.util.log
  * from a `flow { ... }` is cancellable:
  */
 
-object Flow_Cancellation {
+object FlowCancellation {
     private fun foo() = flow {
         for (i in 1..5) {
-            log("Emitting $i")
+            log("$i emitting ...")
             emit(i)
         }
     }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        try {
-            foo().collect { value ->
-                if (value == 3) cancel()
-                log(value)
-            }
-        } catch (ex: Exception) {
-            log("Exception $ex caught")
+        coroutineContext.job.onCompletion("runBlocking")
+
+        foo().collect { value ->
+            if (value == 3) cancel()
+            log(value)
         }
+
     }
 }
 
@@ -37,13 +38,15 @@ object Flow_Cancellation {
  * Flow cancellation checks:
  *
  * However, most other flow operators do not do additional cancellation checks on their own
- * for performance reasons. For example, if you use IntRange.asFlow extension to write the same
+ * for performance reasons. For example, if you use `IntRange.asFlow` extension to write the same
  * busy loop and don't suspend anywhere, then there are no checks for cancellation:
  */
-object UncooperativeFlow_Cause_Failed_Cancellation {
+object FailedCancellation_due_to_UncooperativeFlow {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
+        coroutineContext.job.onCompletion("runBlocking")
+
         (1..5).asFlow().collect { value ->
             if (value == 3) cancel()
             log(value)
@@ -64,32 +67,28 @@ object UncooperativeFlow_Cause_Failed_Cancellation {
  * cancellable operator provided to do that:
  */
 
-object CooperativeFlow_Makes_Flow_Cancellable_Demo1 {
+object CooperativeFlow_makes_Flow_Cancellable_Demo1 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        try {
-            (1..5).asFlow()
-                .onEach { coroutineContext.ensureActive() }
-                .collect { value ->
-                    if (value == 3) cancel()
-                    log(value)
-                }
-        } catch (ex: Exception) {
-            log("Exception $ex caught")
-        }
-    }
-}
+        coroutineContext.job.onCompletion("runBlocking")
 
-object CooperativeFlow_Makes_Flow_Cancellable_Demo2 {
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking {
-        try {
-            (1..5).asFlow().cancellable().collect { value ->
+        (1..5).asFlow()
+            .onEach { currentCoroutineContext().ensureActive() }
+            .collect { value ->
                 if (value == 3) cancel()
                 log(value)
             }
-        } catch(ex: Exception) {
-            log("Exception $ex caught")
+    }
+}
+
+object CooperativeFlow_makes_Flow_Cancellable_Demo2 {
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking {
+        coroutineContext.job.onCompletion("runBlocking")
+
+        (1..5).asFlow().cancellable().collect { value ->
+            if (value == 3) cancel()
+            log(value)
         }
     }
 }
