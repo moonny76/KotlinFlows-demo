@@ -4,9 +4,11 @@ import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import org.scarlet.util.spaces
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
 import org.junit.Test
+import org.scarlet.util.log
 import org.scarlet.util.onCompletion
 import kotlin.time.ExperimentalTime
 
@@ -48,67 +50,49 @@ class SharedFlow_TurbineTest {
     }
 
     /**
-     * emit is suspended if there exist any subscribed collectors which are not ready to collect yet.
+     * `emit` is suspended if there exist any subscribed collectors which are not ready to collect yet.
      */
-
-    @Test
-    fun `collect from shared flow - collector subscribed, but not ready yet - hard to test using turbine`() = runBlocking {
-        val sharedFlow = MutableSharedFlow<Int>(replay = 0)
-
-        val emitter = launch(start = CoroutineStart.LAZY) {
-            repeat(3) {
-                println("# subscribers = ${sharedFlow.subscriptionCount.value}")
-                println("Emitter: try to send $it")
-                sharedFlow.emit(it)
-                println("Emitter: Event $it sent")
-            }
-        }.onCompletion("Emitter done")
-
-        sharedFlow.test {
-            println("\t\tCollector subscribes and starts the emitter")
-            emitter.start()
-
-            repeat(3) {
-                delay(5000) // simulate subscribed, but not ready to collect
-                println("\t\tCollector received value = ${awaitItem()}")
-            }
-        }
-
-        println("Done.")
-    }
-
     @Test
     fun `collectors start to receive data after subscription - no replay`() = runBlocking {
-        val sharedFlow = MutableSharedFlow<Int>()
+        val sharedFlow = MutableSharedFlow<Int>( // default config.
+            replay = 0,
+            extraBufferCapacity = 0,
+            onBufferOverflow = BufferOverflow.SUSPEND
+        )
 
         launch {
             repeat(3) {
-                println("# subscribers = ${sharedFlow.subscriptionCount.value}")
-                println("Emit: $it")
-                sharedFlow.emit(it)  // when there are no subscribers
-                println("Emit $it done")
+                log("# subscribers = ${sharedFlow.subscriptionCount.value}")
+                log("Emitting: $it")
+                sharedFlow.emit(it)
+                log("Emit $it done")
                 delay(200)
             }
         }.onCompletion("Emitter done")
 
-        launch {
-            delay(100)
-            println("${spaces(4)}Collector1 subscribes...")
+        val slowCollector = launch {
+            delay(100) // start after 100ms
+            log("${spaces(4)}Collector1 subscribes...")
             sharedFlow.test {
-                println("${spaces(4)}Collector1: got ${awaitItem()}")
-                delay(500)
-                println("${spaces(4)}Collector1: got ${awaitItem()}")
+                while (true) {
+                    log("${spaces(4)}Collector1: got ${awaitItem()}")
+                    delay(500)
+                }
             }
-        }.onCompletion("Collector1 done")
+        }.onCompletion("SlowCollector done")
 
-        launch {
-            delay(300)
+        val fastCollector = launch {
+            delay(300) // start after 300ms
             println("${spaces(8)}Collector2 subscribes...")
             sharedFlow.test {
-                println("${spaces(8)}Collector2: got ${awaitItem()}")
+                while (true) {
+                    log("${spaces(8)}Collector2: got ${awaitItem()}")
+                }
             }
-        }.onCompletion("Collector2 done")
+        }.onCompletion("FastCollector done")
 
         delay(3000)
+        slowCollector.cancelAndJoin()
+        fastCollector.cancelAndJoin()
     }
 }

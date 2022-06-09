@@ -3,6 +3,7 @@ package org.scarlet.flows.hot
 import com.google.common.truth.Truth.assertThat
 import org.scarlet.util.spaces
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
 import org.junit.Test
@@ -24,30 +25,27 @@ class SharedFlow_NativeTest {
 
     @Test
     fun `empty SharedFlow - timeout`() = runTest {
-        val emptyFlow = MutableSharedFlow<Int>()
+        val emptyFlow = MutableSharedFlow<Int>() // replay = 0 by default
 
         val value = withTimeoutOrNull(1000) {
             emptyFlow.first()
         }
-        log("value: $value")
         assertThat(value).isNull()
     }
 
-    // hang forever
     @Test
-    fun `empty SharedFlow - collect - runBlocking`() = runTest {
+    fun `empty SharedFlow - collect - UncompletedCoroutinesError`() = runTest {
         val emptyFlow = MutableSharedFlow<Int>()
 
         emptyFlow.collect {
             log("try collect ...")
         }
 
-        println("Done.")
+        log("Unreachable Code")
     }
 
-    // hang forever
     @Test
-    fun `empty SharedFlow - collect in launch - runTest`() = runTest {
+    fun `empty SharedFlow - collect in launch - UncompletedCoroutinesError`() = runTest {
         val emptyFlow = MutableSharedFlow<Int>()
 
         launch {
@@ -61,76 +59,49 @@ class SharedFlow_NativeTest {
 
     @Test
     fun `replay - SharedFlow`() = runTest {
-        val sharedFlow =
-            MutableSharedFlow<Int>(replay = 0) // replay = 1, then OK
+        val sharedFlow = MutableSharedFlow<Int>(replay = 1) // replay = 1, then OK
 
         sharedFlow.emit(1)
 
         val value = sharedFlow.first()
-        assertThat(value).isEqualTo(1)
-
-        println("Done.")
-    }
-
-    @Test
-    fun `emit waits for unready collector - SharedFlow`() =
-        runBlocking {
-            val sharedFlow = MutableSharedFlow<String>(replay = 0)
-
-            val emitter = launch(start = CoroutineStart.LAZY) {
-                println("2. Emitter started: Subscription count = ${sharedFlow.subscriptionCount.value}, try to send event ...")
-                sharedFlow.emit("Event 1")
-                println("3. Emitter: Event 1 sent")
-
-                println("4. Emitter: try to send Event 2")
-                sharedFlow.emit("Event 2")
-                println("6. Emitter: Event 2 sent")
-            }
-
-            val collector = launch {
-                println("1. Starts the emitter and subscribes collector which suspends 2000ms")
-                emitter.start()
-
-                sharedFlow.collect {
-                    delay(3000)
-                    if (it == "Event 1")
-                        println("5. collected value = $it")
-                    else
-                        println("7. collected value = $it")
-                }
-            }
-
-            delay(10_000)
-
-            collector.cancelAndJoin()
-            println("Done.")
+        assertThat(value).isEqualTo(1).also {
+            log("Done.")
         }
 
+    }
+
+    /**
+     * `emit` is suspended if there exist any subscribed collectors which are not ready to collect yet.
+     */
     @Test
     fun `collectors start to receive data after subscription - no replay`() = runBlocking {
-        val sharedFlow = MutableSharedFlow<Int>()
+        val sharedFlow = MutableSharedFlow<Int>( // default config.
+            replay = 0,
+            extraBufferCapacity = 0,
+            onBufferOverflow = BufferOverflow.SUSPEND
+        )
 
         // Emitter
         launch {
             repeat(5) {
                 log("# subscribers = ${sharedFlow.subscriptionCount.value}")
-                log("Emit: $it")
+                log("Emitting: $it")
                 sharedFlow.emit(it)
                 log("Emit: $it done")
                 delay(200)
             }
         }.onCompletion("Emitter done")
 
-        val collector1 = launch {
+        val slowCollector = launch {
             delay(100) // start after 100ms
             log("${spaces(4)}Collector1 subscribes...")
             sharedFlow.collect {
-                delay(500)
                 log("${spaces(4)}Collector1: $it")
+                delay(500) // <----------------- Slow!!!!!!!!!!!
             }
         }.onCompletion("Collector1 done")
 
-        val collector2 = launch {
+        val fastCollector = launch {
             delay(300) // start after 300ms
             log("${spaces(8)}Collector2 subscribes...")
             sharedFlow.collect {
@@ -139,7 +110,7 @@ class SharedFlow_NativeTest {
         }.onCompletion("Collector2 done")
 
         delay(3000)
-        collector1.cancelAndJoin()
-        collector2.cancelAndJoin()
+        slowCollector.cancelAndJoin()
+        fastCollector.cancelAndJoin()
     }
 }

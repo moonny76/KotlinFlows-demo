@@ -42,7 +42,7 @@ class StateFlow_NativeTest {
         stateFlow
             .onCompletion { ex -> log("ON COMPLETE: ${ex?.javaClass?.name}") }
             .collect {
-                log(it)
+                log("received = $it")
             }
     }
 
@@ -66,9 +66,9 @@ class StateFlow_NativeTest {
             hotFlow.collect {
                 list.add(it)
             }
+        }.also {
+            runCurrent()
         }
-
-        runCurrent()
 
         hotFlow.emit(1)
 
@@ -97,19 +97,18 @@ class StateFlow_NativeTest {
     }
 
     @Test
-    fun `suspending function version - stateIn`() = runTest {
+    fun `suspending function version of stateIn`() = runTest {
         val payload = 0
         val given: StateFlow<Int> = flow {
+            log("started ...")
             emit(payload)
             delay(1000) // what if to move this line one up?
             emit(payload + 1)
+            log("finished ...")
         }.stateIn(scope = this)
 
         launch {
             log(given.first())
-        }
-
-        launch {
             delay(1000)
             log(given.first())
         }
@@ -126,14 +125,16 @@ class StateFlow_NativeTest {
             scope = this,
             started = SharingStarted.Lazily, // What if using Early?
             initialValue = null
-        )
+        ).apply {
+            runCurrent()
+        }
 
         val result = mutableListOf<Int?>()
         val job = launch {
             given.take(2).toList(result)
         }
 
-        delay(100)
+        delay(1000)
         job.cancelAndJoin()
 
         assertThat(result).containsExactly(null, 0)
@@ -143,6 +144,7 @@ class StateFlow_NativeTest {
     fun `stateIn - WhileSubscribed`() = runTest {
         val payload = 0
         val given = flow {
+            log(currentCoroutineContext())
             emit(payload)
         }.stateIn(
             scope = this, // Oops!
@@ -152,12 +154,12 @@ class StateFlow_NativeTest {
 
         val result = mutableListOf<Int?>()
         val job = launch {
-            given.collect {
-                result.add(it)
-            }
+            log("collector")
+            given.take(2).toList(result)
+        }.also {
+            runCurrent()
         }
 
-        delay(100)
         job.cancelAndJoin()
 
         assertThat(result).containsExactly(null, 0)
