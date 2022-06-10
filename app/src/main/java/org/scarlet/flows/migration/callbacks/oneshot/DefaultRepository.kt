@@ -10,6 +10,10 @@ import retrofit2.Response
 @ExperimentalCoroutinesApi
 class DefaultRepository(private val recipeApi: RecipeApi) : Repository {
 
+    @Deprecated(
+        "Use the suspend equivalent -> suspend fun getRecipe()",
+        replaceWith = ReplaceWith("getRecipe(recipeId)")
+    )
     override fun getRecipeCallback(recipeId: String, callback: RecipeCallback) {
         val call: Call<Recipe> = recipeApi.getRecipe(recipeId)
         call.enqueue(object : Callback<Recipe> {

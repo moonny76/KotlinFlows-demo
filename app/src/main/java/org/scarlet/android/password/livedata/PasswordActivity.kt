@@ -1,16 +1,15 @@
 package org.scarlet.android.password.livedata
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import org.scarlet.android.password.livedata.PasswordViewModel.LoginUiState
 import org.scarlet.databinding.ActivityPasswordMainBinding
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.consumeEach
+import org.scarlet.android.password.LoginUiState
 
 @ExperimentalCoroutinesApi
 class PasswordActivity : AppCompatActivity() {
@@ -27,18 +26,18 @@ class PasswordActivity : AppCompatActivity() {
 
         binding.btnLogin.setOnClickListener {
             viewModel.login(
-                binding.etUsername.text.toString(),
-                binding.etPassword.text.toString()
+                binding.username.text.toString(),
+                binding.password.text.toString()
             )
         }
 
         /**/
 
         binding.flowSource.setOnClickListener {
-            lifecycleScope.launchWhenResumed {
-                Log.d(TAG, "onCreate: sending event to viewModel")
-                viewModel.eventChannel.send(Unit)
-            }
+            viewModel.increment()
+//            lifecycleScope.launchWhenResumed {
+//                viewModel.eventChannel.send(Unit)
+//            }
         }
 
         subscribeObservers()
@@ -51,12 +50,17 @@ class PasswordActivity : AppCompatActivity() {
             }
         }
 
-        lifecycleScope.launchWhenResumed {
-            viewModel.countChannel.consumeEach{ count ->
-                Log.d(TAG, "onCreate: update count")
-                binding.counts.text = count.toString()
+        viewModel.counter.observe(this) { counter ->
+            counter?.let {
+                binding.counts.text = counter.toString()
             }
         }
+
+//        lifecycleScope.launchWhenResumed {
+//            viewModel.countChannel.consumeEach{ count ->
+//                binding.counts.text = count.toString()
+//            }
+//        }
 
     }
 
@@ -82,7 +86,4 @@ class PasswordActivity : AppCompatActivity() {
         _binding = null
     }
     
-    companion object {
-        const val TAG = "Password"
-    }
 }

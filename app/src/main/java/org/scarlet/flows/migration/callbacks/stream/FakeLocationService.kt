@@ -11,6 +11,10 @@ class FakeLocationService(
     private var callbacks: LocationCallback? = null
     private var job: Job? = null
 
+    @Deprecated(
+        "Obsolete API - use requestLocationFlow instead",
+        replaceWith = ReplaceWith("requestLocationFlow(location, timeMs)")
+    )
     override fun requestLocationUpdates(request: LocationRequest, callback: LocationCallback) {
         this.callbacks = callback
         var next = 0

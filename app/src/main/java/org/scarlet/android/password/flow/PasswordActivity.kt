@@ -10,7 +10,7 @@ import org.scarlet.android.password.flow.PasswordViewModel.*
 import org.scarlet.databinding.ActivityPasswordMainBinding
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.flow.collect
+import org.scarlet.android.password.LoginUiState
 
 @ExperimentalCoroutinesApi
 @ObsoleteCoroutinesApi
@@ -28,17 +28,15 @@ class PasswordActivity : AppCompatActivity() {
 
         binding.btnLogin.setOnClickListener {
             viewModel.login(
-                binding.etUsername.text.toString(),
-                binding.etPassword.text.toString()
+                binding.username.text.toString(),
+                binding.password.text.toString()
             )
         }
 
         /**/
 
         binding.flowSource.setOnClickListener {
-            lifecycleScope.launchWhenResumed {
-                viewModel.eventChannel.send(Unit)
-            }
+            viewModel.increment()
         }
 
         subscribeObservers()
@@ -46,17 +44,15 @@ class PasswordActivity : AppCompatActivity() {
     }
 
     private fun subscribeObservers() {
-        lifecycleScope.launchWhenResumed {
-            viewModel.loginUiState.collect { state ->
-                handleState(state)
-            }
-        }
 
-        lifecycleScope.launchWhenResumed {
-            viewModel.countFlow.collect { count ->
-                binding.counts.text = count.toString()
-            }
-        }
+        /**
+         * TODO - handle `loginUiState`
+         */
+
+        /**
+         * TODO - subscribe to `counterFlow`
+         */
+
     }
 
     private fun handleState(state: LoginUiState) {
@@ -81,7 +77,4 @@ class PasswordActivity : AppCompatActivity() {
         _binding = null
     }
 
-    companion object {
-        const val TAG = "Password"
-    }
 }
