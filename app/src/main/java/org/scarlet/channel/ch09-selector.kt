@@ -9,7 +9,7 @@ import org.scarlet.util.log
 import kotlin.random.Random
 
 /**
- * Select expression makes it possible to await multiple suspending functions
+ * `select` expression makes it possible to await multiple suspending functions
  * simultaneously and select the first one that becomes available.
  */
 
@@ -31,7 +31,7 @@ object Selecting_from_channels {
     }
 
     suspend fun selectFizzBuzz(fizz: ReceiveChannel<String>, buzz: ReceiveChannel<String>) {
-        select<Unit> { // <Unit> means that this select expression does not produce any result
+        select { // <Unit> means that this select expression does not produce any result
             fizz.onReceive { value ->  // this is the first select clause
                 log("fizz -> '$value'")
             }
@@ -93,6 +93,7 @@ object Selecting_on_Close {
         repeat(8) { // print first eight results
             println(selectAorB(a, b))
         }
+
         coroutineContext.cancelChildren()
     }
 
@@ -106,20 +107,17 @@ object Selecting_on_Close {
 }
 
 /**
- * Select expression has `onSend` clause that can be used for a great good
+ * `select` expression has `onSend` clause that can be used for a great good
  * in combination with a biased nature of selection.
  */
 
 object Selecting_to_Send_Demo {
 
-    val worker1 = Channel<String>()
-    val worker2 = Channel<String>()
-
-    suspend fun dispatch(worker1: SendChannel<String>, worker2: SendChannel<String>) {
+    private suspend fun dispatch(worker1: SendChannel<String>, worker2: SendChannel<String>) {
         val words = "quick brown fox jumps over the lazy dog".split(" ")
 
         words.forEach { word ->
-            select<Unit> {
+            select {
                 worker1.onSend(word) {
                 }
                 worker2.onSend(word) {
@@ -133,9 +131,8 @@ object Selecting_to_Send_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
 
-        launch {
-            dispatch(worker1, worker2)
-        }
+        val worker1 = Channel<String>()
+        val worker2 = Channel<String>()
 
         launch {
             worker1.consumeEach {
@@ -150,16 +147,20 @@ object Selecting_to_Send_Demo {
                 delay(200)
             }
         }
+
+        launch {
+            dispatch(worker1, worker2)
+        }
     }
 }
 
 @ExperimentalCoroutinesApi
 object Selecting_to_Send {
 
-    fun CoroutineScope.produceNumbers(side: SendChannel<Int>): ReceiveChannel<Int> = produce {
+    private fun CoroutineScope.produceNumbers(side: SendChannel<Int>): ReceiveChannel<Int> = produce {
         for (num in 1..10) { // produce 10 numbers from 1 to 10
             delay(100)
-            select<Unit> {
+            select {
                 onSend(num) {} // Send to the primary channel
                 side.onSend(num) {} // or to the side channel
             }
@@ -190,30 +191,31 @@ object Selecting_to_Send {
 @ExperimentalCoroutinesApi
 @ObsoleteCoroutinesApi
 object MixedChannels {
-    suspend fun selectFizzBuzz(fizz: SendChannel<String>, buzz: ReceiveChannel<String>) {
+
+    private suspend fun selectFizzBuzz(fizz: SendChannel<String>, buzz: ReceiveChannel<String>) {
         val word = "quick brown fox jumps over the lazy dog"
 
-        select<Unit> { // <Unit> means that this select expression does not produce any result
-            fizz.onSend(word) {   // this is the first select clause
+        select { // this select expression does not produce any result
+            fizz.onSend(word) {
                 log("fizz: -> sent")
             }
-            buzz.onReceive { value ->  // this is the second select clause
+            buzz.onReceive { value ->
                 log("buzz -> '$value'")
             }
         }
     }
 
-    fun CoroutineScope.fizz(): SendChannel<String> = actor {
+    private fun CoroutineScope.fizz(): SendChannel<String> = actor {
         while (true) { // receives every 300 ms
             log(receive())
-            delay(300)
+            delay(2000)
         }
     }
 
-    fun CoroutineScope.buzz(): ReceiveChannel<String> = produce {
+    private fun CoroutineScope.buzz(): ReceiveChannel<String> = produce {
         while (true) { // sends "Buzz!" every 500 ms
             send("Buzz!")
-            delay(500)
+            delay(1000)
         }
     }
 

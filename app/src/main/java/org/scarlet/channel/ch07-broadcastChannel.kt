@@ -28,9 +28,9 @@ object RaceConditionChannel {
 
         // Consumers
         repeat(3) {
-            GlobalScope.launch {
+            launch(Dispatchers.Default) {
                 channel.consumeEach { value ->
-                    println("Consumer $it: $value")
+                    log("Consumer $it: $value")
                 }
             }
         }
@@ -43,26 +43,34 @@ object RaceConditionChannel {
 // Similar to Rx PublishSubject
 @ObsoleteCoroutinesApi
 @DelicateCoroutinesApi
-object BroadcastChannelDemo1 {
+object BroadcastChannelDemo {
 
     private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Pear", "Strawberry")
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
+    fun main(args: Array<String>) = runBlocking {
+        // Note: this channel looses all items that are send to it until
+        // the first subscriber appears, unless specified as CONFLATED
         val channel = BroadcastChannel<String>(3)
 
         // Producer
-        repeat(5) {
+        repeat(3) {
             // Send data in channel
-            channel.send(fruitArray[it % fruitArray.size])
-        } // Loses all before sub
+            log("Sending ${fruitArray[it]}")
+            channel.send(fruitArray[it])
+            log("${fruitArray[it]} sent")
+        } // Loses all before subscription
+
+        delim()
 
         // Consumers
         repeat(2) {
             launch {
                 channel.openSubscription().let { rcvChannel ->
+                    log("Consumer $it subscribes ...")
                     for (value in rcvChannel) {
                         log("Consumer $it: $value")
+                        delay(it * 2000L)
                     }
                 }
             }
@@ -70,62 +78,27 @@ object BroadcastChannelDemo1 {
 
         delay(500)
 
-        channel.apply {
-            send(fruitArray[3]) // Pear
-            send(fruitArray[4]) // Strawberry
-        }
-
-        delay(1000)
-        channel.close()
-    }
-}
-
-@ObsoleteCoroutinesApi
-@DelicateCoroutinesApi
-object BroadcastChannel_Demo2 {
-
-    private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Pear", "Strawberry")
-
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = BroadcastChannel<String>(3)
-
-        // Producer
-        repeat(3) {
-            // Send data in channel
-            channel.send(fruitArray[it])
-        }
-
-        // Consumers
-        repeat(2) {
-            launch {
-                coroutineContext.job.onCompletion("Consumers")
-//                channel.openSubscription().consumeEach { value ->
-                channel.consumeEach { value ->
-                    log("Consumer $it: $value")
-                }
+        with (channel) {
+            repeat(4) {
+                send(fruitArray[it])
+                log("${fruitArray[it]} sent")
             }
-        }
-
-        delay(500)
-
-        channel.apply {
-            send(fruitArray[3])
-            send(fruitArray[4])
+            close()
         }
 
         delay(1000)
-        channel.close()
     }
 }
 
+@ExperimentalCoroutinesApi
 @ObsoleteCoroutinesApi
-@DelicateCoroutinesApi
 object BroadcastChannel_Buffering_Demo {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = BroadcastChannel<Int>(3)
+        val channel = BroadcastChannel<Int>(3).apply {
+            invokeOnClose { log("Channel closed with $it") }
+        }
 
         // Consumers
         launch {
@@ -133,14 +106,14 @@ object BroadcastChannel_Buffering_Demo {
                 log("\t\t\tConsumer 0: $value")
                 delay(100)
             }
-        }
+        }.onCompletion("Consumer 0")
 
         launch {
             channel.consumeEach { value ->
                 log("\t\t\t\t\t\t\tConsumer 1: $value")
                 delay(300)
             }
-        }
+        }.onCompletion("Consumer 1")
 
         delay(50) // allow time for receivers to ready
 
@@ -154,21 +127,23 @@ object BroadcastChannel_Buffering_Demo {
         }
 
         launch {
-            log("Late Consumer")
-            channel.consumeEach { value ->
-                log("Late Consumer: $value")
+            log("Late Consumer:")
+            val result = channel.openSubscription().tryReceive()
+            if (result.isFailure) {
+                log("Late Consumer: empty result received")
+            } else if (result.isClosed) {
+                log("Late Consumer: channel already closed")
+            } else {
+                log("Late Consumer: ${result.getOrNull()}")
             }
-            if (channel.openSubscription().tryReceive().isFailure) {
-                channel.cancel()
-            }
-        }
+            channel.cancel()
+        }.onCompletion("Late Consumer")
     }
 }
 
 // Similar to Rx ConflatedPublishSubject
 // Sender never blocks!
 @ObsoleteCoroutinesApi
-@DelicateCoroutinesApi
 object ConflatedBroadcastChannel_Demo {
 
     @JvmStatic
@@ -204,13 +179,17 @@ object ConflatedBroadcastChannel_Demo {
         }
 
         launch {
-            channel.consumeEach { value ->
-                log("Late Consumer: $value")
-//                channel.cancel()
+            log("Late Consumer:")
+            val result = channel.openSubscription().tryReceive()
+            if (result.isFailure) {
+                log("Late Consumer: empty result received")
+            } else if (result.isClosed) {
+                log("Late Consumer: channel already closed")
+            } else {
+                log("Late Consumer: ${result.getOrNull()}")
             }
+            channel.close()
         }.onCompletion("Late Consumer")
 
-        delay(1000)
-        channel.close()
     }
 }

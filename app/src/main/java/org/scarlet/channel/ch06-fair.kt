@@ -5,10 +5,23 @@ import kotlinx.coroutines.channels.Channel
 import org.scarlet.util.log
 
 object Channels_Fair_PingPong {
+
+    data class Ball(var hits: Int)
+
+    private suspend fun player(name: String, table: Channel<Ball>) {
+        for (ball in table) { // receive the ball in a loop
+            ball.hits++
+            log("$name $ball")
+            delay(300) // wait a bit
+            table.send(ball) // send the ball back
+        }
+    }
+
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
 
         val table = Channel<Ball>() // a shared table
+
         launch { player("ping", table) }
         launch { player("pong", table) }
 
@@ -18,14 +31,6 @@ object Channels_Fair_PingPong {
         coroutineContext.cancelChildren() // game over, cancel them
     }
 
-    data class Ball(var hits: Int)
 
-    suspend fun player(name: String, table: Channel<Ball>) {
-        for (ball in table) { // receive the ball in a loop
-            ball.hits++
-            log("$name $ball")
-            delay(300) // wait a bit
-            table.send(ball) // send the ball back
-        }
-    }
+
 }

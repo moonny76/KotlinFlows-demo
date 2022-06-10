@@ -13,7 +13,7 @@ import org.scarlet.util.log
  */
 
 @ObsoleteCoroutinesApi
-object Actor_Demo {
+object ActorDemo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
 
@@ -24,7 +24,6 @@ object Actor_Demo {
                 messages.add(msg)
             }
 
-            log("from thread ${Thread.currentThread()}")
             log(messages.joinToString(", "))
         }
 

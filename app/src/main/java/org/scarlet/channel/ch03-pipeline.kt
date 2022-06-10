@@ -8,14 +8,14 @@ import org.scarlet.util.onCompletion
 
 @ExperimentalCoroutinesApi
 object ChannelPipelines {
-    fun CoroutineScope.produceNumbers(): ReceiveChannel<Int> = produce {
+    private fun CoroutineScope.produceNumbers(): ReceiveChannel<Int> = produce {
         coroutineContext.job.onCompletion("produceNumber")
 
         var x = 1
         while (true) send(x++) // infinite stream of integers starting from 1
     }
 
-    fun CoroutineScope.square(numbers: ReceiveChannel<Int>): ReceiveChannel<Double> = produce {
+    private fun CoroutineScope.square(numbers: ReceiveChannel<Int>): ReceiveChannel<Double> = produce {
         coroutineContext.job.onCompletion("square")
 
         for (x in numbers) send((x * x).toDouble())
@@ -23,8 +23,8 @@ object ChannelPipelines {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        val numbers = produceNumbers() // produces integers from 1 and on
-        val squares = square(numbers) // squares integers
+        val numbers: ReceiveChannel<Int> = produceNumbers() // produces integers from 1 and on
+        val squares: ReceiveChannel<Double> = square(numbers) // squares integers
 
         repeat(5) {
             log(squares.receive()) // print first five
@@ -50,13 +50,16 @@ object PipelineExample_Primes {
     }
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
-        var cur = numbersFrom(2)
-        repeat(10) {
-            val prime = cur.receive()
-            log(prime)
-            cur = filter(cur, prime)
+    fun main(args: Array<String>) = runBlocking {
+        var cur: ReceiveChannel<Int> = numbersFrom(2)
+        val primes = buildList {
+            repeat(20) {
+                val prime = cur.receive()
+                add(prime)
+                cur = filter(cur, prime)
+            }
         }
+        log(primes)
         coroutineContext.cancelChildren() // cancel all children to let main finish
     }
 }
@@ -74,10 +77,13 @@ object PipelineExample_Primes_With_Sequence {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
         var cur: Sequence<Int> = numbersFrom(2)
-        repeat(10) {
-            val prime = cur.first()
-            println(prime)
-            cur = filter(cur, prime)
+        val primes = buildList {
+            repeat(20) {
+                val prime = cur.first()
+                add(prime)
+                cur = filter(cur, prime)
+            }
         }
+        log(primes)
     }
 }

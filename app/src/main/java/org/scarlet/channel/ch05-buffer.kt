@@ -9,7 +9,7 @@ import org.scarlet.util.log
 
 object Buffering {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
 
         // create buffered channel
         val channel = Channel<Int>(4)
@@ -18,7 +18,7 @@ object Buffering {
             repeat(10) {
                 log("Sending $it") // print before sending each element
                 channel.send(it) // will suspend when buffer is full
-                log("$it sent") // print before sending each element
+                log("$it sent") // print after sending each element
             }
         }
 
@@ -29,7 +29,7 @@ object Buffering {
 }
 
 @ExperimentalCoroutinesApi
-object Closing_Sender_Waits_until_Received {
+object Closing_SendChannel_Guarantees_All_Sent_Data_Received {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
 
@@ -38,17 +38,17 @@ object Closing_Sender_Waits_until_Received {
 
         launch { // launch sender coroutine
             repeat(10) {
-                log("Sending $it") // print before sending each element
+                log("Sending $it")
                 channel.send(it) // will suspend when buffer is full
+                log("$it sent")
             }
             log("Closing channel ...")
             channel.close()
         }
 
-        delay(3000)
-
         for (value in channel) {
             log("$value received")
+            delay(500)
         }
 
     }

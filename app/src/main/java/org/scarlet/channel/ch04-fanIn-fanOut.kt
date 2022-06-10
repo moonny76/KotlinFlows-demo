@@ -10,7 +10,7 @@ import org.scarlet.util.log
 @ExperimentalCoroutinesApi
 object FanOut {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         // Single producer
         val producer: ReceiveChannel<Int> = produceNumbers()
 
@@ -48,7 +48,7 @@ object FanIn {
         launch { sendString(channel, "Pong", 500L) }
 
         // Single consumer
-        repeat(10) { // receive first six
+        repeat(10) { // receive first ten
             log(channel.receive())
         }
 
