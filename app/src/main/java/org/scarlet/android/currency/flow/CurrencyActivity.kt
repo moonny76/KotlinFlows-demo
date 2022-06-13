@@ -2,13 +2,12 @@ package org.scarlet.android.currency.flow
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
 import org.scarlet.R
 import org.scarlet.android.currency.FakeCurrencyApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,14 +17,13 @@ import java.text.DecimalFormat
 
 @ExperimentalCoroutinesApi
 class CurrencyActivity : AppCompatActivity() {
-    private lateinit var detailsSymbolTargetCurrency: TextView
-    private lateinit var detailsExchangeRate: TextView
+    private lateinit var currencySymbol: TextView
+    private lateinit var exchangeRate: TextView
     private lateinit var amountEntered: EditText
-    private lateinit var detailsTotalAmount: TextView
-    private lateinit var detailsAmount: TextView
+    private lateinit var totalAmount: TextView
+    private lateinit var formattedAmount: TextView
 
-    private lateinit var orderButton: Button
-    private var currentCurrency: String? = "dollar"
+    private var currentCurrency: String = "dollar"
 
     val viewModel: CurrencyViewModel by viewModels {
         CurrencyViewModelFactory(FakeCurrencyApi())
@@ -36,52 +34,54 @@ class CurrencyActivity : AppCompatActivity() {
         setContentView(R.layout.activity_currency_main)
 
         getViews()
-
-        orderButton.setOnClickListener {
-            amountEntered.text.toString().toBigDecimalOrNull()?.let { amount ->
-                hideKeyboard()
-                detailsAmount.text = format(amount)
-                viewModel.onOrderSubmit(amount, currentCurrency!!)
-            } ?: showEmptyAmountWarning()
-        }
-
         subscribeObservers()
+
+        amountEntered.setOnKeyListener { _, keyCode, _ ->
+            when (keyCode) {
+                KeyEvent.KEYCODE_ENTER -> {
+                    onOrderSubmit()
+                    hideKeyboard()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
-    private fun showEmptyAmountWarning() {
-        Snackbar.make(
-            findViewById(android.R.id.content),
-            "Enter amount to buy",
-            Snackbar.LENGTH_LONG
-        ).show()
+    private fun onOrderSubmit() {
+        amountEntered.text.toString().toBigDecimalOrNull()?.let { amount ->
+            formattedAmount.text = format(amount)
+            viewModel.onOrderSubmit(amount, currentCurrency)
+        } ?: run {
+            amountEntered.setText("0")
+            viewModel.onOrderSubmit(BigDecimal.ZERO, currentCurrency)
+        }
     }
 
     private fun getViews() {
         amountEntered = findViewById(R.id.amount_entered)
-        detailsSymbolTargetCurrency = findViewById(R.id.details_symbol_target_currency)
-        detailsExchangeRate = findViewById(R.id.details_exchange_rate)
-        detailsTotalAmount = findViewById(R.id.details_total_amount)
-        detailsAmount = findViewById(R.id.details_amount)
-        orderButton = findViewById(R.id.orderButton)
+        currencySymbol = findViewById(R.id.currency_symbol)
+        exchangeRate = findViewById(R.id.exchange_rate)
+        totalAmount = findViewById(R.id.total_amount)
+        formattedAmount = findViewById(R.id.formatted_amount)
     }
 
     private fun subscribeObservers() {
-
         lifecycleScope.launchWhenStarted {
             viewModel.currencySymbol.collect { symbol ->
-                detailsSymbolTargetCurrency.text = symbol
+                currencySymbol.text = symbol
             }
         }
 
         lifecycleScope.launchWhenStarted {
             viewModel.exchangeRate.collect { rate ->
-                detailsExchangeRate.text = rate.toString()
+                exchangeRate.text = rate.toString()
             }
         }
 
         lifecycleScope.launchWhenStarted {
             viewModel.totalAmount.collect { total ->
-                detailsTotalAmount.text = format(total)
+                totalAmount.text = format(total)
             }
         }
 
@@ -98,6 +98,7 @@ class CurrencyActivity : AppCompatActivity() {
             R.id.radio_pounds -> "pound"
             else -> "yen"
         }
+        onOrderSubmit()
     }
 
 }

@@ -11,20 +11,29 @@ class CurrencyViewModel(
     private val currencyApi: CurrencyApi
 ) : ViewModel() {
 
-    private val currencySymbolMap = mutableMapOf(
+    private val currencySymbolMap: MutableMap<String, String> = mutableMapOf(
         "dollar" to "$",
         "pound" to "£",
         "yen" to "¥",
     )
 
-    private val _currencySymbol = MutableLiveData<String>()
+    private val _currencySymbol = MutableLiveData<String>(currencySymbolMap["dollar"])
     val currencySymbol: LiveData<String> = _currencySymbol
 
-    private val _exchangeRate = MutableLiveData<Double>()
-    val exchangeRate: LiveData<Double> = _exchangeRate
+    private val _currency = MutableLiveData("dollar")
 
-    private val _amount = MutableLiveData<BigDecimal>()
-    val totalAmount: LiveData<BigDecimal> = _amount.switchMap { amount ->
+    val exchangeRate: LiveData<Double> = _currency.switchMap { currency ->
+        liveData {
+            while (true) {
+                val rate = currencyApi.getExchangeRate(currency)
+                emit(rate)
+                delay(1000)
+            }
+        }
+    }
+
+    private val _amountEntered = MutableLiveData<BigDecimal>()
+    val totalAmount: LiveData<BigDecimal> = _amountEntered.switchMap { amount ->
         exchangeRate.map { rate ->
             amount * rate.toBigDecimal()
         }
@@ -32,10 +41,8 @@ class CurrencyViewModel(
 
     fun onOrderSubmit(amount: BigDecimal, currency: String) {
         _currencySymbol.value = currencySymbolMap[currency]
-        viewModelScope.launch {
-            _exchangeRate.value = currencyApi.getExchangeRate(currency)
-            _amount.value = amount
-        }
+        _currency.value = currency
+        _amountEntered.value = amount
     }
 
 }

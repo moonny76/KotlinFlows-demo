@@ -3,8 +3,9 @@ package org.scarlet.flows
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.scarlet.util.delim
+import org.scarlet.util.log
 
-object Motivation {
+object ObserverPattern {
 
     @JvmStatic
     fun main(args: Array<String>) {
@@ -24,7 +25,7 @@ object RealFlowTypes {
         }
 
         flow.collect {
-            println(it)
+            log(it)
         }
 
         delim()
@@ -32,7 +33,7 @@ object RealFlowTypes {
         flow.map {
             it * it
         }.collect {
-            println(it)
+            log(it)
         }
 
         delim()
@@ -42,7 +43,7 @@ object RealFlowTypes {
                 emit(Pair(it, it * it))
             }
         }.collect {
-            println(it)
+            log(it)
         }
 
         delim()
@@ -59,7 +60,7 @@ object RealFlowTypes {
                 emit("second: $it")
             }
         }.collect {
-            println(it)
+            log(it)
         }
     }
 }

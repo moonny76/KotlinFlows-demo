@@ -12,29 +12,44 @@ class CurrencyViewModel(
     private val currencyApi: CurrencyApi
 ) : ViewModel() {
 
-    private val currencySymbolMap = mutableMapOf(
+    private val currencySymbolMap: MutableMap<String, String> = mutableMapOf(
         "dollar" to "$",
         "pound" to "£",
         "yen" to "¥",
     )
 
-    private val _currencySymbol = MutableStateFlow("$")
+    private val _currencySymbol = MutableStateFlow(currencySymbolMap["dollar"]!!)
     val currencySymbol: StateFlow<String> = _currencySymbol
 
-    private val _exchangeRate = MutableStateFlow(0.0)
-    val exchangeRate: StateFlow<Double> = _exchangeRate
+    private val _currency = MutableStateFlow("dollar")
+
+    val exchangeRate: StateFlow<Double> = _currency.flatMapLatest { currency ->
+        flow {
+            while (true) {
+                val rate = currencyApi.getExchangeRate(currency)
+                emit(rate)
+                delay(1000)
+            }
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0.0
+    )
 
     private val _amount = MutableStateFlow<BigDecimal>(BigDecimal.ZERO)
-    val totalAmount: Flow<BigDecimal> = _amount.combine(exchangeRate) { amount, rate ->
+    val totalAmount: StateFlow<BigDecimal> = _amount.combine(exchangeRate) { amount, rate ->
         amount * rate.toBigDecimal()
-    }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = BigDecimal.ZERO
+    )
 
     fun onOrderSubmit(amount: BigDecimal, currency: String) {
         _currencySymbol.value = currencySymbolMap[currency]!!
-        viewModelScope.launch {
-            _exchangeRate.value = currencyApi.getExchangeRate(currency)
-            _amount.value = amount
-        }
+        _currency.value = currency
+        _amount.value = amount
     }
 }
 
