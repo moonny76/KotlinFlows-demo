@@ -24,14 +24,8 @@ object RealFlowTypes {
             emit(3)
         }
 
-        flow.collect {
-            log(it)
-        }
-
-        delim()
-
         flow.map {
-            it * it
+            it to it * it
         }.collect {
             log(it)
         }
@@ -40,7 +34,8 @@ object RealFlowTypes {
 
         flow.flatMapConcat {
             flow {
-                emit(Pair(it, it * it))
+                emit(it)
+                emit(it * it)
             }
         }.collect {
             log(it)

@@ -4,11 +4,9 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
 import org.scarlet.databinding.ActivityPasswordMainBinding
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.consumeEach
 import org.scarlet.android.password.LoginUiState
 
 @ExperimentalCoroutinesApi
@@ -35,9 +33,6 @@ class PasswordActivity : AppCompatActivity() {
 
         binding.flowSource.setOnClickListener {
             viewModel.increment()
-//            lifecycleScope.launchWhenResumed {
-//                viewModel.eventChannel.send(Unit)
-//            }
         }
 
         subscribeObservers()
@@ -55,13 +50,6 @@ class PasswordActivity : AppCompatActivity() {
                 binding.counts.text = counter.toString()
             }
         }
-
-//        lifecycleScope.launchWhenResumed {
-//            viewModel.countChannel.consumeEach{ count ->
-//                binding.counts.text = count.toString()
-//            }
-//        }
-
     }
 
     private fun handleState(state: LoginUiState) {
