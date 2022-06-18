@@ -1,18 +1,15 @@
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.ConflatedBroadcastChannel
-import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.*
 import org.scarlet.util.delim
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
 
 @DelicateCoroutinesApi
-object RaceConditionChannel {
+object Channel_FanOut_RaceCondition {
 
-    private val fruitArray = arrayOf("Apple", "Banana", "Pear")
+    private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Orange", "Pear", "Watermelon")
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
@@ -20,15 +17,15 @@ object RaceConditionChannel {
 
         // Producer
         launch {
-            repeat(6) {
+            repeat(fruitArray.size) {
                 // Send data in channel
-                channel.send(fruitArray[it % 3])
+                channel.send(fruitArray[it])
             }
         }
 
         // Consumers
         repeat(3) {
-            launch(Dispatchers.Default) {
+            launch {
                 channel.consumeEach { value ->
                     log("Consumer $it: $value")
                 }
@@ -48,22 +45,21 @@ object BroadcastChannelDemo {
     private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Pear", "Strawberry")
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking {
+    fun main(args: Array<String>) = runBlocking<Unit> {
         // Note: this channel looses all items that are send to it until
         // the first subscriber appears, unless specified as CONFLATED
-        val channel = BroadcastChannel<String>(3)
+        val channel = BroadcastChannel<String>(1) // 1, 2, 3
 
         // Producer
-        repeat(3) {
+        repeat(fruitArray.size) {
             // Send data in channel
-            log("Sending ${fruitArray[it]}")
             channel.send(fruitArray[it])
             log("${fruitArray[it]} sent")
         } // Loses all before subscription
 
         delim()
 
-        // Consumers
+        // Two Consumers
         repeat(2) {
             launch {
                 channel.openSubscription().let { rcvChannel ->
@@ -73,20 +69,20 @@ object BroadcastChannelDemo {
                         delay(it * 2000L)
                     }
                 }
-            }
+            }.onCompletion("Consumer $it")
         }
 
-        delay(500)
+        delay(100)
 
+        // Producer again
         with (channel) {
-            repeat(4) {
+            repeat(fruitArray.size) {
                 send(fruitArray[it])
                 log("${fruitArray[it]} sent")
             }
-            close()
+            close() // Even if channel closed, all sent items are still received
         }
 
-        delay(1000)
     }
 }
 
@@ -96,11 +92,11 @@ object BroadcastChannel_Buffering_Demo {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = BroadcastChannel<Int>(3).apply {
+        val channel = BroadcastChannel<Int>(1).apply { // Change to 1,2,3 to see the difference
             invokeOnClose { log("Channel closed with $it") }
         }
 
-        // Consumers
+        // Two Consumers
         launch {
             channel.consumeEach { value ->
                 log("\t\t\tConsumer 0: $value")
@@ -118,7 +114,6 @@ object BroadcastChannel_Buffering_Demo {
         delay(50) // allow time for receivers to ready
 
         // Producer
-        // Send data in channel
         repeat(10) {
             channel.send(it)
             log("Sent $it")
@@ -136,7 +131,6 @@ object BroadcastChannel_Buffering_Demo {
             } else {
                 log("Late Consumer: ${result.getOrNull()}")
             }
-            channel.cancel()
         }.onCompletion("Late Consumer")
     }
 }
@@ -170,7 +164,6 @@ object ConflatedBroadcastChannel_Demo {
         delay(50) // allow time for receivers to ready
 
         // Producer
-        // Send data in channel
         repeat(10) {
             channel.send(it)
             log("Sent $it")
@@ -188,7 +181,6 @@ object ConflatedBroadcastChannel_Demo {
             } else {
                 log("Late Consumer: ${result.getOrNull()}")
             }
-            channel.close()
         }.onCompletion("Late Consumer")
 
     }
