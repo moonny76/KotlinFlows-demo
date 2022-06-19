@@ -5,19 +5,24 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
 import org.scarlet.util.log
+import org.scarlet.util.onClose
 import org.scarlet.util.onCompletion
 import kotlin.random.Random
+import kotlin.system.measureTimeMillis
 
 @JvmInline
 value class Item(val value: Int)
 
 suspend fun makeItem(): Item {
-    delay(1000) // simulate some asynchronism
+    delay(1000) // simulate some asynchrony
     return Item(Random.nextInt(100))
 }
 
+/**
+ * List is an eager data structure.
+ */
 object Motivations {
-    private suspend fun getItems() = buildList {
+    private suspend fun getItems(): List<Item> = buildList {
         log("\tBuilding first")
         add(makeItem())
         log("\tBuilding second")
@@ -26,68 +31,133 @@ object Motivations {
         add(makeItem())
     }
 
+    private fun consumeItems(items: List<Item>) {
+        items.forEach {
+            log("Do something with $it")
+        }
+    }
+
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        val startTime = System.currentTimeMillis()
+        var items: List<Item>?
 
-        log("before getItems()")
-        val items = getItems() // List is eager
-        log("after getItems(), time = ${System.currentTimeMillis() - startTime}")
-
-        repeat(items.size) {
-            log("Do something with ${items[it]}")
+        val time = measureTimeMillis {
+            items = getItems()
+            consumeItems(items!!)
         }
+
+        log("time = $time")
     }
 }
 
 object Basics {
     private suspend fun getItems(channel: Channel<Item>) {
         channel.send(makeItem())
-        log("\tFirst sent")
+        log("First sent")
         channel.send(makeItem())
-        log("\tSecond sent")
+        log("Second sent")
         channel.send(makeItem())
-        log("\tThird sent")
+        log("Third sent")
+        channel.close()
+    }
+
+    private suspend fun consumeItems(channel: Channel<Item>) {
+        for (item in channel) {
+            log("Do something with $item")
+        }
     }
 
     @ExperimentalCoroutinesApi
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        val channel = Channel<Item>() //  without a buffer by default
+        val channel = Channel<Item>()
 
-        val startTime = System.currentTimeMillis()
+        // List is eager
+        val time = measureTimeMillis {
+            coroutineScope {
+                launch {
+                    getItems(channel)
+                }
+                launch {
+                    consumeItems(channel)
+                }
+            }
+        }
 
-        log("before getItems()")
+        log("after getItems(), time = $time")
+    }
+}
+
+@ExperimentalCoroutinesApi
+object Different_Ways_to_Receive_and_Close_a_Channel {
+
+    private val data = listOf(1, 2, 3, 4, 5)
+
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking<Unit> {
+        val channel = Channel<Int>(5).onClose()
+
         launch {
-            getItems(channel)
-        }
-        log("after getItems(), time = ${System.currentTimeMillis() - startTime}")
+            data.forEach {
+                channel.send(it)
+                delay(50)
+            }
 
-        repeat(3) {
-            val item = channel.receive()
-            log("Do something with $item")
+            log("Sender closing channel")
+            channel.close() // comment this out to see what happen?
+            log("Is channel closed for send? ${channel.isClosedForSend}")
+            log("Is channel closed for receive? ${channel.isClosedForReceive}") // make buffer = 5 after closing channel
+        }.onCompletion("Sender")
+
+        launch {
+            receiveOneByOne(channel)
+//            receiveByIterable(channel)
+//            receiveByConsumeEach(channel)
+        }.onCompletion("Receiver")
+    }
+
+    private suspend fun receiveOneByOne(channel: ReceiveChannel<Int>) {
+//        while (!channel.isClosedForReceive) {
+        repeat(data.size) {
+            log("Received ${channel.receive()}")
+            delay(100)
+//            channel.cancel()
         }
+        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
+    }
+
+    private suspend fun receiveByIterable(channel: ReceiveChannel<Int>) {
+        // here we print received values using `for` loop (until the channel is closed)
+        for (value in channel) {
+            log("Received $value")
+            delay(100)
+        }
+        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
+    }
+
+    private suspend fun receiveByConsumeEach(channel: ReceiveChannel<Int>) {
+        channel.consumeEach {
+            log("Received $it")
+            delay(100)
+        }
+        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
     }
 }
 
 object Sender_Suspends_If_No_Receivers {
-    @ExperimentalCoroutinesApi
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
         //  without a buffer by default
-        val channel = Channel<Int>().apply {
-            invokeOnClose { log("Channel closed") }
-        }
+        val channel = Channel<Int>()
 
-        val sender = launch {
-            log("Sending 42 ...")
-            channel.send(42)
-            log("This never prints")
-        }
-
-        delay(1000)
-        sender.cancelAndJoin()
-        channel.close()
+        // Sender
+        launch {
+            withTimeout(3000) {
+                log("Sending 42 ...")
+                channel.send(42)
+                log("unreachable code")
+            }
+        }.onCompletion("Sender")
     }
 }
 
@@ -96,100 +166,24 @@ object Receiver_Suspends_If_No_Senders {
     fun main(args: Array<String>) = runBlocking<Unit> {
         val channel = Channel<Int>()
 
+        // Receiver
         launch {
-            repeat(2) {
-                log("Try to send ${it}-th ...")
-                channel.send(it)
-                log("Sent $it")
-            }
-        }.onCompletion("Sender")
-
-        launch {
-            repeat(3) {
-                withTimeout(3000) {
-                    log("Wait for receiving ${it}-th ...")
-                    log("${channel.receive()} received")
-                }
+            withTimeout(3000) {
+                log("Waiting for senders to send data")
+                log("${channel.receive()} received")
+                log("unreachable code")
             }
         }.onCompletion("Receiver")
     }
 }
 
 @ExperimentalCoroutinesApi
-object Receiving_and_Closing_Channel {
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking {
-        val channel = Channel<Int>().apply {
-            invokeOnClose { log("Channel closed with cause = $it") }
-        }
-
-        launch {
-            repeat(5) {
-                channel.send(it)
-                delay(50)
-            }
-            channel.close() // comment this out to see what happen?
-            log("Is channel closed for receive? ${channel.isClosedForReceive}") // make buffer = 5
-            log("Is channel closed for send? ${channel.isClosedForSend}")
-        }.onCompletion("Sender")
-
-        receiveOneByOne(channel)
-//        receiveByIterable(channel)
-//        receiveByConsumeEach(channel)
-    }
-
-    private suspend fun receiveOneByOne(channel: ReceiveChannel<Int>) {
-        while (!channel.isClosedForReceive) {
-            log("${channel.receive()} received")
-            delay(100)
-        }
-        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
-    }
-
-    private suspend fun receiveByIterable(channel: ReceiveChannel<Int>) {
-        // here we print received values using `for` loop (until the channel is closed)
-        for (item in channel) {
-            log("$item received")
-            delay(100)
-        }
-        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
-    }
-
-    private suspend fun receiveByConsumeEach(channel: ReceiveChannel<Int>) {
-        channel.consumeEach {
-            log("$it received")
-            delay(100)
-        }
-        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
-    }
-
-}
-
-@ExperimentalCoroutinesApi
-object ReceiverCancellingRendezvousChannel {
+object OneOfReceivers_Cancell_RendezvousChannel {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
+        val channel = Channel<Int>().onClose()
 
-        val channel = Channel<Int>().apply {
-            invokeOnClose { ex ->
-                log("Channel closed with ex = $ex")
-            }
-        }
-
-        launch {
-            while (!channel.isClosedForReceive) {
-                delay(50)
-                log("Receiver 1:received = " + channel.receive())
-            }
-        }.onCompletion("Receiver 1")
-
-        launch {
-            log("Receiver 2: received = " + channel.receive())
-            delay(500)
-            log("Receiver 2 calls cancel")
-            channel.cancel()
-        }.onCompletion("Receiver 2")
-
+        // Sender
         launch {
             var i = 0
             while (!channel.isClosedForSend) {
@@ -198,6 +192,23 @@ object ReceiverCancellingRendezvousChannel {
             }
             log("Is channel closed for send? ${channel.isClosedForSend}")
         }.onCompletion("Sender")
+
+        // Receiver 1
+        launch {
+            while (!channel.isClosedForReceive) {
+                log("Receiver 1:received = " + channel.receive())
+                delay(50)
+            }
+        }.onCompletion("Receiver 1")
+
+        // Receiver 2 - will cancel the channel
+        launch {
+            log("Receiver 2: received = " + channel.receive())
+            delay(300)
+
+            log("Receiver 2 calls cancel")
+            channel.cancel()
+        }.onCompletion("Receiver 2")
 
     }
 }

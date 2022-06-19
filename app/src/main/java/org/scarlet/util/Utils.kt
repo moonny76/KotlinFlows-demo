@@ -4,6 +4,9 @@ import android.content.Context
 import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.coroutines.*
+import kotlinx.coroutines.NonCancellable.isCancelled
+import kotlinx.coroutines.channels.BroadcastChannel
+import kotlinx.coroutines.channels.Channel
 import kotlin.coroutines.ContinuationInterceptor
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -29,14 +32,6 @@ fun CoroutineScope.coroutineInfo(indent: Int) {
     delim()
 }
 
-fun Job.completeStatus(name: String = "Job", level: Int = 0) = apply {
-    log("${spaces(level)}$name: isCancelled = $isCancelled")
-}
-
-fun CoroutineScope.completeStatus(name: String = "scope", level: Int = 0) = apply {
-    log("${spaces(level)}$name: isCancelled = ${coroutineContext[Job]?.isCancelled}")
-}
-
 fun Job.onCompletion(name: String, level: Int = 0): Job = apply {
     invokeOnCompletion {
         log("${spaces(level)}$name: isCancelled = $isCancelled, exception = ${it?.javaClass?.name}")
@@ -46,6 +41,29 @@ fun Job.onCompletion(name: String, level: Int = 0): Job = apply {
 fun <T> Deferred<T>.onCompletion(name: String, level: Int = 0): Deferred<T> = apply {
     invokeOnCompletion {
         log("${spaces(level)}$name: isCancelled = $isCancelled, exception = ${it?.javaClass?.name}")
+    }
+}
+
+fun Job.completeStatus(name: String = "Job", level: Int = 0) = apply {
+    log("${spaces(level)}$name: isCancelled = $isCancelled")
+}
+
+fun CoroutineScope.completeStatus(name: String = "scope", level: Int = 0) = apply {
+    log("${spaces(level)}$name: isCancelled = ${coroutineContext[Job]?.isCancelled}")
+}
+
+@ExperimentalCoroutinesApi
+fun <T> Channel<T>.onClose(message: String = "Channel") = apply {
+    invokeOnClose {
+        log("$message: closed, exception = ${it?.javaClass?.name}")
+    }
+}
+
+@ObsoleteCoroutinesApi
+@ExperimentalCoroutinesApi
+fun <T> BroadcastChannel<T>.onClose(message: String = "BroadCastChannel") = apply {
+    invokeOnClose {
+        log("$message: closed, exception = ${it?.javaClass?.name}")
     }
 }
 

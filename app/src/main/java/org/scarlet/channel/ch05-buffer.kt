@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.scarlet.util.log
+import org.scarlet.util.onClose
 
 object Buffering {
     @JvmStatic
@@ -34,7 +35,7 @@ object Closing_SendChannel_Guarantees_All_Sent_Data_Received {
     fun main(args: Array<String>) = runBlocking{
 
         // create buffered channel
-        val channel = Channel<Int>(4).apply { invokeOnClose { log("Channel closed") } }
+        val channel = Channel<Int>(4).onClose()
 
         launch { // launch sender coroutine
             repeat(10) {

@@ -4,6 +4,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import org.scarlet.util.delim
 import org.scarlet.util.log
+import org.scarlet.util.onClose
 import org.scarlet.util.onCompletion
 
 @DelicateCoroutinesApi
@@ -40,15 +41,15 @@ object Channel_FanOut_RaceCondition {
 // Similar to Rx PublishSubject
 @ObsoleteCoroutinesApi
 @DelicateCoroutinesApi
-object BroadcastChannelDemo {
+object BroadcastChannel_Bufferring_Demo {
 
-    private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Pear", "Strawberry")
+    private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Orange", "Pear", "Watermelon")
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
         // Note: this channel looses all items that are send to it until
         // the first subscriber appears, unless specified as CONFLATED
-        val channel = BroadcastChannel<String>(1) // 1, 2, 3
+        val channel = BroadcastChannel<String>(1) // vary capacity 1, 2, 3
 
         // Producer
         repeat(fruitArray.size) {
@@ -88,13 +89,11 @@ object BroadcastChannelDemo {
 
 @ExperimentalCoroutinesApi
 @ObsoleteCoroutinesApi
-object BroadcastChannel_Buffering_Demo {
+object BroadcastChannel_LateConsumer_Demo {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = BroadcastChannel<Int>(1).apply { // Change to 1,2,3 to see the difference
-            invokeOnClose { log("Channel closed with $it") }
-        }
+        val channel = BroadcastChannel<Int>(1).onClose() // Change to 1,2,3 to see the difference
 
         // Two Consumers
         launch {
@@ -122,7 +121,6 @@ object BroadcastChannel_Buffering_Demo {
         }
 
         launch {
-            log("Late Consumer:")
             val result = channel.openSubscription().tryReceive()
             if (result.isFailure) {
                 log("Late Consumer: empty result received")
@@ -132,19 +130,21 @@ object BroadcastChannel_Buffering_Demo {
                 log("Late Consumer: ${result.getOrNull()}")
             }
         }.onCompletion("Late Consumer")
+
+        delay(1000)
+        channel.close()
     }
 }
 
 // Similar to Rx ConflatedPublishSubject
 // Sender never blocks!
+@ExperimentalCoroutinesApi
 @ObsoleteCoroutinesApi
 object ConflatedBroadcastChannel_Demo {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = ConflatedBroadcastChannel<Int>().apply {
-            invokeOnClose { log("Channel closed!") }
-        }
+        val channel = ConflatedBroadcastChannel<Int>().onClose()
 
         // Consumers
         launch {
@@ -172,7 +172,6 @@ object ConflatedBroadcastChannel_Demo {
         }
 
         launch {
-            log("Late Consumer:")
             val result = channel.openSubscription().tryReceive()
             if (result.isFailure) {
                 log("Late Consumer: empty result received")
@@ -183,5 +182,7 @@ object ConflatedBroadcastChannel_Demo {
             }
         }.onCompletion("Late Consumer")
 
+        delay(1000)
+        channel.close()
     }
 }

@@ -63,27 +63,3 @@ object PipelineExample_Primes {
         coroutineContext.cancelChildren() // cancel all children to let main finish
     }
 }
-
-object PipelineExample_Primes_With_Sequence {
-    private fun numbersFrom(start: Int): Sequence<Int> = sequence {
-        var x = start
-        while (true) yield(x++) // infinite stream of integers from start
-    }
-
-    private fun filter(numbers: Sequence<Int>, prime: Int) = sequence {
-        for (x in numbers) if (x % prime != 0) yield(x)
-    }
-
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
-        var cur: Sequence<Int> = numbersFrom(2)
-        val primes = buildList {
-            repeat(20) {
-                val prime = cur.first()
-                add(prime)
-                cur = filter(cur, prime)
-            }
-        }
-        log(primes)
-    }
-}
