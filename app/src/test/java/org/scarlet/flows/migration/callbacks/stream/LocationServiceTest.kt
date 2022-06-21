@@ -5,9 +5,7 @@ import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.*
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
-import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.util.testDispatcher
 import java.io.IOException
 
@@ -15,12 +13,9 @@ import java.io.IOException
 @ExperimentalCoroutinesApi
 class LocationServiceTest {
 
-    @get:Rule
-    val rule = CoroutineTestRule()
-
     lateinit var locationService: LocationService
 
-    @MockK(relaxed = true)
+    @MockK(relaxUnitFun = true)
     lateinit var callback: LocationCallback
 
     @Before
@@ -38,13 +33,15 @@ class LocationServiceTest {
         // Act (When)
         locationService.requestLocationUpdates(request, callback)
 
-        advanceTimeBy(5_000L); runCurrent()
+        advanceTimeBy(request.timeMs); runCurrent()
 
         locationService.removeLocationUpdates(callback)
 
         // Assert (Then)
-        verify { callback.onLocation(FakeLocationService.testLocations[0]) }
-        verify { callback.onLocation(FakeLocationService.testLocations[1]) }
+        verifySequence {
+            callback.onLocation(FakeLocationService.testLocations[0])
+            callback.onLocation(FakeLocationService.testLocations[1])
+        }
     }
 
     @ExperimentalStdlibApi
@@ -58,7 +55,7 @@ class LocationServiceTest {
         // Act (When)
         locationService.requestLocationUpdates(request, callback)
 
-        advanceTimeBy(5_000L); runCurrent()
+        advanceTimeBy(request.timeMs); runCurrent()
 
         locationService.removeLocationUpdates(callback)
 

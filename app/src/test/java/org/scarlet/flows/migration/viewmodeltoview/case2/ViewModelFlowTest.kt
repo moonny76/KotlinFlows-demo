@@ -1,7 +1,5 @@
 package org.scarlet.flows.migration.viewmodeltoview.case2
 
-import app.cash.turbine.test
-import com.google.common.truth.Truth.assertThat
 import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.util.Resource
@@ -61,8 +59,7 @@ class ViewModelFlowTest {
         // Act (When)
 //        viewModel.recipes.test {
 //            // Assert (Then)
-//            assertThat(awaitItem()).isEqualTo(Resource.Loading)
-//            assertThat(awaitItem()).isEqualTo(Resource.Success(mRecipes))
+//
 //        }
 
     }

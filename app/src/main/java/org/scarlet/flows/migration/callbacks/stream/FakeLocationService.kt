@@ -44,9 +44,7 @@ class FakeLocationService(
     }
 
     companion object {
-        enum class Mode {
-            Success, Fail
-        }
+        enum class Mode { Success, Fail }
 
         val testLocations = listOf(Location(36.5, 125.7), Location(37.5, 126.8))
     }

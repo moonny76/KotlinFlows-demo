@@ -1,7 +1,5 @@
 package org.scarlet.flows.migration.viewmodeltoview.case4
 
-import app.cash.turbine.test
-import com.google.common.truth.Truth.assertThat
 import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.AuthManager
 import org.scarlet.flows.migration.viewmodeltoview.Repository
