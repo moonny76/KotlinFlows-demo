@@ -21,11 +21,13 @@ class SharedFlow_TurbineTest {
      * Emissions to hot flows that don't have active consumers are dropped.
      * It's important to call test (and therefore have an active collector)
      * on a flow before emissions to a flow are made.
+     *
+     * Hot flow never completes.
      */
 
     @Test(expected = TimeoutCancellationException::class)
     fun `wrongTest - SharedFlow`() = runTest {
-        val hotFlow = MutableSharedFlow<Int>(replay = 0) // replay = 1, then OK
+        val hotFlow = MutableSharedFlow<Int>(replay = 0) // if replay = 1, then OK
 
         hotFlow.emit(1)
 
@@ -50,10 +52,10 @@ class SharedFlow_TurbineTest {
     }
 
     /**
-     * `emit` is suspended if there exist any subscribed collectors which are not ready to collect yet.
+     * `emit` is suspended if there exist any subscribed subscribers which are not ready to collect yet.
      */
     @Test
-    fun `collectors start to receive data after subscription - no replay`() = runBlocking {
+    fun `subscribers start to receive data after subscription`() = runBlocking {
         val sharedFlow = MutableSharedFlow<Int>( // default config.
             replay = 0,
             extraBufferCapacity = 0,
@@ -62,37 +64,36 @@ class SharedFlow_TurbineTest {
 
         launch {
             repeat(3) {
-                log("# subscribers = ${sharedFlow.subscriptionCount.value}")
-                log("Emitting: $it")
+                log("Emitting: $it (# subscribers = ${sharedFlow.subscriptionCount.value})")
                 sharedFlow.emit(it)
                 log("Emit $it done")
                 delay(200)
             }
-        }.onCompletion("Emitter done")
+        }.onCompletion("Publisher done")
 
-        val slowCollector = launch {
+        val slowSubscriber = launch {
             delay(100) // start after 100ms
-            log("${spaces(4)}Collector1 subscribes...")
+            log("${spaces(4)}Subscriber1 subscribes...")
             sharedFlow.test {
                 while (true) {
-                    log("${spaces(4)}Collector1: got ${awaitItem()}")
+                    log("${spaces(4)}Subscriber1: ${awaitItem()}")
                     delay(500)
                 }
             }
-        }.onCompletion("SlowCollector done")
+        }.onCompletion("slowSubscriber done")
 
-        val fastCollector = launch {
+        val fastSubscriber = launch {
             delay(300) // start after 300ms
-            println("${spaces(8)}Collector2 subscribes...")
+            log("${spaces(8)}Subscriber2 subscribes...")
             sharedFlow.test {
                 while (true) {
-                    log("${spaces(8)}Collector2: got ${awaitItem()}")
+                    log("${spaces(8)}Subscriber2: ${awaitItem()}")
                 }
             }
-        }.onCompletion("FastCollector done")
+        }.onCompletion("fastSubscriber done")
 
         delay(3000)
-        slowCollector.cancelAndJoin()
-        fastCollector.cancelAndJoin()
+        slowSubscriber.cancelAndJoin()
+        fastSubscriber.cancelAndJoin()
     }
 }

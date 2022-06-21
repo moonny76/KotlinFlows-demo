@@ -6,8 +6,6 @@ import org.scarlet.flows.basics.DataSource.genToken
 import org.scarlet.flows.basics.DataSource.tokens
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.test.currentTime
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.scarlet.util.log
@@ -32,7 +30,6 @@ class StateFlow_TurbineTest {
             repeat(4) {
                 log("received value = ${awaitItem()}")
             }
-            log(cancelAndConsumeRemainingEvents())
         }
     }
 
@@ -77,9 +74,9 @@ class StateFlow_TurbineTest {
     @Test
     fun `StateFlow - realistic test`() = runTest {
         // Arrange (Given)
-        val gen = launch {
+        val publisher = launch {
             genToken() // infinite flow
-        }.onCompletion("Emitter")
+        }.onCompletion("Publisher")
 
         // Act (When)
         tokens.test {
@@ -88,30 +85,23 @@ class StateFlow_TurbineTest {
                 log(awaitItem())
             }
         }
-        gen.cancelAndJoin() // Must use this line.
+
+        publisher.cancelAndJoin() // Must use this line.
     }
 
     @Test
     fun `suspending function version - stateIn`() = runTest {
         val payload = 0
         val given: StateFlow<Int> = flow {
-            log("here1")
             emit(payload)
-            log("here2, $currentTime")
             delay(1000) // what if to move this line before first emit?
             emit(payload + 1)
-            log("here3, $currentTime")
         }.stateIn(scope = this)
-
-        log("here4, $currentTime")
 
         launch {
             given.test {
-                log("here5")
                 log(awaitItem())
-                log("here6")
                 delay(1000)
-                log("here7, $currentTime")
                 log(awaitItem())
             }
         }
@@ -121,22 +111,17 @@ class StateFlow_TurbineTest {
     fun `stateIn demo`() = runTest {
         val payload = 0
         val given: StateFlow<Int?> = flow {
-            log("started ...")
             emit(payload)
-            log("finished ...")
         }.stateIn(
             scope = this,
-            started = SharingStarted.Lazily, // try Eagerly
-//            started = SharingStarted.WhileSubscribed(),
+//            started = SharingStarted.Lazily, // try Eagerly
+            started = SharingStarted.WhileSubscribed(),
             initialValue = null
-        ).apply {
-            runCurrent()
-        }
+        )
 
-        log("here")
+        delay(500)
 
         given.test {
-            log("in test")
             log(awaitItem())
             log(awaitItem())
         }

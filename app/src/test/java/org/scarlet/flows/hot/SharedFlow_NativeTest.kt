@@ -52,65 +52,63 @@ class SharedFlow_NativeTest {
             emptyFlow.collect {
                 log("try collect ...")
             }
-        }
+        }.join()
 
-        log("Done.")
+        log("Unreachable Code")
     }
 
     @Test
     fun `replay - SharedFlow`() = runTest {
         val sharedFlow = MutableSharedFlow<Int>(replay = 1) // replay = 1, then OK
 
-        sharedFlow.emit(1)
+        sharedFlow.emit(1)  // will be replayed
 
         val value = sharedFlow.first()
-        assertThat(value).isEqualTo(1).also {
-            log("Done.")
-        }
+        assertThat(value).isEqualTo(1)
 
+        log("Done.")
     }
 
     /**
      * `emit` is suspended if there exist any subscribed collectors which are not ready to collect yet.
      */
     @Test
-    fun `collectors start to receive data after subscription - no replay`() = runBlocking {
+    fun `subscribers start to receive data after subscription`() = runBlocking {
         val sharedFlow = MutableSharedFlow<Int>( // default config.
             replay = 0,
             extraBufferCapacity = 0,
             onBufferOverflow = BufferOverflow.SUSPEND
         )
 
-        // Emitter
+        // Publisher
         launch {
             repeat(5) {
-                log("# subscribers = ${sharedFlow.subscriptionCount.value}")
-                log("Emitting: $it")
+                log("Emitting: $it (# subscribers = ${sharedFlow.subscriptionCount.value})")
                 sharedFlow.emit(it)
                 log("Emit: $it done")
                 delay(200)
             }
-        }.onCompletion("Emitter done")
+        }.onCompletion("Publisher done")
 
-        val slowCollector = launch {
+        val slowSubscriber = launch {
             delay(100) // start after 100ms
-            log("${spaces(4)}Collector1 subscribes...")
+            log("${spaces(4)}Subscriber1 subscribes...")
             sharedFlow.collect {
-                log("${spaces(4)}Collector1: $it")
+                log("${spaces(4)}Subscriber1: $it")
                 delay(500) // <----------------- Slow!!!!!!!!!!!
             }
-        }.onCompletion("Collector1 done")
+        }.onCompletion("slowSubscriber done")
 
-        val fastCollector = launch {
+        val fastSubscriber = launch {
             delay(300) // start after 300ms
-            log("${spaces(8)}Collector2 subscribes...")
+            log("${spaces(8)}Subscriber2 subscribes...")
             sharedFlow.collect {
-                log("${spaces(8)}Collector2: $it")
+                log("${spaces(8)}Subscriber2: $it")
             }
-        }.onCompletion("Collector2 done")
+        }.onCompletion("fastSubscriber done")
 
         delay(3000)
-        slowCollector.cancelAndJoin()
-        fastCollector.cancelAndJoin()
+        slowSubscriber.cancelAndJoin()
+        fastSubscriber.cancelAndJoin()
     }
 }
