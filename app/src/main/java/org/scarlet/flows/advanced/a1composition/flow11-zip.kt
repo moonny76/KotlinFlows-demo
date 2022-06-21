@@ -29,13 +29,13 @@ object Zip_Demo2 {
         val numbers = (1..10).asFlow().map {
             delay(1000)
             it
-        } // numbers 1..3
+        }
 
         val strings = flowOf("one", "two", "three")
             .map {
                 delay(500)
                 it
-            }// strings
+            }
 
         numbers.zip(strings) { a, b -> "$a -> $b" }
             .collect { log(it) }

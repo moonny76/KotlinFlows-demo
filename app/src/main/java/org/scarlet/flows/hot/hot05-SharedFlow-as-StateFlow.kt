@@ -85,7 +85,6 @@ object SharedFlow_As_StateFlow {
         launch {
             for (i in 0..5) {
                 _sharedFlow.emit(Resource.Success(i))
-//                _stateFlow.value = Resource.Success(i)
                 delay(200)
             }
         }

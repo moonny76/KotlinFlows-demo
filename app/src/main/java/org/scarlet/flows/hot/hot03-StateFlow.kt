@@ -16,6 +16,7 @@ import org.scarlet.util.log
 
 object StateFlow_Hot_and_Conflation {
 
+    // State flow must have an initial value.
     private val stateFlow = MutableStateFlow<Resource<Int>>(Resource.Empty)
 
     /**
@@ -26,16 +27,17 @@ object StateFlow_Hot_and_Conflation {
 
         val subscriber = launch {
 //            delay(450) // 1. Uncomment to check to see whether initial value collected or not
-            log("${spaces(4)}Subscriber: Subscribe to stateflow")
+            log("${spaces(4)}Subscriber: subscribe to stateflow")
             stateFlow.collect {
                 log("${spaces(4)}Subscriber: $it")
-                delay(100) // 2. change to 100 (fast subscriber), 200, 400 (slow subscriber)
+                delay(100) // 2. change to 100 (fast subscriber), 400 (slow subscriber)
             }
         }
 
         // Populate state flow
         launch {
-            for (i in 0..5) {
+            log("Publisher: starts")
+            for (i in 0..4) {
                 log("Emit $i")
                 stateFlow.value = Resource.Success(i)
                 delay(200)
@@ -59,8 +61,8 @@ object StateFlow_Hot_and_Late_Collector {
 
         // Populate state flow
         launch {
-            for (i in 0..5) {
-                log("Emit $i")
+            for (i in 0..4) {
+                log("Emit $i (#subscribers = ${stateFlow.subscriptionCount.value})")
                 stateFlow.value = Resource.Success(i)
                 delay(100)
             }
@@ -99,13 +101,13 @@ object StateFlow_Multiple_Subscribers {
             log("${spaces(12)}Subscriber2 subscribes")
             stateFlow.collect {
                 log("${spaces(12)}subscriber2: $it")
-                delay(400) // Change 100, 400
+                delay(100) // Change 100, 400
             }
         }
 
         // Populate stateflow
         launch {
-            for (i in 0..5) {
+            for (i in 0..4) {
                 log("Emitter: $i")
                 stateFlow.value = Resource.Success(i)
                 delay(200)

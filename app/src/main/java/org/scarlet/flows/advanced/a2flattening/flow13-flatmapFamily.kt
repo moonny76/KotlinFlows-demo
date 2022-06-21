@@ -1,6 +1,5 @@
 package org.scarlet.flows.advanced.a2flattening
 
-import org.scarlet.util.delim
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -14,6 +13,7 @@ import org.scarlet.util.log
  * Flows represent asynchronously received sequences of values, so it is quite
  * easy to get in a situation where each value triggers a request for another
  * sequence of values.
+ *
  * For example, we can have the following function that returns a flow of two
  * strings 500 ms apart:
  *
@@ -35,10 +35,10 @@ import org.scarlet.util.log
  * as such, there is a family of flattening operators on flows.
  */
 
-fun requestFlow(i: Int, timeMs: Long): Flow<String> = flow {
-    emit("$i: First")
+fun requestFlow(i: Int, timeMs: Long) = flow {
+    emit(i to "First")
     delay(timeMs)
-    emit("$i: Second")
+    emit(i to "Second")
 }
 
 /**
@@ -60,6 +60,13 @@ object flatmapConcat_Demo {
             .collect { value -> // collect and print
                 log("$value at ${System.currentTimeMillis() - startTime} ms from start")
             }
+
+        log(
+            (1..3).asFlow()
+            .onEach { delay(100) } // a number every 100 ms.
+            .flatMapConcat { requestFlow(it, 200) }
+            .toList()
+        )
     }
 }
 
@@ -88,6 +95,13 @@ object flatMapMerge_Demo {
             .collect { value -> // collect and print
                 log("$value at ${System.currentTimeMillis() - startTime} ms from start")
             }
+
+        log(
+            (1..3).asFlow()
+                .onEach { delay(100) } // a number every 100 ms.
+                .flatMapMerge { requestFlow(it, 200) }
+                .toList()
+        )
     }
 }
 
@@ -108,23 +122,20 @@ object flatMapMerge_Demo {
 object flatMapLatest_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        var startTime = System.currentTimeMillis()
-        (1..3).asFlow()
-            .onEach { delay(100) } // a number every 100 ms
-            .flatMapConcat { requestFlow(it, 200) }
-            .collect { value -> // collect and print
-                log("$value at ${System.currentTimeMillis() - startTime} ms from start")
-            }
-
-        delim()
-
-        startTime = System.currentTimeMillis()
+        val startTime = System.currentTimeMillis()
         (1..3).asFlow()
             .onEach { delay(100) } // a number every 100 ms
             .flatMapLatest { requestFlow(it, 200) }
             .collect { value -> // collect and print
                 log("$value at ${System.currentTimeMillis() - startTime} ms from start")
             }
+
+        log(
+            (1..3).asFlow()
+                .onEach { delay(100) } // a number every 100 ms.
+                .flatMapLatest { requestFlow(it, 200) }
+                .toList()
+        )
     }
 }
 

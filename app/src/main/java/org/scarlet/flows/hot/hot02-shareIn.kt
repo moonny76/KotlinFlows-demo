@@ -1,11 +1,8 @@
 package org.scarlet.flows.hot
 
-import org.scarlet.util.Resource
-import org.scarlet.util.spaces
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.scarlet.util.log
-import org.scarlet.util.onCompletion
+import org.scarlet.util.*
 
 /**
  * Convert cold flow to hot flow.
@@ -19,15 +16,16 @@ object sharedIn_Demo {
 
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
-        val coldFlow: Flow<Resource<Int>> = flow {
+        val coldFlow: Flow<Int> = flow {
             for (i in 0..5) {
-                emit(Resource.Success(i))
+                emit(i)
+                delim()
                 log("Emitting $i done")
                 delay(1000)
             }
         }
 
-        val sharedFlow: SharedFlow<Resource<Int>> = coldFlow.shareIn(
+        val sharedFlow: SharedFlow<Int> = coldFlow.shareIn(
             scope = this,
             started = SharingStarted.Eagerly, // Eagerly, Lazily, WhileSubscribed
             replay = 0 // default
@@ -45,18 +43,18 @@ object sharedIn_Demo {
         delay(1000) // second subscriber joins 2500ms later
 
         val subscriber2 = launch {
-            log("${spaces(4)}Subscriber2 subscribes")
+            log("${spaces(8)}Subscriber2 subscribes")
             sharedFlow.collect {
-                log("${spaces(4)}Subscriber 2: $it")
+                log("${spaces(8)}Subscriber 2: $it")
             }
         }.onCompletion("Subscriber2")
 
         delay(1000) // third subscriber joins 3500ms later
 
         val subscriber3 = launch {
-            log("${spaces(4)}Subscriber3 subscribes")
+            log("${spaces(12)}Subscriber3 subscribes")
             sharedFlow.collect {
-                log("${spaces(4)}Subscriber 3: $it")
+                log("${spaces(12)}Subscriber 3: $it")
             }
         }.onCompletion("Subscriber3")
 
@@ -70,15 +68,16 @@ object sharedIn_Eager {
 
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
-        val coldFlow: Flow<Resource<Int>> = flow {
+        val coldFlow: Flow<Int> = flow {
             for (i in 0..5) {
-                emit(Resource.Success(i))
+                emit(i)
+                delim()
                 log("Emitting $i done")
                 delay(50)
             }
         }
 
-        val sharedFlow: SharedFlow<Resource<Int>> = coldFlow.shareIn(
+        val sharedFlow: SharedFlow<Int> = coldFlow.shareIn(
             scope = this,
             /**
              * Sharing is started immediately and never stops.
@@ -105,15 +104,16 @@ object shareIn_Lazy {
 
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
-        val coldFlow: Flow<Resource<Int>> = flow {
+        val coldFlow: Flow<Int> = flow {
             for (i in 0..5) {
-                emit(Resource.Success(i))
+                emit(i)
+                delim()
                 log("Emitting $i done")
                 delay(20)
             }
         }
 
-        val sharedFlow: SharedFlow<Resource<Int>> = coldFlow.shareIn(
+        val sharedFlow: SharedFlow<Int> = coldFlow.shareIn(
             scope = this,
             /**
              * Sharing is started when the first subscriber appears and never stops.
@@ -142,8 +142,8 @@ object SharedFlow_WhileSubscribed {
     fun main(args: Array<String>) = runBlocking {
         val flow = flowOf("A", "B", "C", "D")
             .onStart { log("Flow started") }
-            .onCompletion { log("Flow finished") }
             .onEach { delay(1000) }
+            .onCompletion { log("Flow finished") }
 
         val sharedFlow = flow.shareIn(
             scope = this,
@@ -157,21 +157,29 @@ object SharedFlow_WhileSubscribed {
 
         delay(3000)
 
-        launch {
-            log("subscriber1 join: ${sharedFlow.first()}")
-        }.onCompletion("Subscriber1")
+        val subscriber1 = launch {
+            log("${spaces(4)}Subscriber1 subscribes")
+            sharedFlow.collect {
+                log("${spaces(4)}subscriber1: $it")
+            }
+        }.onCompletion("${spaces(4)}Subscriber1 leaves")
 
         launch {
-            log("subscriber2 join: ${sharedFlow.take(2).toList()}")
-        }.onCompletion("Subscriber2")
+            delay(2000)
+            log("${spaces(8)}Subscriber2 subscribes")
+            log("${spaces(8)}subscriber2: ${sharedFlow.take(2).toList()}")
+        }.onCompletion("${spaces(8)}Subscriber2 leaves")
 
         delay(3000)
+        subscriber1.cancelAndJoin()
 
         launch {
-            log("subscriber3 join: ${sharedFlow.first()}")
-        }.onCompletion("Subscriber3")
+            delay(1000)
+            log("${spaces(12)}Subscriber3 subscribes")
+            log("${spaces(12)}subscriber3: ${sharedFlow.first()}")
+        }.onCompletion("${spaces(12)}Subscriber3 leaves")
 
-        delay(3000)
+        delay(5000)
         coroutineContext.job.cancelChildren()
     }
 }

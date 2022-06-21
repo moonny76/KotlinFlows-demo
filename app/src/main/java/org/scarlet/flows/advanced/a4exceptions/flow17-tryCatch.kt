@@ -24,7 +24,7 @@ object TryCatch_Demo1 {
     fun main(args: Array<String>) = runBlocking {
         try {
             dataFlow().collect { value ->
-                check(value <= 1) { "Collected $value" }
+                check(value <= 1) { "Crashed on $value" }
                 log(value)
             }
         } catch (ex: Throwable) {
@@ -35,16 +35,14 @@ object TryCatch_Demo1 {
 
 object TryCatch_Demo2 {
 
-    fun simple(): Flow<String> = dataFlow()
-        .map { value ->
-            check(value <= 1) { "Crashed on $value" }
-            "string $value"
-        }
-
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
-            simple().collect { value -> log(value) }
+            dataFlow()
+                .map { value ->
+                    check(value <= 1) { "Crashed on $value" }
+                    "string $value"
+                }.collect { value -> log(value) }
         } catch (ex: Throwable) {
             log("Caught $ex")
         }

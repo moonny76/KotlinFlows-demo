@@ -60,28 +60,19 @@ object ContextPreservation_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
-        demoOne()
+        launch {
+            log("Collector1*: $coroutineContext")
+            simple("Collector1").collect { value ->
+                log("Collector1: $value")
+            }
+        }.join()
+
         delim()
-        demoTwo()
-
-        log("Done")
-    }
-
-    private suspend fun demoOne() = coroutineScope {
-        launch {
-            log("collector: collect")
-            simple("collector").collect { value -> log("collector: $value") }
-        }
-    }
-
-    private suspend fun demoTwo() = coroutineScope {
-        launch {
-            simple("Collector1").collect { value -> log("Collector1: $value") }
-        }
 
         launch(Dispatchers.Default) {
+            log("Collector2: $coroutineContext")
             simple("Collector2").collect { value -> log("Collector2: $value") }
-        }
+        }.join()
     }
 
 }

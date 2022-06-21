@@ -37,7 +37,7 @@ object SimpleFlow {
 }
 
 @ExperimentalStdlibApi
-object List_Demo1 {
+object List_Blocking_Build_Demo1 {
 
     private fun compute(i: String): Result<String> {
         Thread.sleep(1000)
@@ -61,7 +61,7 @@ object List_Demo1 {
     }
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         // Launch a concurrent coroutine to check if the main thread is blocked
         launch {
             for (k in 1..3) {
@@ -76,11 +76,11 @@ object List_Demo1 {
             foo = foo()
         }
         log("time elapsed for list request = $elapsedTime")
+        delim()
 
         /**
          * List processing can be done only after list construction is finished
          */
-        delim()
 
         foo.forEach {
             log("[Main] process next = $it")
@@ -90,7 +90,7 @@ object List_Demo1 {
 }
 
 @ExperimentalStdlibApi
-object List_Demo2 {
+object List_NonBlocking_Build_Demo {
 
     private suspend fun compute(i: String): Result<String> {
         delay(1000)
@@ -129,11 +129,11 @@ object List_Demo2 {
             foo = foo()
         }
         log("time elapsed for list construction = $elapsedTime")
+        delim()
 
         /**
          * List processing can be done only after list construction is finished
          */
-        delim()
 
         foo.forEach {
             log("[Main] process next = $it")
@@ -170,7 +170,7 @@ object Sequence_Demo {
     }
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
+    fun main(args: Array<String>) = runBlocking {
         // Launch a concurrent coroutine to check if the main thread is blocked
         launch {
             for (k in 1..3) {
@@ -187,9 +187,14 @@ object Sequence_Demo {
         log("time elapsed for request = $elapsedTime")
         delim()
 
-        foo?.forEach {
-            log("[Main] request next = $it")
+        val iterator = foo?.iterator()
+
+        log("[Main] request next")
+        while (iterator?.hasNext() == true) {
+            val next = iterator.next()
+            log("[Main] process next = $next")
             delay(500)
+            log("[Main] request next")
         }
     }
 }
@@ -230,10 +235,11 @@ object FlowDemo {
             foo = foo()
         }
         log("time elapsed for flow construction = $elapsedTime")
+        delim()
 
         // collect the flow
         foo.collect { value ->
-            log("[Main] request next = $value")
+            log("[Main] process next = $value")
             delay(500)
         }
     }
@@ -262,13 +268,11 @@ object Flow_Builders {
 
         delim()
 
-        val flow = flow {
+        flow {
             emit(1)
             emit(2)
             emitAll((100..110).asFlow())
-        }
-
-        flow.collect { log(it) }
+        }.collect { log(it) }
     }
 
 }

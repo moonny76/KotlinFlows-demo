@@ -6,13 +6,14 @@ import org.scarlet.util.log
 
 object TryCatch_Review {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         try {
             dataFlowThrow().collect { value -> updateUI(value) }
         } catch (ex: Throwable) {
             showErrorMessage(ex)
+        } finally {
+            log("Done.")
         }
-        log("Done.")
     }
 }
 
@@ -44,7 +45,7 @@ private fun <T> Flow<T>.handleErrors(): Flow<T> = flow {
 object HandleException_Inside_Flow {
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         dataFlowThrow()
             .handleErrors()
             .collect { value -> updateUI(value) }
@@ -59,13 +60,16 @@ object HandleException_Inside_Flow {
  */
 object ExceptionThrown_As_Expected {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         try {
-            dataFlow().collect { error("Failed") }
+            dataFlow().collect {
+                throw IllegalStateException("Failed")
+            }
         } catch (e: Throwable) {
             showErrorMessage(e)
+        } finally {
+            log("Done.")
         }
-        log("Done.")
     }
 }
 
@@ -86,10 +90,12 @@ object ExceptionThrown_As_Expected {
 object Exception_Swallowed {
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         dataFlow()
             .handleErrors()
-            .collect { error("Failed") }
+            .collect {
+                throw IllegalStateException("Failed")
+            }
 
         log("Done.")
     }

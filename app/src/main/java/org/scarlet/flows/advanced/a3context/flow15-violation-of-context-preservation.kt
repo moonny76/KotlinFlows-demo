@@ -1,6 +1,5 @@
 package org.scarlet.flows.advanced.a3context
 
-import org.scarlet.util.coroutineInfo
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
@@ -30,7 +29,7 @@ object ViolationOfContextPreservation {
     // coroutineScope is OK
     private fun okFlow(): Flow<Int> = flow {
         coroutineScope {
-            log("context in flow = ${currentCoroutineContext()}")
+            log("Flow: ${currentCoroutineContext()}")
             emit(async { delay(100); 42 }.await())
             emit(async { delay(100); 24 }.await())
         }

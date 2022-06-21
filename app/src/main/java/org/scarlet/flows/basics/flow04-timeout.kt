@@ -16,6 +16,8 @@ import org.scarlet.util.onCompletion
  */
 
 private fun conFlow(): Flow<Int> = flow {
+    currentCoroutineContext().job.onCompletion("conFlow")
+
     repeat(Int.MAX_VALUE) {
         try {
             log("Emitting $it")
@@ -34,11 +36,10 @@ object Flow_Timeout1 {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
+        coroutineContext.job.onCompletion("runBlocking")
 
         withTimeoutOrNull(3000) {
-            coroutineContext.job.invokeOnCompletion { ex ->
-                log("Collector completed: isCancelled = ${coroutineContext.job.isCancelled}, ex = $ex")
-            }
+            coroutineContext.job.onCompletion("withTimeoutOrNull")
             conFlow().collect { value -> log(value) }
         }
 

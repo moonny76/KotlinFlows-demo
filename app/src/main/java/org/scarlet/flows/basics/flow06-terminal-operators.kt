@@ -22,7 +22,7 @@ private val myFlow = flow {
     }
 }
 
-object ToList_first_last_Demo {
+object ToList_first_last_Operators {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
@@ -43,12 +43,12 @@ object ToList_first_last_Demo {
     }
 }
 
-object FirstOrNull_LastOrNull_Demo {
+object FirstOrNull_LastOrNull_Operators {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
-        log(emptyFlow<Int>().firstOrNull()) // lastOrNull
-        log(emptyFlow<Int>().lastOrNull()) // lastOrNull
+        log(emptyFlow<Int>().firstOrNull())
+        log(emptyFlow<Int>().lastOrNull())
         log((1..100).asFlow().first { it % 5 == 0 }) // flow cannot be cancelled!!
 
         delim()
@@ -59,7 +59,7 @@ object FirstOrNull_LastOrNull_Demo {
     }
 }
 
-object Single_Demo {
+object Single_Operator {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
@@ -97,7 +97,7 @@ object Single_Demo {
     }
 }
 
-object Reduce_Fold_Demo {
+object Reduce_Fold_Operators {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val sum = (1..100).asFlow()
@@ -109,6 +109,11 @@ object Reduce_Fold_Demo {
             .map { it * it }
             .fold(100) { acc, a -> acc + a }
         log(total)
+
+        /**
+         * Exercises: Create a list of squares of integers from 1 to 100 by using `fold`.
+         */
+
     }
 }
 

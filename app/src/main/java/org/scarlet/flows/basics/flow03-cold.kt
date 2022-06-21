@@ -2,6 +2,7 @@ package org.scarlet.flows.basics
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.delim
 import org.scarlet.util.log
 
 /**
@@ -19,7 +20,7 @@ fun simple(): Flow<Int> = flow {
     }
 }
 
-object ColdFlow_Demo1 {
+object ColdFlow_No_Terminal_Operator {
     @JvmStatic
     fun main(args: Array<String>) {
         log("Calling simple function...")
@@ -28,16 +29,17 @@ object ColdFlow_Demo1 {
     }
 }
 
-object ColdFlow_Demo2 {
+object ColdFlow_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        log("Calling collect ...")
         val flow = simple()
+
+        log("Calling collect ...")
         flow.collect { value -> log(value) }
     }
 }
 
-object ColdFlow_Demo3 {
+object ColdFlow_Multiple_Collect_Demo1 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val flow = simple()
@@ -45,12 +47,14 @@ object ColdFlow_Demo3 {
         log("Calling collect first time ...")
         flow.collect { value -> log(value) }
 
+        delim()
+
         log("Calling collect second time ...")
         flow.collect { value -> log(value) }
     }
 }
 
-object ColdFlow_Demo4 {
+object ColdFlow_Multiple_Collect_Demo2 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val simple = flow {

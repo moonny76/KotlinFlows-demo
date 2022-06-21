@@ -13,7 +13,6 @@ fun dataFlow(): Flow<Int> = flow {
 
 fun dataFlowThrow() = flow {
     emit(1)
-    emit(2)
     throw RuntimeException("oops")
 }
 

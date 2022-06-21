@@ -21,13 +21,11 @@ import org.scarlet.util.log
 object FlowOn_Demo {
 
     private fun simple() = flow {
-        log(currentCoroutineContext())
+        log("Flow: ${currentCoroutineContext()}")
 
-        for (i in 1..3) {
-            delay(100) // pretend we are computing it in CPU-consuming way
-            log("Emitting $i")
-            emit(i)
-        }
+        delay(100) // pretend we are computing it in CPU-consuming way
+        log("Emitting 42")
+        emit(42)
     }
 
     @JvmStatic
@@ -35,6 +33,7 @@ object FlowOn_Demo {
         simple()
             .flowOn(Dispatchers.Default)
             .collect { value ->
+                log("Collector: ${currentCoroutineContext()}")
                 log("Collected $value")
             }
     }
@@ -43,12 +42,14 @@ object FlowOn_Demo {
 /**
  * Channel Flow
  */
+@DelicateCoroutinesApi
 @ExperimentalCoroutinesApi
 object ChannelFlow_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
         myFlow().collect { value ->
+            log("Collector: ${currentCoroutineContext()}")
             log(value)
         }
     }
@@ -57,19 +58,21 @@ object ChannelFlow_Demo {
         log("channelFlow context = ${currentCoroutineContext()}")
 
         launch(CoroutineName("Child1") + Dispatchers.Default) {
-            log("${currentCoroutineContext()}")
-            for (i in 1..3) {
-                delay(500)
-                send(i)
-            }
+            log("Child1: ${currentCoroutineContext()}")
+            delay(500)
+            send(42)
         }
 
         launch(CoroutineName("Child2")) {
-            log("${currentCoroutineContext()}")
-            for (i in 10..12) {
-                delay(500)
-                send(i)
-            }
+            log("Child2: ${currentCoroutineContext()}")
+            delay(500)
+            send(1569)
+        }
+
+        withContext(newSingleThreadContext("myThread")) {
+            log("WithContext: ${currentCoroutineContext()}")
+            delay(1000)
+            send(777)
         }
     }
 

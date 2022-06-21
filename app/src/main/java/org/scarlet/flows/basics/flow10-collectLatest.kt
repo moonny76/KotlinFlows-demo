@@ -18,7 +18,6 @@ import kotlin.system.*
 object CollectLatestDemo {
 
     fun simple(): Flow<Int> = flow {
-//        log("Emit: $i")
         emit(1)
         delay(30)
         emit(2)
@@ -35,7 +34,7 @@ object CollectLatestDemo {
                 .collectLatest { value -> // cancel & restart on the latest value
                     currentCoroutineContext().job.onCompletion("collectLatest: value = $value")
 
-                    delay(50)  // pretend we are processing it for 150 ms
+                    delay(50)  // pretend we are processing it for 50 ms
                     log("\t$value collected")
                 }
         }

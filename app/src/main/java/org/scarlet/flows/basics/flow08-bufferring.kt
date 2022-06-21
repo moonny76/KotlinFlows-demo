@@ -11,8 +11,8 @@ import kotlin.system.*
 
 object Buffering {
     fun simple(): Flow<Int> = flow {
-        log(currentCoroutineContext())
-        for (i in 1..3) {
+        log("Flow: ${currentCoroutineContext()}")
+        for (i in 1..5) {
             delay(100) // pretend we are asynchronously waiting 100 ms
             emit(i)
         }
@@ -24,9 +24,11 @@ object Buffering {
             simple()
 //                .buffer()
                 .collect { value ->
+                    if (value == 1) {
+                        log("Collector: ${currentCoroutineContext()}")
+                    }
                     log(value)
-                    log(currentCoroutineContext())
-                    delay(100) // pretend we are processing it for 300 ms
+                    delay(300) // pretend we are processing it for 300 ms
                 }
         }
         log("Collected in $time ms")

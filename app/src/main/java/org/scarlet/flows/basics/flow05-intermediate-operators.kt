@@ -18,7 +18,7 @@ suspend fun performRequest(request: Int): String {
     return "response $request"
 }
 
-object Map_Demo {
+object Map_Operator {
     private fun intermediateOp() = runBlocking {
         (1..3).asFlow() // a flow of requests
             .map(::performRequest)
@@ -39,7 +39,7 @@ object Map_Demo {
  *  we can emit arbitrary values an arbitrary number of times.
  */
 
-object Transform_Demo {
+object Transform_Operator {
     data class Person(val name: String, val age: Int)
 
     private fun transformOp() = runBlocking {
@@ -72,7 +72,7 @@ object Transform_Demo {
  * blocks) operate normally in case of cancellation:
  */
 
-object Take_Demo {
+object Take_Operator {
 
     // DO NOT CATCH EXCEPTIONS INSIDE FLOW BODY!!
     private fun numbers(): Flow<Int> = flow {

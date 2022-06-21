@@ -10,7 +10,7 @@ import java.lang.RuntimeException
  * Flow cancellation checks:
  *
  * For convenience, the flow builder performs additional `ensureActive` checks
- * for cancellation on each emitted value. It means that a busy loop emitting
+ * for cancellation "on each emitted value". It means that a busy loop emitting
  * from a `flow { ... }` is cancellable:
  */
 
@@ -43,6 +43,10 @@ object FlowCancellation {
  */
 object FailedCancellation_due_to_UncooperativeFlow {
 
+    /*
+     * All numbers from 1 to 5 are collected and cancellation gets detected only before
+     * return from runBlocking.
+     */
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         coroutineContext.job.onCompletion("runBlocking")
@@ -52,11 +56,6 @@ object FailedCancellation_due_to_UncooperativeFlow {
             log(value)
         }
     }
-
-    /*
-     * All numbers from 1 to 5 are collected and cancellation gets detected only before
-     * return from runBlocking.
-     */
 }
 
 /**

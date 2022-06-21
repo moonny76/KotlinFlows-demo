@@ -26,15 +26,13 @@ import org.scarlet.util.log
  */
 
 object ExceptionTransparencyDemo1 {
-    fun simple(): Flow<String> =
+
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking {
         dataFlow().map { value ->
             check(value <= 1) { "Crashed on $value" }
             "string $value"
         }
-
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking {
-        simple()
             .catch { exception -> emit("Caught ... $exception") } // emit on exception
             .collect { value -> log(value) }
     }
@@ -58,7 +56,9 @@ object CatchOperatorCatchesOnlyUpstreamExceptions {
         try {
             dataFlow()
                 .handleErrors() // inline this
-                .collect { error("Failed") }
+                .collect {
+                    throw IllegalStateException("Failed")
+                }
         } catch (ex: Exception) {
             log("Exception $ex caught .. outside collect")
         }
@@ -80,9 +80,10 @@ object DeclarativeExceptionHandling {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         dataFlowThrow()
-            .onEach { value -> updateUI(value) } // move body of `collect` here
             .catch { e -> showErrorMessage(e) }
-            .collect()
+            .collect { value ->
+                updateUI(value) // move body of `collect` to `onEach`
+            }
 
         log("Done.")
     }
@@ -100,10 +101,15 @@ object ExceptionHandlingTogetherWith_launchIn {
     fun main(args: Array<String>) = runBlocking{
         val scope = CoroutineScope(Job())
 
-        val job = dataFlowThrow()
-            .onEach { value -> updateUI(value) }
-            .catch { e -> showErrorMessage(e) }
-            .launchIn(scope)
+        /**
+         * Combine `launch` and `collect()` using `launchIn()`
+         */
+        val job = scope.launch {
+            dataFlowThrow()
+                .onEach { value -> updateUI(value) }
+                .catch { e -> showErrorMessage(e) }
+                .collect()
+        }
 
         job.join()
 
