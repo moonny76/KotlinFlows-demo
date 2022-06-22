@@ -18,11 +18,7 @@ object ObserverPattern {
 object RealFlowTypes {
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
-        val flow = flow {
-            emit(1)
-            emit(2)
-            emit(3)
-        }
+        val flow = (1..3).asFlow()
 
         flow.map {
             it to it * it
