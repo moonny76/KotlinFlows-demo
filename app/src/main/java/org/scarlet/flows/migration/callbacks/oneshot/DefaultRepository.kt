@@ -11,7 +11,7 @@ import retrofit2.Response
 class DefaultRepository(private val recipeApi: RecipeApi) : Repository {
 
     @Deprecated(
-        "Use the suspend equivalent -> suspend fun getRecipe()",
+        message = "Use the suspend equivalent -> suspend fun getRecipe()",
         replaceWith = ReplaceWith("getRecipe(recipeId)")
     )
     override fun getRecipeCallback(recipeId: String, callback: RecipeCallback) {

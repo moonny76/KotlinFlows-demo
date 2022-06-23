@@ -19,7 +19,7 @@ data class LocationRequest(
 
 interface LocationService {
     @Deprecated(
-        "Obsolete API - use requestLocationFlow instead",
+        message = "Obsolete API - use requestLocationFlow instead",
         replaceWith = ReplaceWith("requestLocationFlow(location, timeMs)")
     )
     fun requestLocationUpdates(request: LocationRequest, callback: LocationCallback)

@@ -40,7 +40,7 @@ object FanOut {
 
 object FanIn {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         val channel = Channel<String>()
 
         // Multiple producers

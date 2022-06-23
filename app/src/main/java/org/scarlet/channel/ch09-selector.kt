@@ -3,10 +3,7 @@ package org.scarlet.channel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.selects.select
-import org.scarlet.channel.Selecting_from_channels.buzz
-import org.scarlet.channel.Selecting_from_channels.fizz
 import org.scarlet.util.log
-import kotlin.random.Random
 
 /**
  * `select` expression makes it possible to await multiple suspending functions
@@ -195,34 +192,34 @@ object MixedChannels {
     private suspend fun selectFizzBuzz(fizz: SendChannel<String>, buzz: ReceiveChannel<String>) {
         val word = "quick brown fox jumps over the lazy dog"
 
-        select { // this select expression does not produce any result
+        select {
             fizz.onSend(word) {
-                log("fizz: -> sent")
+                log("To fizz: -> sent: $word")
             }
             buzz.onReceive { value ->
-                log("buzz -> '$value'")
+                log("From buzz -> '$value'")
             }
         }
     }
 
     private fun CoroutineScope.fizz(): SendChannel<String> = actor {
         while (true) { // receives every 300 ms
-            log(receive())
-            delay(2000)
+            receive()
+            delay(300)
         }
     }
 
     private fun CoroutineScope.buzz(): ReceiveChannel<String> = produce {
         while (true) { // sends "Buzz!" every 500 ms
             send("Buzz!")
-            delay(1000)
+            delay(500)
         }
     }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
-        val fizz = fizz()
-        val buzz = buzz()
+        val fizz: SendChannel<String> = fizz()
+        val buzz: ReceiveChannel<String> = buzz()
 
         repeat(7) {
             selectFizzBuzz(fizz, buzz)
