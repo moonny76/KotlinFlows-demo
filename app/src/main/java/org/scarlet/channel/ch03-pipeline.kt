@@ -1,10 +1,50 @@
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
+
+object ChannelPipelines_Madeup_Demo {
+    val channel1 = Channel<Int>()
+    val channel2 = Channel<Double>()
+    val channel3 = Channel<Pair<Double, Double>>()
+
+    suspend fun produceNumbers() {
+        var x = 1
+        while (true) channel1.send(x++) // infinite stream of integers starting from 1
+    }
+
+    suspend fun square() {
+        for (x in channel1) channel2.send((x * x).toDouble())
+    }
+
+    suspend fun pair() {
+        for (x in channel2) channel3.send(Pair(x, x))
+    }
+
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking {
+        launch {
+            produceNumbers()
+        }
+        launch {
+            square()
+        }
+        launch {
+            pair()
+        }
+
+        repeat(5) {
+            log(channel3.receive()) // print first five
+        }
+
+        log("Done!") // we are done
+        coroutineContext.cancelChildren() // cancel children coroutines
+    }
+}
 
 @ExperimentalCoroutinesApi
 object ChannelPipelines {
@@ -63,3 +103,4 @@ object PipelineExample_Primes {
         coroutineContext.cancelChildren() // cancel all children to let main finish
     }
 }
+
