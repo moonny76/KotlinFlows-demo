@@ -9,6 +9,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import org.scarlet.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import org.scarlet.flows.model.Recipe
 import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
 @ExperimentalCoroutinesApi
@@ -100,5 +101,25 @@ class SafeCollectActivity : AppCompatActivity() {
 
     companion object {
         const val TAG = "Flow"
+    }
+}
+
+class FakeRemoteDataSource {
+
+    private val mRecipes = mutableMapOf<String, Recipe>()
+
+    fun searchRecipes(query: String): List<Recipe> {
+        Thread.sleep(FAKE_NETWORK_DELAY)
+        return mRecipes.values.toList()
+    }
+
+    fun addRecipes(recipes: List<Recipe>) {
+        recipes.forEach { recipe ->
+            mRecipes[recipe.recipeId] = recipe.copy()
+        }
+    }
+
+    companion object {
+        const val FAKE_NETWORK_DELAY = 3_000L
     }
 }
