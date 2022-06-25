@@ -15,7 +15,6 @@ class ViewModelLive(
 ) : ViewModel() {
 
     val recipes: LiveData<Resource<List<Recipe>>> = liveData {
-        log("inside liveData")
         emit(Resource.Loading)
         emit(repository.getRecipes(query))
     }
