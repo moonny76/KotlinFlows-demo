@@ -18,7 +18,7 @@ class HotFlowViewModel : ViewModel() {
                 flow = _backingFlow.asStateFlow()
                 viewModelScope.launch {
                     repeat(Int.MAX_VALUE) {
-                        Log.d(TAG, "ViewModel: value = $it")
+                        Log.v(TAG, "ViewModel: value = $it")
                         _backingFlow.value = it
                         delay(2000)
                     }
@@ -29,7 +29,7 @@ class HotFlowViewModel : ViewModel() {
                 viewModelScope.launch {
                     repeat(Int.MAX_VALUE) {
                         if (_backingFlow.subscriptionCount.value != 0) {
-                            Log.d(TAG, "ViewModel: value = $it")
+                            Log.v(TAG, "ViewModel: value = $it")
                             _backingFlow.value = it
                         }
                         delay(2000)
@@ -39,7 +39,7 @@ class HotFlowViewModel : ViewModel() {
             FlowKind.FLOW3 -> {
                 flow = flow {
                     repeat(Int.MAX_VALUE) {
-                        Log.d(TAG, "ViewModel: value = $it")
+                        Log.v(TAG, "ViewModel: value = $it")
                         emit(it)
                         delay(2000)
                     }

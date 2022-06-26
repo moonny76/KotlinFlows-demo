@@ -10,20 +10,18 @@ import kotlinx.coroutines.launch
 import org.scarlet.R
 
 class HotFlowActivity : AppCompatActivity() {
-    private val viewModel by lazy {
-        HotFlowViewModel()
-    }
+    private val viewModel by lazy { HotFlowViewModel() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_collect_main)
 
-        viewModel.startFlow(HotFlowViewModel.Companion.FlowKind.FLOW2)
+        viewModel.startFlow(HotFlowViewModel.Companion.FlowKind.FLOW3)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.flow.collect {
-                    Log.d(TAG, "Produced: $it")
+                    Log.d(TAG, "View: collected = $it")
                 }
             }
         }
@@ -31,27 +29,27 @@ class HotFlowActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "onStart: ")
+        Log.w(TAG, "onStart: ")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d(TAG, "onStop: ")
+        Log.w(TAG, "onStop: ")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "onPause: ")
+        Log.w(TAG, "onPause: ")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume: ")
+        Log.w(TAG, "onResume: ")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "onDestroy:")
+        Log.w(TAG, "onDestroy:")
     }
 
 

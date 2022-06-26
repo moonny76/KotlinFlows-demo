@@ -8,118 +8,102 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import org.scarlet.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import org.scarlet.flows.model.Recipe
-import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
 @ExperimentalCoroutinesApi
 class SafeCollectActivity : AppCompatActivity() {
-    private val apiService = FakeRemoteDataSource()
+    val viewModel by lazy { SafeCollectViewModel() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_collect_main)
 
-        prepareFakeData()
+//        prepareFakeData()
 
-        Log.d(TAG, "onCreate: massive launching started ...")
+        Log.w(TAG, "onCreate: massive launching started ...")
 
         lifecycleScope.launch {
-            Log.d(TAG, "launch started")
-            val recipes = apiService.searchRecipes("eggs")
-            Log.d(TAG, "recipes = $recipes")
+            Log.e(TAG, "[launch] launch started")
+            Log.e(TAG, "[launch] recipes = ${viewModel.searchRecipes("eggs")}")
+//            viewModel.recipes.collect {
+//                Log.e(TAG, "[launch] collecting recipes: $it")
+//            }
         }.invokeOnCompletion {
-            Log.d(TAG, "launch completed: $it")
+            Log.e(TAG, "[launch] completed: $it")
         }
 
         lifecycleScope.launchWhenCreated {
-            Log.d(TAG, "launchWhenCreated started")
-            val recipes = apiService.searchRecipes("eggs")
-            Log.d(TAG, "recipes = $recipes")
+            Log.v(TAG, "[launchWhenCreated] launchWhenCreated started")
+            Log.v(TAG, "[launchWhenCreated] recipes = ${viewModel.searchRecipes("eggs")}")
+//            viewModel.recipes.collect {
+//                Log.v(TAG, "[launchWhenCreated] collecting recipes: $it")
+//            }
         }.invokeOnCompletion {
-            Log.d(TAG, "launchWhenCreated completed: $it")
+            Log.v(TAG, "[launchWhenCreated] completed: $it")
         }
 
         lifecycleScope.launchWhenStarted {
-            Log.d(TAG, "launchWhenStarted started")
-        val recipes = apiService.searchRecipes("eggs")
-        Log.d(TAG, "recipes = $recipes")
+            Log.d(TAG, "\t[launchWhenStarted] launchWhenStarted started")
+            Log.d(TAG, "[launchWhenStarted] recipes = ${viewModel.searchRecipes("eggs")}")
+//            viewModel.recipes.collect {
+//                Log.d(TAG, "\t[launchWhenStarted] collecting recipes: $it")
+//            }
         }.invokeOnCompletion {
-            Log.d(TAG, "launchWhenStarted completed: $it")
+            Log.d(TAG, "\t[launchWhenStarted] completed: $it")
         }
 
         lifecycleScope.launchWhenResumed {
-            Log.d(TAG, "launchWhenResumed started")
-        val recipes = apiService.searchRecipes("eggs")
-        Log.d(TAG, "recipes = $recipes")
+            Log.d(TAG, "\t\t[launchWhenResumed] launchWhenResumed started")
+            Log.d(TAG, "[launchWhenResumed] recipes = ${viewModel.searchRecipes("eggs")}")
+//            viewModel.recipes.collect {
+//                Log.d(TAG, "\t\t[launchWhenResumed] collecting recipes: $it")
+//            }
         }.invokeOnCompletion {
-            Log.d(TAG, "launchWhenResumed completed: $it")
+            Log.d(TAG, "\t\t[launchWhenResumed] completed: $it")
         }
 
         lifecycleScope.launch {
-            Log.d(TAG, "launch for repeatOnLifecycle started")
+            Log.i(TAG, "[repeatOnLifeCycle] launch for repeatOnLifecycle")
             lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                Log.d(TAG, "repeatOnLifeCycle started")
-                val recipes = apiService.searchRecipes("eggs")
-                Log.d(TAG, "recipes = $recipes")
+                Log.i(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle body started")
+                Log.i(TAG, "[repeatOnLifeCycle] recipes = ${viewModel.searchRecipes("eggs")}")
+//                viewModel.recipes.collect {
+//                    Log.i(TAG, "[repeatOnLifeCycle] collecting recipes: $it")
+//                }
             }
-
-            Log.d(TAG, "See when i am printed ...")
+            Log.i(TAG, "[repeatOnLifeCycle] Printed only when `lifecycle` is destroyed ...")
         }.invokeOnCompletion {
-            Log.d(TAG, "launch for repeatOnLifeCycle completed: $it")
+            Log.i(TAG, "[repeatOnLifeCycle] completed: $it")
         }
-    }
-
-    private fun prepareFakeData() {
-        apiService.addRecipes(mRecipes)
     }
 
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "onStart: ")
+        Log.w(TAG, "onStart: ")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.d(TAG, "onStop: ")
+        Log.w(TAG, "onStop: ")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "onPause: ")
+        Log.w(TAG, "onPause: ")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume: ")
+        Log.w(TAG, "onResume: ")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "onDestroy:")
+        Log.w(TAG, "onDestroy:")
     }
 
     companion object {
         const val TAG = "Flow"
-    }
-}
-
-class FakeRemoteDataSource {
-
-    private val mRecipes = mutableMapOf<String, Recipe>()
-
-    fun searchRecipes(query: String): List<Recipe> {
-        Thread.sleep(FAKE_NETWORK_DELAY)
-        return mRecipes.values.toList()
-    }
-
-    fun addRecipes(recipes: List<Recipe>) {
-        recipes.forEach { recipe ->
-            mRecipes[recipe.recipeId] = recipe.copy()
-        }
-    }
-
-    companion object {
-        const val FAKE_NETWORK_DELAY = 3_000L
     }
 }
