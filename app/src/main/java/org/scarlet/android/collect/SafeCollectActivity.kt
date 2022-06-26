@@ -19,8 +19,6 @@ class SafeCollectActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_collect_main)
 
-//        prepareFakeData()
-
         Log.w(TAG, "onCreate: massive launching started ...")
 
         lifecycleScope.launch {
