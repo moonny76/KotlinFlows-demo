@@ -40,16 +40,16 @@ android {
 }
 
 dependencies {
-    def androidxCore_version = '1.9.0-alpha05'
+    def androidxCore_version = '1.9.0-rc01'
     implementation "androidx.core:core-ktx:$androidxCore_version"
-    def appCompat_version = '1.4.2'
+    def appCompat_version = '1.5.0'
     implementation "androidx.appcompat:appcompat:$appCompat_version"
     def material_version = '1.6.1'
     implementation "com.google.android.material:material:$material_version"
     def constraintLayout_version = '2.1.4'
     implementation "androidx.constraintlayout:constraintlayout:$constraintLayout_version"
 
-    def room_version = '2.4.2' // kotlin 1.6.0 requires >= 2.4.0
+    def room_version = '2.4.3' // kotlin 1.6.0 requires >= 2.4.0
     implementation "androidx.room:room-runtime:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
@@ -68,15 +68,15 @@ dependencies {
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 
     // androidx.fragment
-    def androidxFragment_version = '1.5.0-rc01' // must use for new factory stuff
+    def androidxFragment_version = '1.6.0-alpha02' // must use for new factory stuff
     implementation "androidx.fragment:fragment-ktx:$androidxFragment_version"
 
     // androidx.activity
-    def androidxActivity_version = '1.6.0-alpha05'
+    def androidxActivity_version = '1.6.0-rc01'
     implementation "androidx.activity:activity-ktx:$androidxActivity_version"
 
     // ViewModelScope
-    def androidxArchLifecycle_version = '2.5.0-rc02'
+    def androidxArchLifecycle_version = '2.6.0-alpha01'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxArchLifecycle_version"
     // lifecycleScope
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidxArchLifecycle_version"
