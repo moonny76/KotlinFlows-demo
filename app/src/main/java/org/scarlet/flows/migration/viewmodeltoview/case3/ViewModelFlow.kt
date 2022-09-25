@@ -6,6 +6,7 @@ import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
 import org.scarlet.flows.model.User
 
 /**
@@ -17,9 +18,9 @@ class ViewModelFlow(
     private val authManager: AuthManager
 ) : ViewModel() {
 
-    // TODO:
-    // 1. Change userId from LiveData to Flow.
-    // 2. Change favorites from LiveData to StateFlow. Hint: use `mapLatest` and `stateIn`
+    /* TODO:
+     1. Change user from LiveData to Flow.
+     2. Change favorites from LiveData to StateFlow. Hint: use `mapLatest` and `stateIn`
 
     private val user: LiveData<User> = authManager.observeUser().asLiveData()
 
@@ -30,5 +31,10 @@ class ViewModelFlow(
                 emit(repository.getFavoriteRecipes(user.id))
             }
         }
+     */
+
+    private val user: Flow<User> = authManager.observeUser()
+
+    val favorites: StateFlow<Resource<List<Recipe>>> = TODO()
 
 }

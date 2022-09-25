@@ -91,11 +91,16 @@ object Exception_Swallowed {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        dataFlow()
-            .handleErrors()
-            .collect {
-                throw IllegalStateException("Failed")
-            }
+        try {
+            dataFlow()
+                .handleErrors()
+                .collect {
+                    throw IllegalStateException("Failed")
+                }
+        } catch (ex: Exception) {
+            // We want to see `IllegalStateException` exception caught here.
+            log("Caught at collector side: $ex")
+        }
 
         log("Done.")
     }
@@ -105,7 +110,7 @@ object Exception_Swallowed {
  * Kotlin flows provide several exception handling operators that ensure
  * exception transparency. In our case we can use the `catch` operator:
  *
- * It does not catch the errors that might happen inside `collect { value -> updateUI(value) }`
+ * It does not catch the errors that might happen inside `collect { value -> ... }`
  * call due to exception transparency.
  */
 

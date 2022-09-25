@@ -26,7 +26,7 @@ object ViolationOfContextPreservation {
         }
     }
 
-    // coroutineScope is OK
+    // `coroutineScope` is OK to use here
     private fun okFlow(): Flow<Int> = flow {
         coroutineScope {
             log("Flow: ${currentCoroutineContext()}")
@@ -49,7 +49,7 @@ object ViolationOfContextPreservation {
     }
 }
 
-// Launching new coroutine is prohibited!!
+// Emitting inside a newly launched coroutine is prohibited!!
 object Strange {
     val flow = flow {
         emit(1)

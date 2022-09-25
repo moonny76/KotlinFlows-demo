@@ -1,5 +1,7 @@
 package org.scarlet.flows.migration.viewmodeltoview.case4
 
+import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.AuthManager
 import org.scarlet.flows.migration.viewmodeltoview.Repository
@@ -44,33 +46,33 @@ class ViewModelFlowTest {
             delay(1000)
             flowOf(Resource.Success(mFavorites))
         }
+
+        viewModel = ViewModelFlow(repository, authManager)
     }
 
     @Test
     fun `test flow without turbine`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelFlow(repository, authManager)
 
         // Act (When)
-        // TODO() - take, toList
+        val resource = viewModel.favorites.take(2).toList()
 
         // Assert (Then)
-//        assertThat(response).containsExactly(
-//            Resource.Loading, Resource.Success(mFavorites)
-//        )
+        assertThat(resource).containsExactly(
+            Resource.Loading, Resource.Success(mFavorites)
+        )
     }
 
     @ExperimentalTime
     @Test
     fun `test flow wih turbine`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelFlow(repository, authManager)
 
         // Act (When)
-//        viewModel.favorites.test {
-//            // Assert (Then)
-//            assertThat(awaitItem()).isEqualTo(Resource.Loading)
-//            assertThat(awaitItem()).isEqualTo(Resource.Success(mFavorites))
-//        }
+        viewModel.favorites.test {
+            // Assert (Then)
+            assertThat(awaitItem()).isEqualTo(Resource.Loading)
+            assertThat(awaitItem()).isEqualTo(Resource.Success(mFavorites))
+        }
     }
 }

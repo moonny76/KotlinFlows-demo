@@ -95,16 +95,15 @@ object DeclarativeExceptionHandling {
  * turning it into a simple left-to-right sequence of operators:
  */
 
-object ExceptionHandlingTogetherWith_launchIn {
+object ExceptionHandling_together_with_launchIn {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{
-        val scope = CoroutineScope(Job())
 
         /**
          * Combine `launch` and `collect()` using `launchIn()`
          */
-        val job = scope.launch {
+        val job = launch {
             dataFlowThrow()
                 .onEach { value -> updateUI(value) }
                 .catch { e -> showErrorMessage(e) }

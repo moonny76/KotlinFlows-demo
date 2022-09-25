@@ -1,5 +1,7 @@
 package org.scarlet.flows.migration.callbacks.stream
 
+import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.*
@@ -72,9 +74,13 @@ class LocationServiceTest {
         val request = LocationRequest("me", 1_000L)
 
         // Act (When)
+        val flow = locationService.requestLocationUpdatesFlow(request)
 
-        // Assert (Then)
-
+        flow.test {
+            assertThat(awaitItem()).isEqualTo(FakeLocationService.testLocations[0])
+            assertThat(awaitItem()).isEqualTo(FakeLocationService.testLocations[1])
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @ExperimentalStdlibApi
@@ -84,11 +90,13 @@ class LocationServiceTest {
         locationService = FakeLocationService(testDispatcher,
             FakeLocationService.Companion.Mode.Fail)
 
+        // Act (When)
         val request = LocationRequest("me", 1_000L)
 
         // Act (When)
-
-        // Assert (Then)
-
+        locationService.requestLocationUpdatesFlow(request).test {
+            // Assert (Then)
+            assertThat(awaitItem()).isNull()
+        }
     }
 }

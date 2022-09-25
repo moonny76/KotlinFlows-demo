@@ -5,6 +5,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
+import org.scarlet.util.delim
 import org.scarlet.util.log
 
 /**
@@ -49,7 +50,7 @@ fun requestFlow(i: Int, timeMs: Long) = flow {
  * They wait for the inner flow to complete before starting to collect the next one.
  */
 @FlowPreview
-object flatmapConcat_Demo {
+object flatMapConcat_Demo {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -60,6 +61,8 @@ object flatmapConcat_Demo {
             .collect { value -> // collect and print
                 log("$value at ${System.currentTimeMillis() - startTime} ms from start")
             }
+
+        delim()
 
         log(
             (1..3).asFlow()
@@ -80,26 +83,28 @@ object flatmapConcat_Demo {
  * by default).
  */
 
-//1     2      3
-//F         S
-//      F          S
-//             F         S
+// 1     2      3
+// F         S
+//       F          S
+//              F         S
 @FlowPreview
 object flatMapMerge_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val startTime = System.currentTimeMillis()
         (1..3).asFlow()
-            .onEach { delay(100) }
-            .flatMapMerge { requestFlow(it, 150) }
+            .onEach { delay(1000) } // a number every 100 ms.
+            .flatMapMerge { requestFlow(it, 1500) }
             .collect { value -> // collect and print
                 log("$value at ${System.currentTimeMillis() - startTime} ms from start")
             }
 
+        delim()
+
         log(
             (1..3).asFlow()
-                .onEach { delay(100) } // a number every 100 ms.
-                .flatMapMerge { requestFlow(it, 200) }
+                .onEach { delay(1000) } // a number every 100 ms.
+                .flatMapMerge { requestFlow(it, 1500) }
                 .toList()
         )
     }
@@ -113,10 +118,10 @@ object flatMapMerge_Demo {
  * as soon as new flow is emitted.
  */
 
-// x    1    2    3
-//      F         S
-//                 F          S
-//                             F          S
+// 1    2    3
+// F         S(x)
+//      F          S(x)
+//           F          S
 @FlowPreview
 @ExperimentalCoroutinesApi
 object flatMapLatest_Demo {

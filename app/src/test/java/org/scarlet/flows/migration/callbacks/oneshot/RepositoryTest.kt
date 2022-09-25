@@ -1,6 +1,6 @@
 package org.scarlet.flows.migration.callbacks.oneshot
 
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -50,7 +50,7 @@ class RepositoryTest {
         repository.getRecipeCallback(Recipe.recipe1.recipeId, object : RecipeCallback {
             override fun onReceive(response: Resource<Recipe>) {
                 // Assert (Then)
-                Truth.assertThat(response).isEqualTo(Resource.Success(Recipe.recipe1))
+                assertThat(response).isEqualTo(Resource.Success(Recipe.recipe1))
             }
         })
     }
@@ -70,7 +70,7 @@ class RepositoryTest {
         repository.getRecipeCallback(Recipe.recipe1.recipeId, object : RecipeCallback {
             override fun onReceive(response: Resource<Recipe>) {
                 // Assert (Then)
-                Truth.assertThat(response).isEqualTo(Resource.Error("Network Error"))
+                assertThat(response).isEqualTo(Resource.Error("Network Error"))
             }
         })
     }

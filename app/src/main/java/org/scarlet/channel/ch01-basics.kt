@@ -95,7 +95,7 @@ object Different_Ways_to_Receive_and_Close_a_Channel {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = Channel<Int>(5).onClose()
+        val channel = Channel<Int>().onClose()
 
         launch {
             data.forEach {
@@ -117,8 +117,8 @@ object Different_Ways_to_Receive_and_Close_a_Channel {
     }
 
     private suspend fun receiveOneByOne(channel: ReceiveChannel<Int>) {
-//        while (!channel.isClosedForReceive) {
-        repeat(data.size) {
+        while (!channel.isClosedForReceive) {
+//        repeat(data.size) {
             log("Received ${channel.receive()}")
             delay(100)
 //            channel.cancel()

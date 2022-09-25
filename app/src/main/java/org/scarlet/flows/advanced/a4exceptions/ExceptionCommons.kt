@@ -17,7 +17,7 @@ fun dataFlowThrow() = flow {
 }
 
 fun showErrorMessage(ex: Throwable) {
-    log(ex)
+    log("Exception caught: $ex")
 }
 
 fun updateUI(value: Int) {

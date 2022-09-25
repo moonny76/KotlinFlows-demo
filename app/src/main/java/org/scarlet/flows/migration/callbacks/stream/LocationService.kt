@@ -1,9 +1,6 @@
 package org.scarlet.flows.migration.callbacks.stream
 
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import org.scarlet.util.log
 
 interface LocationCallback {
     fun onLocation(location: Location)
@@ -28,4 +25,3 @@ interface LocationService {
 
 
 fun LocationService.requestLocationUpdatesFlow(request: LocationRequest): Flow<Location?> = TODO()
-

@@ -116,8 +116,10 @@ object Selecting_to_Send_Demo {
         words.forEach { word ->
             select {
                 worker1.onSend(word) {
+                    log("Sent '$word' to worker1")
                 }
                 worker2.onSend(word) {
+                    log("Sent '$word' to worker2")
                 }
             }
         }
@@ -166,14 +168,12 @@ object Selecting_to_Send {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        /**
-         * Consumer is going to be quite slow, taking 250 ms to process each number:
-         */
         val side = Channel<Int>() // allocate side channel
         launch { // this is a very fast consumer for the side channel
             side.consumeEach { log("Side channel has $it") }
         }
 
+        // Consumer is going to be quite slow, taking 250 ms to process each number:
         produceNumbers(side).consumeEach {
             log("Consuming $it")
             delay(250) // let us digest the consumed number properly, do not hurry

@@ -18,7 +18,14 @@ import org.scarlet.util.log
 
 private val myFlow = flow {
     repeat(10) {
-        emit(it + 1)
+        try {
+            emit(it + 1)
+        } catch (ex: Exception) {
+            log("Caught $ex")
+            if (ex is CancellationException) {
+                throw ex
+            }
+        }
     }
 }
 
@@ -39,7 +46,7 @@ object ToList_first_last_Operators {
         delim()
 
         log("empty list first() = ${emptyList<Int>().asFlow().firstOrNull()}")
-        log("empty list first() = ${emptyList<Int>().asFlow().first()}")
+        log("empty list first() = ${emptyList<Int>().asFlow().first()}") // NoSuchElementException
     }
 }
 
@@ -49,13 +56,13 @@ object FirstOrNull_LastOrNull_Operators {
 
         log(emptyFlow<Int>().firstOrNull())
         log(emptyFlow<Int>().lastOrNull())
-        log((1..100).asFlow().first { it % 5 == 0 }) // flow cannot be cancelled!!
+        log((1..100).asFlow().first { it % 5 == 0 })
 
         delim()
 
         log(myFlow.first { it % 5 == 0 })
         log(myFlow.firstOrNull { it % 13 == 0 })
-        log(myFlow.first { it % 13 == 0 })
+        log(myFlow.first { it % 13 == 0 }) // NoSuchElementException
     }
 }
 
@@ -68,7 +75,7 @@ object Single_Operator {
         try {
             log("flowOf(42, 43).single() = ${flowOf(42, 43).single()}")
         } catch (ex: Exception) {
-            log(ex.javaClass.simpleName)
+            log(ex.javaClass.simpleName) // IllegalArgumentException
         }
 
         delim()
@@ -82,7 +89,7 @@ object Single_Operator {
         try {
             log("emptyList<Int>().asFlow().single() = ${emptyList<Int>().asFlow().single()}")
         } catch (ex: Exception) {
-            log(ex.javaClass.simpleName)
+            log(ex.javaClass.simpleName) // NoSuchElementException
         }
 
         delim()
@@ -92,7 +99,7 @@ object Single_Operator {
         try {
             log("(1..10).asFlow().single() = ${(1..10).asFlow().single()}")
         } catch (ex: Exception) {
-            log(ex.javaClass.simpleName)
+            log(ex.javaClass.simpleName) // IllegalArgumentException
         }
     }
 }
@@ -101,17 +108,15 @@ object Reduce_Fold_Operators {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val sum = (1..100).asFlow()
-            .map { it * it }
             .reduce { a, b -> a + b }
         log(sum)
 
         val total = (1..100).asFlow()
-            .map { it * it }
             .fold(100) { acc, a -> acc + a }
         log(total)
 
         /**
-         * Exercises: Create a list of squares of integers from 1 to 100 by using `fold`.
+         * Exercises: Create a list of integers from 1 to 10 by using `fold`.
          */
 
     }

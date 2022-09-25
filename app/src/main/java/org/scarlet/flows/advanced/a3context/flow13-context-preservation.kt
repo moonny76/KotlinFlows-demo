@@ -9,7 +9,7 @@ import org.scarlet.util.log
 // Flow invariant is violated
 object Why_Context_Preservation {
 
-    fun dataFlow(): Flow<Int> = flow { // create emitter
+    fun dataFlow(): Flow<Int> = flow {
         withContext(Dispatchers.Default) {
             while (currentCoroutineContext().isActive) {
                 delay(1000) // fake long delay
@@ -61,7 +61,7 @@ object ContextPreservation_Demo {
     fun main(args: Array<String>) = runBlocking {
 
         launch {
-            log("Collector1*: $coroutineContext")
+            log("Collector1: $coroutineContext")
             simple("Collector1").collect { value ->
                 log("Collector1: $value")
             }

@@ -36,7 +36,7 @@ object sharedIn_Demo {
         val subscriber1 = launch {
             log("${spaces(4)}Subscriber1 subscribes")
             sharedFlow.collect {
-                log("${spaces(4)}Subscriber 1: $it")
+                log("${spaces(4)}Subscriber1: $it")
             }
         }.onCompletion("Subscriber1")
 
@@ -45,7 +45,7 @@ object sharedIn_Demo {
         val subscriber2 = launch {
             log("${spaces(8)}Subscriber2 subscribes")
             sharedFlow.collect {
-                log("${spaces(8)}Subscriber 2: $it")
+                log("${spaces(8)}Subscriber2: $it")
             }
         }.onCompletion("Subscriber2")
 
@@ -54,7 +54,7 @@ object sharedIn_Demo {
         val subscriber3 = launch {
             log("${spaces(12)}Subscriber3 subscribes")
             sharedFlow.collect {
-                log("${spaces(12)}Subscriber 3: $it")
+                log("${spaces(12)}Subscriber3: $it")
             }
         }.onCompletion("Subscriber3")
 
@@ -171,7 +171,7 @@ object SharedFlow_WhileSubscribed {
         }.onCompletion("${spaces(8)}Subscriber2 leaves")
 
         delay(3000)
-        subscriber1.cancelAndJoin()
+//        subscriber1.cancelAndJoin() // last subscriber leaves
 
         launch {
             delay(1000)

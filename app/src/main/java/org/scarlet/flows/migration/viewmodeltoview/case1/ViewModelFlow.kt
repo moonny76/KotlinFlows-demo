@@ -1,13 +1,11 @@
 package org.scarlet.flows.migration.viewmodeltoview.case1
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
-import kotlinx.coroutines.launch
 
 /**
  * #1: Expose the result of a one-shot operation with a Mutable data holder
@@ -17,27 +15,23 @@ class ViewModelFlow(
     private val repository: Repository
 ) : ViewModel() {
 
-    // TODO: Change LiveData to StateFlow
-    private val _recipes = MutableLiveData<Resource<List<Recipe>>>()
+    /* TODO: Change LiveData to StateFlow
+    private val _recipes = MutableLiveData<Resource<List<Recipe>>>(Resource.Loading)
     val recipes: LiveData<Resource<List<Recipe>>> = _recipes
 
     init {
-        _recipes.value = Resource.Loading
         viewModelScope.launch {
-            val result = repository.getRecipes(query)
-            _recipes.value = result
+            _recipes.value = repository.getRecipes(query)
         }
     }
+    */
 
-    // 1. StateFlow
-//    private val _recipes = MutableStateFlow<Resource<List<Recipe>>>(Resource.Loading)
-//    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
-//
-//    init {
-//        TODO()
-//    }
+    // StateFlow
+    private val _recipes = MutableStateFlow<Resource<List<Recipe>>>(Resource.Loading)
+    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
 
-    // 2. stateIn
-//    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
+    init {
+        TODO()
+    }
 
 }

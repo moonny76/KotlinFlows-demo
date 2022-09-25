@@ -27,4 +27,9 @@ class ViewModelLive(
             }
         }
 
+    // Alternative
+//    private val user: Flow<User> = authManager.observeUser()
+//
+//    val favorites: LiveData<Resource<List<Recipe>>> = TODO()
+
 }

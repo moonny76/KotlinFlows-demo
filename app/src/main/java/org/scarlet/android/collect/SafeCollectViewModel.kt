@@ -1,5 +1,6 @@
 package org.scarlet.android.collect
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -17,6 +18,7 @@ class SafeCollectViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             while (isActive) {
+                Log.d(TAG, "[ViewModel] Emitting recipes ...")
                 _recipes.emit(mRecipes)
                 delay(FAKE_NETWORK_DELAY)
             }
@@ -30,5 +32,6 @@ class SafeCollectViewModel : ViewModel() {
 
     companion object {
         const val FAKE_NETWORK_DELAY = 5_000L
+        const val TAG = "Flow"
     }
 }

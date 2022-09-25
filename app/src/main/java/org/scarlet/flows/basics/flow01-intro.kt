@@ -248,9 +248,9 @@ object FlowDemo {
 /**
  * Flow builders:
  *
- * - The flow { ... } builder is the most basic one.
+ * - The `flow { ... }` builder is the most basic one.
  * - `flowOf` builder that defines a flow emitting a fixed set of values.
- * - Various collections and sequences can be converted to flows using .asFlow() extension functions.
+ * - Various collections and sequences can be converted to flows using `.asFlow()` extension functions.
  */
 
 object Flow_Builders {

@@ -1,5 +1,7 @@
 package org.scarlet.flows.migration.viewmodeltoview.case2
 
+import app.cash.turbine.test
+import com.google.common.truth.Truth.assertThat
 import org.scarlet.flows.CoroutineTestRule
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.util.Resource
@@ -8,6 +10,9 @@ import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -37,17 +42,21 @@ class ViewModelFlowTest {
             delay(1_000)
             Resource.Success(mRecipes)
         }
+
+        viewModel = ViewModelFlow("eggs", repository)
     }
 
     @Test
     fun `test flow without turbine`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelFlow("eggs", repository)
 
         // Act (When)
+        val resource = viewModel.recipes.take(2).toList()
 
         // Assert (Then)
-
+        assertThat(resource).containsExactly(
+            Resource.Loading, Resource.Success(mRecipes)
+        )
     }
 
     @ExperimentalTime
@@ -57,10 +66,10 @@ class ViewModelFlowTest {
         viewModel = ViewModelFlow("eggs", repository)
 
         // Act (When)
-//        viewModel.recipes.test {
-//            // Assert (Then)
-//
-//        }
-
+        viewModel.recipes.test {
+            // Assert (Then)
+            assertThat(awaitItem()).isEqualTo(Resource.Loading)
+            assertThat(awaitItem()).isEqualTo(Resource.Success(mRecipes))
+        }
     }
 }

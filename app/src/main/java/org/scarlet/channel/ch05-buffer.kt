@@ -7,6 +7,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.scarlet.util.log
 import org.scarlet.util.onClose
+import org.scarlet.util.onCompletion
 
 object Buffering {
     @JvmStatic
@@ -21,7 +22,7 @@ object Buffering {
                 channel.send(it) // will suspend when buffer is full
                 log("$it sent") // print after sending each element
             }
-        }
+        }.onCompletion("Sender")
 
         // don't receive anything... just wait....
         delay(1000)

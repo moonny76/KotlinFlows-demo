@@ -31,5 +31,10 @@ class ViewModelLive(
      * Or, preferably, process both flows using flatMapLatest and convert
      * the output to LiveData:
      */
+//    private val user: Flow<User> = authManager.observeUser()
+//
+//    val favorites: LiveData<Resource<List<Recipe>>> = user.flatMapLatest { user ->
+//            TODO()
+//        }.asLiveData()
 
 }

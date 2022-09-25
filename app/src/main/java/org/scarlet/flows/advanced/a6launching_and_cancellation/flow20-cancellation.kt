@@ -72,7 +72,7 @@ object CooperativeFlow_makes_Flow_Cancellable_Demo1 {
         coroutineContext.job.onCompletion("runBlocking")
 
         (1..5).asFlow()
-            .onEach { currentCoroutineContext().ensureActive() }
+//            .onEach { currentCoroutineContext().ensureActive() }
             .collect { value ->
                 if (value == 3) cancel()
                 log(value)

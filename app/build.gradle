@@ -7,12 +7,12 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "org.scarlet.flows"
         minSdk 28
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -29,6 +29,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    packagingOptions { // as of Gradle 7.2
+        exclude 'META-INF/INDEX.LIST'
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -40,9 +43,9 @@ android {
 }
 
 dependencies {
-    def androidxCore_version = '1.9.0-rc01'
+    def androidxCore_version = '1.9.0'
     implementation "androidx.core:core-ktx:$androidxCore_version"
-    def appCompat_version = '1.5.0'
+    def appCompat_version = '1.5.1'
     implementation "androidx.appcompat:appcompat:$appCompat_version"
     def material_version = '1.6.1'
     implementation "com.google.android.material:material:$material_version"
@@ -61,7 +64,7 @@ dependencies {
     def okHttp_version = '5.0.0-alpha.9'
     implementation "com.squareup.okhttp3:logging-interceptor:$okHttp_version"
 
-    def coroutines_version = '1.6.3'
+    def coroutines_version = '1.6.4'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-swing:$coroutines_version"
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-swing:$coroutines_version"
@@ -72,11 +75,11 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:$androidxFragment_version"
 
     // androidx.activity
-    def androidxActivity_version = '1.6.0-rc01'
+    def androidxActivity_version = '1.6.0'
     implementation "androidx.activity:activity-ktx:$androidxActivity_version"
 
     // ViewModelScope
-    def androidxArchLifecycle_version = '2.6.0-alpha01'
+    def androidxArchLifecycle_version = '2.6.0-alpha02'
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$androidxArchLifecycle_version"
     // lifecycleScope
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$androidxArchLifecycle_version"
@@ -117,7 +120,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 
-    def logback_version = '1.2.11'
+    def logback_version = '1.4.0'
     implementation "ch.qos.logback:logback-classic:$logback_version"
 }
 

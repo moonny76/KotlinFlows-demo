@@ -16,7 +16,7 @@ class HotFlowActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_collect_main)
 
-        viewModel.startFlow(HotFlowViewModel.Companion.FlowKind.FLOW3)
+        viewModel.startFlow(HotFlowViewModel.Companion.FlowKind.FLOW1)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {

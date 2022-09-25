@@ -15,6 +15,7 @@ import io.mockk.impl.annotations.MockK
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.scarlet.flows.model.Recipe.Companion.mFavorites
@@ -49,18 +50,18 @@ class ViewModelLiveTest {
             delay(1000)
             repository.getFavoriteRecipesFlow(any())
         } returns flowOf(Resource.Success(mFavorites))
+
+        viewModel = ViewModelLive(repository, authManager)
     }
 
     @Test
     fun `testLiveData - with mock observer`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelLive(repository, authManager)
-
         val liveData = viewModel.favorites
         liveData.observeForever(mockObserver)
 
         // Act (When)
-        // TODO
+        advanceUntilIdle()
 
         // Act (Then)
         verifySequence {
@@ -74,11 +75,10 @@ class ViewModelLiveTest {
     @Test
     fun `testLiveData - with captureValues`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelLive(repository, authManager)
 
         // Act (When)
         viewModel.favorites.captureValues {
-            // TODO
+            advanceUntilIdle()
 
             // Act (Then)
             assertThat(values).containsExactly(

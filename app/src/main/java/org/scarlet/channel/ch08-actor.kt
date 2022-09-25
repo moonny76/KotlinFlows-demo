@@ -17,7 +17,7 @@ object ActorDemo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
 
-        val printActor: SendChannel<String> = actor(Dispatchers.Default) {
+        val printActor: SendChannel<String> = actor/*(Dispatchers.Default)*/ {
             val messages = mutableListOf<String>()
 
             for (msg in channel) {

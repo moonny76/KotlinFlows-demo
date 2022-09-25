@@ -1,8 +1,7 @@
 package org.scarlet.flows.migration.viewmodeltoview.case2
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.liveData
+import kotlinx.coroutines.flow.StateFlow
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
@@ -15,12 +14,24 @@ class ViewModelFlow(
     private val repository: Repository
 ) : ViewModel() {
 
-    // TODO: Change LiveData to StateFLow
+    /* TODO: Change LiveData to StateFLow
     val recipes: LiveData<Resource<List<Recipe>>> = liveData {
         emit(Resource.Loading)
         emit(repository.getRecipes(query))
     }
+    */
 
-//    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
+    // 1. StateFlow
+    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
+
+//    // 2. stateIn
+//    val recipes: StateFlow<Resource<List<Recipe>>> = flow {
+//        emit(Resource.Loading)
+//        emit(repository.getRecipes(query))
+//    }.stateIn(
+//        scope = viewModelScope,
+//        started = SharingStarted.Lazily,
+//        initialValue = Resource.Loading
+//    )
 
 }

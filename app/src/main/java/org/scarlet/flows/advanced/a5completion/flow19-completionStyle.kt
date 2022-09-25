@@ -25,7 +25,7 @@ object DeclarativeFlowCompletion1 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         dataFlow()
-            .onCompletion { log("Done") }
+            .onCompletion { log("Done by on Completion") }
             .collect { log(it) }
     }
 }
@@ -59,7 +59,7 @@ object DeclarativeFlowCompletion3 {
         try {
             dataFlow()
                 .onCompletion { cause -> log("Flow completed with $cause") }
-                .catch { ex -> log("${ex.javaClass.simpleName} caught") }   // only catch upstream exception
+                .catch { ex -> log("${ex.javaClass.simpleName} caught") }   // only catch upstream exceptions
                 .collect { value ->
                     check(value <= 2) { "Crashed on $value" }
                     log(value)

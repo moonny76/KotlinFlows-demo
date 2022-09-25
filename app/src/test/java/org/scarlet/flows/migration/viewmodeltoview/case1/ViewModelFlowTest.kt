@@ -36,12 +36,13 @@ class ViewModelFlowTest {
             delay(1_000) // simulate network delay
             Resource.Success(mRecipes)
         }
+
+        viewModel = ViewModelFlow("eggs", repository)
     }
 
     @Test
     fun `testFlow without turbine`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelFlow("eggs", repository)
 
         // Act (When)
 
@@ -53,7 +54,6 @@ class ViewModelFlowTest {
     @Test
     fun `test flow wih turbine`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelFlow("eggs", repository)
 
         // Act (When)
 

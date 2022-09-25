@@ -2,6 +2,7 @@ package org.scarlet.flows.advanced.a3context
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import org.scarlet.util.delim
 import org.scarlet.util.log
 
 /**
@@ -31,7 +32,7 @@ object FlowOn_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         simple()
-            .flowOn(Dispatchers.Default)
+//            .flowOn(Dispatchers.Default)
             .collect { value ->
                 log("Collector: ${currentCoroutineContext()}")
                 log("Collected $value")
@@ -58,22 +59,27 @@ object ChannelFlow_Demo {
         log("channelFlow context = ${currentCoroutineContext()}")
 
         launch(CoroutineName("Child1") + Dispatchers.Default) {
-            log("Child1: ${currentCoroutineContext()}")
+            log("Child1: $coroutineContext")
             delay(500)
             send(42)
         }
 
+        delim()
+
         launch(CoroutineName("Child2")) {
-            log("Child2: ${currentCoroutineContext()}")
+            log("Child2: $coroutineContext")
             delay(500)
             send(1569)
         }
 
+        delim()
+
         withContext(newSingleThreadContext("myThread")) {
-            log("WithContext: ${currentCoroutineContext()}")
+            log("WithContext: $coroutineContext")
             delay(1000)
             send(777)
         }
+
     }
 
 }
