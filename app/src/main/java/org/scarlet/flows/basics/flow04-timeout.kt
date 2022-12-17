@@ -15,14 +15,14 @@ import org.scarlet.util.onCompletion
  * `withTimeoutOrNull` block and stops executing its code:
  */
 
-private fun conFlow(): Flow<Int> = flow {
-    currentCoroutineContext().job.onCompletion("conFlow")
+private fun cancellableFlow(): Flow<Int> = flow {
+    currentCoroutineContext().job.onCompletion("cancellableFlow")
 
     repeat(Int.MAX_VALUE) {
         try {
             log("Emitting $it")
             emit(it)
-            delay(1000)
+            delay(1_000)
         } catch (ex: Exception) {
             if (ex is CancellationException) {
                 log("Flow cancelled")
@@ -38,9 +38,9 @@ object Flow_Timeout1 {
     fun main(args: Array<String>) = runBlocking {
         coroutineContext.job.onCompletion("runBlocking")
 
-        withTimeoutOrNull(3000) {
+        withTimeoutOrNull(3_000) {
             coroutineContext.job.onCompletion("withTimeoutOrNull")
-            conFlow().collect { value -> log(value) }
+            cancellableFlow().collect { value -> log(value) }
         }
 
         log("Done")
@@ -69,7 +69,7 @@ object Flow_Timeout2 {
                 slowFlow().collect { value -> log(value) }
             }
         } catch (ex: Exception) {
-            log(ex.javaClass.simpleName)
+            log("${ex.javaClass.simpleName} caught")
         } finally {
             log("Done")
         }
@@ -83,10 +83,10 @@ object Explicit_Collector_Cancellation {
     fun main(args: Array<String>) = runBlocking {
 
         val collector = launch {
-            conFlow().collect { value -> log(value) }
+            cancellableFlow().collect { value -> log(value) }
         }.onCompletion("collector")
 
-        delay(3000)
+        delay(3_000)
         collector.cancelAndJoin()
 
         log("Done")
@@ -98,10 +98,10 @@ object Cancellation_when_Separate_Coroutines_Also_Works {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val collector = launch {
-            conFlow().flowOn(Dispatchers.Default).collect { value -> log(value) }
+            cancellableFlow().flowOn(Dispatchers.Default).collect { value -> log(value) }
         }.onCompletion("Collector")
 
-        delay(3000)
+        delay(3_000)
         collector.cancelAndJoin()
 
         log("Done")

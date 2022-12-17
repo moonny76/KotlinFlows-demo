@@ -1,11 +1,9 @@
 package org.scarlet.flows.basics
 
-import androidx.lifecycle.Transformations.map
 import org.scarlet.util.delim
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import org.scarlet.util.log
-import java.util.Locale.filter
 
 /**
  * Find the square of the second even number which is greater than 7.

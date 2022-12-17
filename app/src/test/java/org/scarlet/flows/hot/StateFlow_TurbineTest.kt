@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.hot
 
 import app.cash.turbine.test
@@ -10,10 +12,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
-import kotlin.time.ExperimentalTime
 
-@ExperimentalCoroutinesApi
-@ExperimentalTime
 class StateFlow_TurbineTest {
 
     @Test
@@ -94,14 +93,14 @@ class StateFlow_TurbineTest {
         val payload = 0
         val given: StateFlow<Int> = flow {
             emit(payload)
-            delay(1000) // what if to move this line before first emit?
+            delay(1_000) // what if to move this line before first emit?
             emit(payload + 1)
         }.stateIn(scope = this)
 
         launch {
             given.test {
                 log(awaitItem())
-                delay(1000)
+                delay(1_000)
                 log(awaitItem())
             }
         }

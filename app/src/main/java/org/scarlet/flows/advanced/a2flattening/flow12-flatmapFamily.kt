@@ -1,15 +1,14 @@
+@file:OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.advanced.a2flattening
 
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runBlocking
 import org.scarlet.util.delim
 import org.scarlet.util.log
 
 /**
- * Flattening flows:
+ * ## Flattening flows:
  *
  * Flows represent asynchronously received sequences of values, so it is quite
  * easy to get in a situation where each value triggers a request for another
@@ -18,17 +17,20 @@ import org.scarlet.util.log
  * For example, we can have the following function that returns a flow of two
  * strings 500 ms apart:
  *
- * fun requestFlow(i: Int): Flow<String> = flow {
- *      emit("$i: First")
- *      delay(500) // wait 500 ms
- *      emit("$i: Second")
- * }
+ * ```
+ *     fun requestFlow(i: Int): Flow<String> = flow {
+ *          emit("$i: First")
+ *          delay(500) // wait 500 ms
+ *          emit("$i: Second")
+ *     }
+ * ```
  *
  * Now if we have a flow of three integers and call `requestFlow` for each of them like this:
  *
- *      (1..3).asFlow().map { requestFlow(it) }
- *
- * Then we end up with a flow of flows (`Flow<Flow<String>>`) that needs to be flattened
+ * ```
+ *     (1..3).asFlow().map { requestFlow(it) }
+ *```
+ * Then we end up with a flow of flows **(`Flow<Flow<String>>`)** that needs to be flattened
  * into a single flow for further processing. Collections and sequences have `flatten` and
  * `flatMap` operators for this.
  *
@@ -37,19 +39,27 @@ import org.scarlet.util.log
  */
 
 fun requestFlow(i: Int, timeMs: Long) = flow {
-    emit(i to "First")
-    delay(timeMs)
-    emit(i to "Second")
+    try {
+        emit(i to "First")
+        delay(timeMs)
+        emit(i to "Second")
+        delay(timeMs)
+        emit(i to "Third")
+    } catch (ex: Exception) {
+        log("Caught exception: $ex")
+        if (ex is CancellationException) {
+            throw ex
+        }
+    }
 }
 
 /**
- * flatMapConcat:
+ * ### flatMapConcat and flattenConcat:
  *
  * Concatenating mode is implemented by `flatMapConcat` and `flattenConcat` operators.
  * They are the most direct analogues of the corresponding sequence operators.
  * They wait for the inner flow to complete before starting to collect the next one.
  */
-@FlowPreview
 object flatMapConcat_Demo {
 
     @JvmStatic
@@ -70,11 +80,21 @@ object flatMapConcat_Demo {
             .flatMapConcat { requestFlow(it, 200) }
             .toList()
         )
+
+        delim()
+
+        log(
+            (1..3).asFlow()
+                .onEach { delay(100) } // a number every 100 ms.
+                .map { requestFlow(it, 200) }
+                .flattenConcat()
+                .toList()
+        )
     }
 }
 
 /**
- * flatMapMerge:
+ * ### flatMapMerge and flattenMerge:
  *
  * Another flattening mode is to concurrently collect all the incoming flows and merge their values
  * into a single flow so that values are emitted as soon as possible. It is implemented by `flatMapMerge`
@@ -87,14 +107,13 @@ object flatMapConcat_Demo {
 // F         S
 //       F          S
 //              F         S
-@FlowPreview
 object flatMapMerge_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val startTime = System.currentTimeMillis()
         (1..3).asFlow()
-            .onEach { delay(1000) } // a number every 100 ms.
-            .flatMapMerge { requestFlow(it, 1500) }
+            .onEach { delay(1_000) } // a number every 100 ms.
+            .flatMapMerge { requestFlow(it, 1_500) }
             .collect { value -> // collect and print
                 log("$value at ${System.currentTimeMillis() - startTime} ms from start")
             }
@@ -103,15 +122,25 @@ object flatMapMerge_Demo {
 
         log(
             (1..3).asFlow()
-                .onEach { delay(1000) } // a number every 100 ms.
-                .flatMapMerge { requestFlow(it, 1500) }
+                .onEach { delay(1_000) } // a number every 100 ms.
+                .flatMapMerge { requestFlow(it, 1_500) }
+                .toList()
+        )
+
+        delim()
+
+        log(
+            (1..3).asFlow()
+                .onEach { delay(1_000) } // a number every 100 ms.
+                .map { requestFlow(it, 1_500) }
+                .flattenMerge()
                 .toList()
         )
     }
 }
 
 /**
- * flatMapLatest:
+ * ### flatMapLatest:
  *
  * Similar to the `collectLatest` operator.
  * There is the corresponding "Latest" flattening mode where a collection of the previous flow is cancelled
@@ -122,8 +151,6 @@ object flatMapMerge_Demo {
 // F         S(x)
 //      F          S(x)
 //           F          S
-@FlowPreview
-@ExperimentalCoroutinesApi
 object flatMapLatest_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -135,39 +162,13 @@ object flatMapLatest_Demo {
                 log("$value at ${System.currentTimeMillis() - startTime} ms from start")
             }
 
+        delim()
+
         log(
             (1..3).asFlow()
                 .onEach { delay(100) } // a number every 100 ms.
                 .flatMapLatest { requestFlow(it, 200) }
                 .toList()
         )
-    }
-}
-
-@FlowPreview
-object flattenConcatDemo {
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
-        val flow = (1..3).asFlow().map {
-            requestFlow(it, 100)
-        }.flattenConcat()
-
-        flow.collect {
-            log(it)
-        }
-    }
-}
-
-@FlowPreview
-object flattenMergeDemo {
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
-        val flow = (1..3).asFlow().map {
-            requestFlow(it, 100)
-        }.flattenMerge(4)
-
-        flow.collect {
-            log(it)
-        }
     }
 }

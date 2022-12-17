@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -13,8 +15,8 @@ import kotlin.system.measureTimeMillis
 @JvmInline
 value class Item(val value: Int)
 
-suspend fun makeItem(): Item {
-    delay(1000) // simulate some asynchrony
+suspend fun getItem(): Item {
+    delay(1_000) // simulate some asynchrony
     return Item(Random.nextInt(100))
 }
 
@@ -23,12 +25,12 @@ suspend fun makeItem(): Item {
  */
 object Motivations {
     private suspend fun getItems(): List<Item> = buildList {
-        log("\tBuilding first")
-        add(makeItem())
-        log("\tBuilding second")
-        add(makeItem())
-        log("\tBuilding third")
-        add(makeItem())
+        add(getItem())
+        log("First added")
+        add(getItem())
+        log("Second added")
+        add(getItem())
+        log("Third added")
     }
 
     private fun consumeItems(items: List<Item>) {
@@ -39,63 +41,89 @@ object Motivations {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        var items: List<Item>?
-
-        val time = measureTimeMillis {
-            items = getItems()
-            consumeItems(items!!)
-        }
-
-        log("time = $time")
+        // List is an eager data structure.
+        consumeItems(getItems())
     }
 }
 
 object Basics {
     private suspend fun getItems(channel: Channel<Item>) {
-        channel.send(makeItem())
+        channel.send(getItem())
         log("First sent")
-        channel.send(makeItem())
+        channel.send(getItem())
         log("Second sent")
-        channel.send(makeItem())
+        channel.send(getItem())
         log("Third sent")
         channel.close()
     }
 
     private suspend fun consumeItems(channel: Channel<Item>) {
-        for (item in channel) {
+        // Other style of channel consumption will be shown later...
+        while (!channel.isClosedForReceive) {
+            log("receive: asking for next item")
+            val item = channel.receive()
             log("Do something with $item")
         }
     }
 
     @ExperimentalCoroutinesApi
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking {
+    fun main(args: Array<String>) = runBlocking<Unit> {
         val channel = Channel<Item>()
 
-        // List is eager
-        val time = measureTimeMillis {
-            coroutineScope {
-                launch {
-                    getItems(channel)
-                }
-                launch {
-                    consumeItems(channel)
-                }
+        coroutineScope {
+            // Sender
+            launch {
+                getItems(channel)
+            }
+
+            // Receiver
+            launch {
+                consumeItems(channel)
             }
         }
-
-        log("after getItems(), time = $time")
     }
 }
 
-@ExperimentalCoroutinesApi
-object Different_Ways_to_Receive_and_Close_a_Channel {
+object Sender_Suspends_If_No_Receivers {
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking<Unit> {
+        //  No buffering by default
+        val channel = Channel<Int>()
 
+        // Sender
+        launch {
+            withTimeout(3_000) {
+                log("Sending 42 ...")
+                channel.send(42)
+                log("unreachable code")
+            }
+        }.onCompletion("Sender")
+    }
+}
+
+object Receiver_Suspends_If_No_Senders {
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking<Unit> {
+        val channel = Channel<Int>()
+
+        // Receiver
+        launch {
+            withTimeout(3_000) {
+                log("Waiting for senders to send data")
+                log("${channel.receive()} received")
+                log("unreachable code")
+            }
+        }.onCompletion("Receiver")
+    }
+}
+
+object Different_Ways_to_Receive_and_Close_a_Channel {
     private val data = listOf(1, 2, 3, 4, 5)
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = Channel<Int>().onClose()
+        val channel = Channel<Int>().onClose() // try with buffer size = 5
 
         launch {
             data.forEach {
@@ -106,7 +134,7 @@ object Different_Ways_to_Receive_and_Close_a_Channel {
             log("Sender closing channel")
             channel.close() // comment this out to see what happen?
             log("Is channel closed for send? ${channel.isClosedForSend}")
-            log("Is channel closed for receive? ${channel.isClosedForReceive}") // make buffer = 5 after closing channel
+            log("Is channel closed for receive? ${channel.isClosedForReceive}")
         }.onCompletion("Sender")
 
         launch {
@@ -118,10 +146,9 @@ object Different_Ways_to_Receive_and_Close_a_Channel {
 
     private suspend fun receiveOneByOne(channel: ReceiveChannel<Int>) {
         while (!channel.isClosedForReceive) {
-//        repeat(data.size) {
             log("Received ${channel.receive()}")
             delay(100)
-//            channel.cancel()
+//            channel.cancel() // Cancel the channel and see what happen?
         }
         log("*Is channel closed for receive? ${channel.isClosedForReceive}")
     }
@@ -144,40 +171,6 @@ object Different_Ways_to_Receive_and_Close_a_Channel {
     }
 }
 
-object Sender_Suspends_If_No_Receivers {
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
-        //  without a buffer by default
-        val channel = Channel<Int>()
-
-        // Sender
-        launch {
-            withTimeout(3000) {
-                log("Sending 42 ...")
-                channel.send(42)
-                log("unreachable code")
-            }
-        }.onCompletion("Sender")
-    }
-}
-
-object Receiver_Suspends_If_No_Senders {
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
-        val channel = Channel<Int>()
-
-        // Receiver
-        launch {
-            withTimeout(3000) {
-                log("Waiting for senders to send data")
-                log("${channel.receive()} received")
-                log("unreachable code")
-            }
-        }.onCompletion("Receiver")
-    }
-}
-
-@ExperimentalCoroutinesApi
 object OneOfReceivers_Cancell_RendezvousChannel {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {

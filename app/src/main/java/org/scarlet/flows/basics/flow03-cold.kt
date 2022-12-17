@@ -39,7 +39,7 @@ object ColdFlow_Demo {
     }
 }
 
-object ColdFlow_Multiple_Collect_Demo1 {
+object ColdFlow_Multiple_Sequential_Collect_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val flow = simple()
@@ -54,25 +54,20 @@ object ColdFlow_Multiple_Collect_Demo1 {
     }
 }
 
-object ColdFlow_Multiple_Collect_Demo2 {
+object ColdFlow_Multiple_Concurrent_Collect_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        val simple = flow {
-            for (i in 1..3) {
-                delay(100)
-                emit(i)
-            }
-        }
+        val flow = simple()
 
         coroutineScope {
             launch {
                 log("Collector1")
-                simple.collect { value -> log(value) }
+                flow.collect { value -> log(value) }
             }
 
             launch {
                 log("\t\t\tCollector2")
-                simple.collect { value -> log("\t\t\t$value") }
+                flow.collect { value -> log("\t\t\t$value") }
             }
         }
 

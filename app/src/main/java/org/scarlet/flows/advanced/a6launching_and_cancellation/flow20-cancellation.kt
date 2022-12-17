@@ -4,10 +4,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
-import java.lang.RuntimeException
 
 /**
- * Flow cancellation checks:
+ * ## Flow cancellation checks:
  *
  * For convenience, the flow builder performs additional `ensureActive` checks
  * for cancellation "on each emitted value". It means that a busy loop emitting
@@ -17,7 +16,7 @@ import java.lang.RuntimeException
 object FlowCancellation {
     private fun foo() = flow {
         for (i in 1..5) {
-            log("$i emitting ...")
+            log("emitting $i...")
             emit(i)
         }
     }
@@ -28,20 +27,20 @@ object FlowCancellation {
 
         foo().collect { value ->
             if (value == 3) cancel()
-            log(value)
+            log("$value collected")
         }
 
     }
 }
 
 /**
- * Flow cancellation checks:
+ * ## Flow cancellation checks (cont'd):
  *
  * However, most other flow operators do not do additional cancellation checks on their own
  * for performance reasons. For example, if you use `IntRange.asFlow` extension to write the same
- * busy loop and don't suspend anywhere, then there are no checks for cancellation:
+ * busy loop and don't suspend anywhere, then there are no checks for cancellation.
  */
-object FailedCancellation_due_to_UncooperativeFlow {
+object Failed_Cancellation_due_to_Uncooperative_Flow {
 
     /*
      * All numbers from 1 to 5 are collected and cancellation gets detected only before
@@ -53,20 +52,27 @@ object FailedCancellation_due_to_UncooperativeFlow {
 
         (1..5).asFlow().collect { value ->
             if (value == 3) cancel()
+//            delay(100)
             log(value)
         }
     }
 }
 
 /**
- * Making busy flow cancellable
+ * ### Making busy flow cancellable
  *
  * In the case where you have a busy loop with coroutines you must explicitly check for cancellation.
- * You can add .onEach { currentCoroutineContext().ensureActive() }, but there is a ready-to-use
- * cancellable operator provided to do that:
+ * You can add the following code to the loop body:
+ *
+ * ```
+ *     .onEach { currentCoroutineContext().ensureActive() }
+ * ```
+ * But there is a ready-to-use
+ * cancellable operator provided to do that.
  */
 
-object CooperativeFlow_makes_Flow_Cancellable_Demo1 {
+object Cooperative_Flow_makes_Flow_Cancellable_Demo1 {
+
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         coroutineContext.job.onCompletion("runBlocking")
@@ -80,15 +86,17 @@ object CooperativeFlow_makes_Flow_Cancellable_Demo1 {
     }
 }
 
-object CooperativeFlow_makes_Flow_Cancellable_Demo2 {
+object Cooperative_Flow_makes_Flow_Cancellable_Demo2 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         coroutineContext.job.onCompletion("runBlocking")
 
-        (1..5).asFlow().cancellable().collect { value ->
-            if (value == 3) cancel()
-            log(value)
-        }
+        (1..5).asFlow()
+            .cancellable()
+            .collect { value ->
+                if (value == 3) cancel()
+                log(value)
+            }
     }
 }
 

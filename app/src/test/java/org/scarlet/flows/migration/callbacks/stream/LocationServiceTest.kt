@@ -1,21 +1,23 @@
+@file:OptIn(DelicateCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.migration.callbacks.stream
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
-import kotlinx.coroutines.*
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
 import org.junit.Before
 import org.junit.Test
+import org.scarlet.flows.migration.callbacks.stream.FakeLocationService.Companion.Mode
 import org.scarlet.util.testDispatcher
 import java.io.IOException
 
-@DelicateCoroutinesApi
-@ExperimentalCoroutinesApi
 class LocationServiceTest {
 
-    lateinit var locationService: LocationService
+    private lateinit var locationService: LocationService
 
     @MockK(relaxUnitFun = true)
     lateinit var callback: LocationCallback
@@ -25,12 +27,11 @@ class LocationServiceTest {
         MockKAnnotations.init(this)
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun `test multi-shot callback - success`() = runTest {
         // Arrange (Given)
         locationService = FakeLocationService(testDispatcher)
-        val request = LocationRequest("me", 5_000L)
+        val request = LocationRequest("seoul", 5_000L)
 
         // Act (When)
         locationService.requestLocationUpdates(request, callback)
@@ -46,12 +47,9 @@ class LocationServiceTest {
         }
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun `test multi-shot callback - failure`() = runTest {
-        locationService = FakeLocationService(testDispatcher,
-            FakeLocationService.Companion.Mode.Fail
-        )
+        locationService = FakeLocationService(testDispatcher, Mode.Fail)
         val request = LocationRequest("me", 5_000L)
 
         // Act (When)
@@ -66,12 +64,11 @@ class LocationServiceTest {
         verify { callback.onFailure(match {it.message == "Failed"}) }
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun `test callbackFlow - success`() = runTest {
         // Arrange (Given)
         locationService = FakeLocationService(testDispatcher)
-        val request = LocationRequest("me", 1_000L)
+        val request = LocationRequest("seoul", 1_000L)
 
         // Act (When)
         val flow = locationService.requestLocationUpdatesFlow(request)
@@ -79,19 +76,16 @@ class LocationServiceTest {
         flow.test {
             assertThat(awaitItem()).isEqualTo(FakeLocationService.testLocations[0])
             assertThat(awaitItem()).isEqualTo(FakeLocationService.testLocations[1])
-            cancelAndIgnoreRemainingEvents()
         }
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun `test callbackFlow - failure`() = runTest {
         // Arrange (Given)
-        locationService = FakeLocationService(testDispatcher,
-            FakeLocationService.Companion.Mode.Fail)
+        locationService = FakeLocationService(testDispatcher, Mode.Fail)
 
         // Act (When)
-        val request = LocationRequest("me", 1_000L)
+        val request = LocationRequest("seoul", 1_000L)
 
         // Act (When)
         locationService.requestLocationUpdatesFlow(request).test {

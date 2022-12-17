@@ -2,45 +2,11 @@ package org.scarlet.flows.advanced.a3context
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.swing.Swing
 import org.scarlet.util.delim
 import org.scarlet.util.log
 
-// Flow invariant is violated
-object Why_Context_Preservation {
-
-    fun dataFlow(): Flow<Int> = flow {
-        withContext(Dispatchers.Default) {
-            while (currentCoroutineContext().isActive) {
-                delay(1000) // fake long delay
-                emit(42)
-            }
-        }
-    }
-
-    @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
-        launch(Dispatchers.Swing) { // launch in the main thread
-            initDisplay() // prepare ui
-            dataFlow().collect {
-                withContext(Dispatchers.Swing) {
-                    updateDisplay(it) // update ui
-                }
-            }
-        }
-    }
-
-    private fun initDisplay() {
-        log("Init Display")
-    }
-
-    private fun updateDisplay(value: Int) {
-        log("display updated with = $value")
-    }
-}
-
 /**
- * Flow context:
+ * ## Flow context:
  *
  * Collection of a flow always happens in the context of the calling coroutine.
  * This property of a flow is called **context preservation**.
@@ -52,9 +18,7 @@ object ContextPreservation_Demo {
 
     private fun simple(tag: String): Flow<Int> = flow {
         log("Started flow for $tag in ${currentCoroutineContext()}")
-        for (i in 1..3) {
-            emit(i)
-        }
+        emit(42)
     }
 
     @JvmStatic
@@ -63,7 +27,7 @@ object ContextPreservation_Demo {
         launch {
             log("Collector1: $coroutineContext")
             simple("Collector1").collect { value ->
-                log("Collector1: $value")
+                log("Collector1: $value, ${currentCoroutineContext()}")
             }
         }.join()
 
@@ -71,8 +35,43 @@ object ContextPreservation_Demo {
 
         launch(Dispatchers.Default) {
             log("Collector2: $coroutineContext")
-            simple("Collector2").collect { value -> log("Collector2: $value") }
+            simple("Collector2").collect { value ->
+                log("Collector2: $value, ${currentCoroutineContext()}")
+            }
         }.join()
+    }
+
+    /**
+     * ### Flow invariant is violated
+     */
+    object Why_Context_Preservation {
+
+        private fun dataFlow(): Flow<Int> = flow {
+            withContext(Dispatchers.Default) {
+                while (currentCoroutineContext().isActive) {
+                    delay(1_000) // fake long delay
+                    emit(42)
+                }
+            }
+        }
+
+        @JvmStatic
+        fun main(args: Array<String>) = runBlocking<Unit> {
+            launch {
+                initDisplay() // prepare ui
+                dataFlow().collect {
+                    updateDisplay(it) // update ui
+                }
+            }
+        }
+
+        private fun initDisplay() {
+            log("Init Display")
+        }
+
+        private fun updateDisplay(value: Int) {
+            log("display updated with = $value")
+        }
     }
 
 }

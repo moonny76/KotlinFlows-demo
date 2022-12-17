@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
 
 /**
- * Launching flow:
+ * ## Launching flow:
  *
  * It is easy to use flows to represent asynchronous events that are coming from some source.
  * In this case, we need an analogue of the `addEventListener` function that registers a piece of
@@ -17,12 +17,12 @@ import org.scarlet.util.log
  * the flow is collected:
  */
 
-object FlowCollection_Using_Lonely_Collect {
+object Flow_Collection_Using_Lonely_Collect {
     // Imitate a flow of events
     private fun events(): Flow<Int> = (1..3).asFlow().onEach { delay(100) }
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         events()
             .onEach { event -> log("Event: $event") }
             .collect() // <--- Collecting the flow waits
@@ -32,7 +32,7 @@ object FlowCollection_Using_Lonely_Collect {
 }
 
 /**
- * Launching flow:
+ * ## Launching flow:
  *
  * The `launchIn` terminal operator comes in handy here. By replacing `collect` with `launchIn`
  * we can launch a collection of the flow in a separate coroutine, so that execution of further
@@ -48,7 +48,7 @@ object FlowCollection_Using_Lonely_Collect {
  * Note that `launchIn` also returns a `Job`, which can be used to cancel the corresponding flow
  * collection coroutine only without cancelling the whole scope or to join it.
  */
-object FlowCollection_Using_LaunchIn {
+object Flow_Collection_Using_LaunchIn {
     // Imitate a flow of events
     private fun events(): Flow<Int> = (1..3).asFlow().onEach { delay(100) }
 

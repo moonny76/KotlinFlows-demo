@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import java.math.BigInteger
 
-@ExperimentalCoroutinesApi
 object DataSource {
 
     // Finite flow

@@ -1,26 +1,25 @@
-package org.scarlet.flows
+@file:OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+package org.scarlet.flows.genesis
+
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
 import org.scarlet.util.delim
 import org.scarlet.util.log
 
-object ObserverPattern {
-
-    @JvmStatic
-    fun main(args: Array<String>) {
-
-    }
-}
-
-@FlowPreview
-@ExperimentalCoroutinesApi
 object RealFlowTypes {
+
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
         val flow = flow {
-            for (i in 1..3) {
-                emit(i)
+            (1..3).forEach {
+                emit(it)
             }
         }
 

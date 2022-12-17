@@ -6,7 +6,7 @@ import org.scarlet.util.delim
 import org.scarlet.util.log
 
 /**
- * flowOn operator:
+ * ## `flowOn` operator:
  *
  * The exception refers to the `flowOn` function that shall be used to change the context of the flow emission.
  * Notice how flow { ... } works in the background thread, while collection happens in the main thread.
@@ -41,7 +41,7 @@ object FlowOn_Demo {
 }
 
 /**
- * Channel Flow
+ * ## Channel Flow
  */
 @DelicateCoroutinesApi
 @ExperimentalCoroutinesApi
@@ -56,27 +56,28 @@ object ChannelFlow_Demo {
     }
 
     private fun myFlow() = channelFlow {
-        log("channelFlow context = ${currentCoroutineContext()}")
+        log("Channel Flow: ${currentCoroutineContext()}")
+        delim()
 
         launch(CoroutineName("Child1") + Dispatchers.Default) {
-            log("Child1: $coroutineContext")
+            log("Child1: ${currentCoroutineContext()}")
             delay(500)
             send(42)
-        }
+        }.join()
 
         delim()
 
         launch(CoroutineName("Child2")) {
-            log("Child2: $coroutineContext")
+            log("Child2: ${currentCoroutineContext()}")
             delay(500)
             send(1569)
-        }
+        }.join()
 
         delim()
 
         withContext(newSingleThreadContext("myThread")) {
-            log("WithContext: $coroutineContext")
-            delay(1000)
+            log("WithContext: ${currentCoroutineContext()}")
+            delay(1_000)
             send(777)
         }
 

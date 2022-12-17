@@ -5,10 +5,11 @@ import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
 
 object TryCatch_Review {
+
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
-            dataFlowThrow().collect { value -> updateUI(value) }
+            dataFlowThrow().collect { updateUI(it) }
         } catch (ex: Throwable) {
             showErrorMessage(ex)
         } finally {
@@ -20,14 +21,16 @@ object TryCatch_Review {
 /**
  * Think about the properties of the flow that is returned by `handleErrors`:
  *
- * val flow = dataFlow().handleErrors()
+ * ```
+ *     val flow = dataFlow().handleErrors()
+ * ```
  *
  * It emits some values like any other flow, but it also has an additional property
  * that other flows do not have — any error in the downstream flow is caught by it.
  */
 private fun <T> Flow<T>.handleErrors(): Flow<T> = flow {
     try {
-        collect { value -> emit(value) }
+        collect { emit(it) }
     } catch (e: Throwable) {
         showErrorMessage(e)
     }
@@ -38,17 +41,17 @@ private fun <T> Flow<T>.handleErrors(): Flow<T> = flow {
  * then we can simplify this code, reduce nesting, and make it more readable.
  *
  * This implementation collects values from the upstream flow it is called on
- * and emits them downstream, wrapping the `collect` call into the `try/catch` block
- * just as we did before. It simply abstracts the code we initially wrote.
+ * and emits them downstream, wrapping the `collect` call into the `try/catch` block.
+ *
  * Would it work? Yes, for this particular case. So why exactly this implementation is naive?
  */
-object HandleException_Inside_Flow {
+object HandleExceptions_Inside_Flow {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         dataFlowThrow()
             .handleErrors()
-            .collect { value -> updateUI(value) }
+            .collect { updateUI(it) }
 
         log("Done.")
     }
@@ -58,7 +61,8 @@ object HandleException_Inside_Flow {
  * If we run the following code with a simple flow then this code throws
  * an `IllegalStateException` on the first emitted value.
  */
-object ExceptionThrown_As_Expected {
+object Exception_Handled_As_Expected {
+
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         try {
@@ -83,8 +87,8 @@ object ExceptionThrown_As_Expected {
  * The only supposed effects of flows are their emitted values and completion, so
  * flow operators like `handleError` are not allowed by the flow specification.
  *
- * Every flow implementation has to ensure `exception transparency` — a downstream
- * exception must always be propagated to the collector⁵.
+ * Every flow implementation has to ensure *exception transparency* — **a downstream
+ * exception must always be propagated to the collector**.
  */
 
 object Exception_Swallowed {
@@ -98,7 +102,7 @@ object Exception_Swallowed {
                     throw IllegalStateException("Failed")
                 }
         } catch (ex: Exception) {
-            // We want to see `IllegalStateException` exception caught here.
+            // We want to see `IllegalStateException` exception caught here, but ...
             log("Caught at collector side: $ex")
         }
 
@@ -106,11 +110,4 @@ object Exception_Swallowed {
     }
 }
 
-/**
- * Kotlin flows provide several exception handling operators that ensure
- * exception transparency. In our case we can use the `catch` operator:
- *
- * It does not catch the errors that might happen inside `collect { value -> ... }`
- * call due to exception transparency.
- */
 

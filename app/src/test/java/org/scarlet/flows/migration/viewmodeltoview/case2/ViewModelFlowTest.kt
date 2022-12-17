@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.migration.viewmodeltoview.case2
 
 import app.cash.turbine.test
@@ -12,19 +14,16 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.scarlet.flows.model.Recipe.Companion.mRecipes
-import kotlin.time.ExperimentalTime
 
-@ExperimentalCoroutinesApi
 class ViewModelFlowTest {
 
     // SUT
-    lateinit var viewModel: ViewModelFlow
+    private lateinit var viewModel: ViewModelFlow
 
     @get:Rule
     val coroutineRule = CoroutineTestRule()
@@ -59,7 +58,6 @@ class ViewModelFlowTest {
         )
     }
 
-    @ExperimentalTime
     @Test
     fun `test flow wih turbine`() = runTest {
         // Arrange (Given)

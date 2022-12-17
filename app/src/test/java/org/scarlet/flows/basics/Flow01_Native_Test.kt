@@ -7,10 +7,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.junit.Test
 import java.math.BigInteger
-import kotlin.time.ExperimentalTime
 
-@ExperimentalCoroutinesApi
-@ExperimentalTime
 class Flow01_Native_Test {
 
     @Test
@@ -72,7 +69,7 @@ class Flow01_Native_Test {
         println("result = $result")
 
         // Take the first 2 items matching a predicate
-        println(fibo().dropWhile { it < BigInteger.valueOf(1000) }.take(10).toList())
+        println(fibo().dropWhile { it < BigInteger.valueOf(1_000) }.take(10).toList())
     }
 
     @Test(expected = NoSuchElementException::class)

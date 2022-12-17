@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.migration.viewmodeltoview.case3
 
 import app.cash.turbine.test
@@ -18,14 +20,11 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.scarlet.flows.model.Recipe
 import org.scarlet.flows.model.Recipe.Companion.mFavorites
-import kotlin.time.ExperimentalTime
 
-@ExperimentalCoroutinesApi
 class ViewModelFlowTest {
     // SUT
-    lateinit var viewModel: ViewModelFlow
+    private lateinit var viewModel: ViewModelFlow
 
     @get:Rule
     val coroutineRule = CoroutineTestRule()
@@ -61,12 +60,11 @@ class ViewModelFlowTest {
 
         // Assert (Then)
         assertThat(resource).containsExactly(
-            Resource.Loading, Resource.Success(Recipe.mFavorites)
+            Resource.Loading, Resource.Success(mFavorites)
         )
 
     }
 
-    @ExperimentalTime
     @Test
     fun `test flow wih turbine`() = runTest {
         // Arrange (Given)
@@ -75,7 +73,7 @@ class ViewModelFlowTest {
         viewModel.favorites.test {
             // Assert (Then)
             assertThat(awaitItem()).isEqualTo(Resource.Loading)
-            assertThat(awaitItem()).isEqualTo(Resource.Success(Recipe.mFavorites))
+            assertThat(awaitItem()).isEqualTo(Resource.Success(mFavorites))
         }
     }
 }

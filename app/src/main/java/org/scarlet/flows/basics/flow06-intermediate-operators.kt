@@ -14,20 +14,17 @@ import org.scarlet.util.log
  */
 
 suspend fun performRequest(request: Int): String {
-    delay(1000) // imitate long-running asynchronous work
+    delay(1_000) // imitate long-running asynchronous work
     return "response $request"
 }
 
 object Map_Operator {
-    private fun intermediateOp() = runBlocking {
+
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking {
         (1..3).asFlow() // a flow of requests
             .map(::performRequest)
             .collect { response -> log(response) }
-    }
-
-    @JvmStatic
-    fun main(args: Array<String>) {
-        intermediateOp()
     }
 }
 
@@ -42,24 +39,22 @@ object Map_Operator {
 object Transform_Operator {
     data class Person(val name: String, val age: Int)
 
-    private fun transformOp() = runBlocking {
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking {
+
         val source = (1..3).asFlow() // a flow of requests
             .transform { request ->
-                emit("Making request $request")
-                emit(1234)
-                emit(Person("John", 33))
-                emit(performRequest(request))
+                this.emit("Making request $request")
+                this.emit(1234)
+                this.emit(Person("John", 33))
+                this.emit(performRequest(request))
                 delim()
             }
 
         source.collect { response ->
             log(response)
         }
-    }
 
-    @JvmStatic
-    fun main(args: Array<String>) {
-        transformOp()
     }
 }
 
@@ -88,15 +83,11 @@ object Take_Operator {
         }
     }
 
-    private fun takeOp() = runBlocking {
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking {
         numbers()
             .take(2) // take only the first two
             .collect { value -> log(value) }
-    }
-
-    @JvmStatic
-    fun main(args: Array<String>) {
-        takeOp()
     }
 }
 

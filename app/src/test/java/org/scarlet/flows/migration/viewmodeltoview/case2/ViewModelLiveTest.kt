@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.migration.viewmodeltoview.case2
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -18,10 +20,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
-@ExperimentalCoroutinesApi
 class ViewModelLiveTest {
     //SUT
-    lateinit var viewModel: ViewModelLive
+    private lateinit var viewModel: ViewModelLive
 
     @get:Rule
     val rule = InstantTaskExecutorRule()
@@ -42,16 +43,16 @@ class ViewModelLiveTest {
         coEvery {
             repository.getRecipes(any())
         } coAnswers {
-            delay(1000)
+            delay(1_000)
             Resource.Success(mRecipes)
         }
+
+        viewModel = ViewModelLive("eggs", repository)
     }
 
     @Test
     fun `testLiveData - with mock observer`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelLive("eggs", repository)
-
         // Act (When)
         val liveData = viewModel.recipes
         liveData.observeForever(mockObserver)
@@ -63,13 +64,13 @@ class ViewModelLiveTest {
             mockObserver.onChanged(Resource.Loading)
             mockObserver.onChanged(Resource.Success(mRecipes))
         }
+
+        liveData.removeObserver(mockObserver)
     }
 
     @Test
     fun `testLiveData - with captureValues`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelLive("eggs", repository)
-
         // Act (When)
         viewModel.recipes.captureValues {
             // Assert (Then)

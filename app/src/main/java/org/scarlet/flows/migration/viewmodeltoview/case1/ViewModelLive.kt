@@ -8,10 +8,9 @@ import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
 import kotlinx.coroutines.launch
-import org.scarlet.util.log
 
 /**
- * #1: Expose the result of a one-shot operation with a Mutable data holder
+ * ###1: Expose the result of a one-shot operation with a Mutable data holder
  */
 class ViewModelLive(
     private val query: String,
@@ -23,8 +22,7 @@ class ViewModelLive(
 
     init {
         viewModelScope.launch {
-            val result = repository.getRecipes(query)
-            _recipes.value = result
+            _recipes.value = repository.getRecipes(query)
         }
     }
 }

@@ -1,6 +1,7 @@
+@file:OptIn(ObsoleteCoroutinesApi::class)
+
 package org.scarlet.channel
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
@@ -12,7 +13,6 @@ import org.scarlet.util.log
  * every message sent to it.
  */
 
-@ObsoleteCoroutinesApi
 object ActorDemo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {

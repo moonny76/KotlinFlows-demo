@@ -5,8 +5,8 @@ import java.io.IOException
 
 @DelicateCoroutinesApi
 class FakeLocationService(
-    val dispatcher: CoroutineDispatcher,
-    var mode: Mode = Mode.Success
+    private val dispatcher: CoroutineDispatcher,
+    private var mode: Mode = Mode.Success
 ) : LocationService {
     private var callbacks: LocationCallback? = null
     private var job: Job? = null

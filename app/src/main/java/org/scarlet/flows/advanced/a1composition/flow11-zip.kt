@@ -25,7 +25,7 @@ object Zip_Operator1 {
     }
 }
 
-val numsDelay = numbers.onEach { delay(1000) }
+val numsDelay = numbers.onEach { delay(1_000) }
 val strsDelay = strings.onEach { delay(500) }
 
 object Zip_Operator2 {

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -8,20 +10,20 @@ import org.scarlet.util.log
 import org.scarlet.util.onCompletion
 
 object ChannelPipelines_Madeup_Demo {
-    val channel1 = Channel<Int>()
-    val channel2 = Channel<Double>()
-    val channel3 = Channel<Pair<Double, Double>>()
+    private val channel1 = Channel<Int>()
+    private val channel2 = Channel<Double>()
+    private val channel3 = Channel<Pair<Double, Double>>()
 
-    suspend fun produceNumbers() {
+    private suspend fun produceNumbers() {
         var x = 1
         while (true) channel1.send(x++) // infinite stream of integers starting from 1
     }
 
-    suspend fun square() {
+    private suspend fun square() {
         for (x in channel1) channel2.send((x * x).toDouble())
     }
 
-    suspend fun pair() {
+    private suspend fun pair() {
         for (x in channel2) channel3.send(Pair(x, x))
     }
 
@@ -46,7 +48,6 @@ object ChannelPipelines_Madeup_Demo {
     }
 }
 
-@ExperimentalCoroutinesApi
 object ChannelPipelines {
     private fun CoroutineScope.produceNumbers(): ReceiveChannel<Int> = produce {
         coroutineContext.job.onCompletion("produceNumber")
@@ -78,7 +79,6 @@ object ChannelPipelines {
 /**
  * Sieve of Eratosthenes
  */
-@ExperimentalCoroutinesApi
 object PipelineExample_Primes {
     private fun CoroutineScope.numbersFrom(start: Int) = produce {
         var x = start
@@ -91,12 +91,12 @@ object PipelineExample_Primes {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
-        var cur: ReceiveChannel<Int> = numbersFrom(2)
+        var current: ReceiveChannel<Int> = numbersFrom(2)
         val primes = buildList {
             repeat(20) {
-                val prime = cur.receive()
+                val prime = current.receive()
                 add(prime)
-                cur = filter(cur, prime)
+                current = filter(current, prime)
             }
         }
         log(primes)

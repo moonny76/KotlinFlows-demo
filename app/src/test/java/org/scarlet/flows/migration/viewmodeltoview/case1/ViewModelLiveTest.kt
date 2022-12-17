@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.migration.viewmodeltoview.case1
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -13,7 +15,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
-@ExperimentalCoroutinesApi
 class ViewModelLiveTest {
     // SUT
     lateinit var viewModel: ViewModelLive
@@ -33,6 +34,7 @@ class ViewModelLiveTest {
     @Before
     fun init() {
         // TODO
+
     }
 
     @Test

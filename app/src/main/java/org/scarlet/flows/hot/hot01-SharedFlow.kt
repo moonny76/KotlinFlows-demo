@@ -68,7 +68,7 @@ object SharedFlow_Single_Subscriber_Rendezvous {
             }
         }.onCompletion("Publisher")
 
-        // Subscriber subscribes after 200ms later
+        // Subscriber subscribes after 1000ms later
         val subscriber = launch {
             delay(1000)
             delim()
@@ -163,10 +163,10 @@ object SharedFlow_replayCache {
 object SharedFlow_Multiple_Subscribers {
 
     private val sharedFlow = MutableSharedFlow<Int>(
-        replay = 2,
+        replay = 0, // 0, 1, 2
         extraBufferCapacity = 0,
-//        onBufferOverflow = BufferOverflow.SUSPEND
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
+        onBufferOverflow = BufferOverflow.SUSPEND
+//        onBufferOverflow = BufferOverflow.DROP_OLDEST
         // DROP_OLDEST does not guarantee receivers accept all equal values.
     )
 

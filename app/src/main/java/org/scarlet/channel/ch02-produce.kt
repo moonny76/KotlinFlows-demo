@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -8,15 +10,14 @@ import kotlinx.coroutines.channels.produce
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
 
-@ExperimentalCoroutinesApi
 object ProduceDemo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        demoWithPlain()
-//        demoWithProduce()
+//        demoWithPlain()
+        demoWithProduce()
     }
 
-    suspend fun demoWithPlain() = coroutineScope {
+    private suspend fun demoWithPlain() = coroutineScope {
         val channel: Channel<Int> = Channel()
 
         // Producer
@@ -38,7 +39,7 @@ object ProduceDemo {
     /**
      * `produce` is a producer coroutine builder.
      */
-    suspend fun demoWithProduce() = coroutineScope {
+    private suspend fun demoWithProduce() = coroutineScope {
         val channel: ReceiveChannel<Int> = produce {
             coroutineContext.job.onCompletion("Producer")
 
@@ -62,7 +63,6 @@ object ProduceDemo {
  * so that we can rely on structured concurrency to make sure that we don't have
  * lingering global coroutines in our application.
  */
-@ExperimentalCoroutinesApi
 object ChannelProducers {
 
     private fun CoroutineScope.produceSquares(): ReceiveChannel<Int> = produce {

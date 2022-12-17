@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.channel
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,7 +32,6 @@ object Buffering {
     }
 }
 
-@ExperimentalCoroutinesApi
 object Closing_SendChannel_Guarantees_All_Sent_Data_Received {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking{

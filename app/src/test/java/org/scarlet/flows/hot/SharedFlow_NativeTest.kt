@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.hot
 
 import com.google.common.truth.Truth.assertThat
@@ -11,8 +13,6 @@ import org.scarlet.util.log
 import org.scarlet.util.onCompletion
 import kotlin.time.ExperimentalTime
 
-@ExperimentalCoroutinesApi
-@ExperimentalTime
 class SharedFlow_NativeTest {
     /**
      * Hot Flows:
@@ -27,7 +27,7 @@ class SharedFlow_NativeTest {
     fun `empty SharedFlow - timeout`() = runTest {
         val emptyFlow = MutableSharedFlow<Int>() // replay = 0 by default
 
-        val value = withTimeoutOrNull(1000) {
+        val value = withTimeoutOrNull(1_000) {
             emptyFlow.first()
         }
         assertThat(value).isNull()

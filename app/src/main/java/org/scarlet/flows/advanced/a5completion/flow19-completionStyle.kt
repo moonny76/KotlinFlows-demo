@@ -7,20 +7,20 @@ import org.scarlet.flows.advanced.a4exceptions.dataFlowThrow
 import org.scarlet.util.log
 
 /**
- * Flow completion:
+ * ## Flow completion:
  *
  * When flow collection completes (normally or exceptionally) it may need to execute an action.
- * It can be done in two ways: imperative or declarative.
- */
-
-/**
- * Declarative handling:
+ * It can be done in two ways: *imperative* or *declarative*.
+ *
+ * <br></br>
+ *
+ * ### Declarative handling:
  *
  * For the declarative approach, flow has `onCompletion` intermediate operator that is invoked
  * when the flow has completely collected.
  */
 
-object DeclarativeFlowCompletion1 {
+object Declarative_Flow_Completion1 {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -35,7 +35,7 @@ object DeclarativeFlowCompletion1 {
  * that can be used to determine whether the flow collection was completed normally or
  * exceptionally.
  */
-object DeclarativeFlowCompletion2 {
+object Declarative_Flow_Completion2 {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -45,14 +45,14 @@ object DeclarativeFlowCompletion2 {
             .collect { log(it) }
     }
 
-    /**
+    /*
      * The `onCompletion` operator, unlike `catch`, does not handle the exception.
      * But, the exception still flows downstream. It will be delivered to further
      * operators down the flow and can be handled with a `catch` operator.
      */
 }
 
-object DeclarativeFlowCompletion3 {
+object Declarative_Flow_Completion3 {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -71,13 +71,13 @@ object DeclarativeFlowCompletion3 {
 }
 
 /**
- * Imperative finally block:
+ * ### Imperative finally block:
  *
  * In addition to try/catch, a collector can also use a finally block to
  * execute an action upon collect completion.
  */
 
-object ImperativeFlowCompletion {
+object Imperative_Flow_Completion {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {

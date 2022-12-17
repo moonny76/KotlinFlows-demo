@@ -75,7 +75,7 @@ object Single_Operator {
         try {
             log("flowOf(42, 43).single() = ${flowOf(42, 43).single()}")
         } catch (ex: Exception) {
-            log(ex.javaClass.simpleName) // IllegalArgumentException
+            log("${ex.javaClass.simpleName} caught") // IllegalArgumentException
         }
 
         delim()
@@ -89,7 +89,7 @@ object Single_Operator {
         try {
             log("emptyList<Int>().asFlow().single() = ${emptyList<Int>().asFlow().single()}")
         } catch (ex: Exception) {
-            log(ex.javaClass.simpleName) // NoSuchElementException
+            log("${ex.javaClass.simpleName} caught") // NoSuchElementException
         }
 
         delim()
@@ -99,7 +99,7 @@ object Single_Operator {
         try {
             log("(1..10).asFlow().single() = ${(1..10).asFlow().single()}")
         } catch (ex: Exception) {
-            log(ex.javaClass.simpleName) // IllegalArgumentException
+            log("${ex.javaClass.simpleName} caught") // IllegalArgumentException
         }
     }
 }

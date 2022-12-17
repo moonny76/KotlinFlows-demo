@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.hot
 
 import com.google.common.truth.Truth.assertThat
@@ -10,7 +12,6 @@ import org.junit.Test
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
 
-@ExperimentalCoroutinesApi
 class StateFlow_NativeTest {
 
     @Test
@@ -31,7 +32,7 @@ class StateFlow_NativeTest {
             }
         }.onCompletion("Subscriber")
 
-        delay(3000)
+        delay(3_000)
         collector.cancelAndJoin()
     }
 
@@ -90,7 +91,7 @@ class StateFlow_NativeTest {
             }
         }.onCompletion("Subscriber")
 
-        delay(1000)
+        delay(1_000)
 
         subscriber.cancelAndJoin()
         publisher.cancelAndJoin()
@@ -102,14 +103,14 @@ class StateFlow_NativeTest {
         val given: StateFlow<Int> = flow {
             log("started ...")
             emit(payload)
-            delay(1000) // what if to move this line one up?
+            delay(1_000) // what if to move this line one up?
             emit(payload + 1)
             log("finished ...")
         }.stateIn(scope = this)
 
         launch {
             log(given.first())
-            delay(1000)
+            delay(1_000)
             log(given.first())
         }
     }
@@ -132,7 +133,7 @@ class StateFlow_NativeTest {
             given.take(2).toList(result)
         }
 
-        delay(1000)
+        delay(1_000)
         job.cancelAndJoin()
 
         assertThat(result).containsExactly(null, 0)
@@ -154,7 +155,7 @@ class StateFlow_NativeTest {
             given.take(2).toList(result)
         }
 
-        delay(1000)
+        delay(1_000)
         job.cancelAndJoin()
 
         assertThat(result).containsExactly(null, 0)

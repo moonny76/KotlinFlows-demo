@@ -33,9 +33,10 @@ object CollectLatestDemo {
             simple()
                 .collectLatest { value -> // cancel & restart on the latest value
                     currentCoroutineContext().job.onCompletion("collectLatest: value = $value")
+                    log("\t$value received")
 
                     delay(50)  // pretend we are processing it for 50 ms
-                    log("\t$value collected")
+                    log("\t$value processing done")
                 }
         }
         log("Collected in $time ms")

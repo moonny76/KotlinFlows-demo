@@ -7,7 +7,7 @@ import org.scarlet.util.Resource
 import org.scarlet.util.log
 
 /**
- * #2: Expose the result of a one-shot operation without a mutable backing property
+ * ###2: Expose the result of a one-shot operation without a mutable backing property
  */
 class ViewModelLive(
     private val query: String,

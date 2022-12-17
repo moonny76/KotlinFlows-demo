@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
+
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -10,24 +12,23 @@ import org.scarlet.util.log
  * simultaneously and select the first one that becomes available.
  */
 
-@ExperimentalCoroutinesApi
 object Selecting_from_channels {
 
-    fun CoroutineScope.fizz(): ReceiveChannel<String> = produce {
+    private fun CoroutineScope.fizz(): ReceiveChannel<String> = produce {
         while (true) { // sends "Fizz" every 300 ms
             delay(300)
             send("Fizz")
         }
     }
 
-    fun CoroutineScope.buzz(): ReceiveChannel<String> = produce {
+    private fun CoroutineScope.buzz(): ReceiveChannel<String> = produce {
         while (true) { // sends "Buzz!" every 500 ms
             delay(500)
             send("Buzz!")
         }
     }
 
-    suspend fun selectFizzBuzz(fizz: ReceiveChannel<String>, buzz: ReceiveChannel<String>) {
+    private suspend fun selectFizzBuzz(fizz: ReceiveChannel<String>, buzz: ReceiveChannel<String>) {
         select { // <Unit> means that this select expression does not produce any result
             fizz.onReceive { value ->  // this is the first select clause
                 log("fizz -> '$value'")
@@ -59,7 +60,7 @@ object Selecting_from_channels {
 @ExperimentalCoroutinesApi
 object Selecting_on_Close {
 
-    suspend fun selectAorB(a: ReceiveChannel<String>, b: ReceiveChannel<String>): String =
+    private suspend fun selectAorB(a: ReceiveChannel<String>, b: ReceiveChannel<String>): String =
         select {
             a.onReceiveCatching {
                 val value = it.getOrNull()
@@ -153,7 +154,6 @@ object Selecting_to_Send_Demo {
     }
 }
 
-@ExperimentalCoroutinesApi
 object Selecting_to_Send {
 
     private fun CoroutineScope.produceNumbers(side: SendChannel<Int>): ReceiveChannel<Int> = produce {
@@ -185,8 +185,6 @@ object Selecting_to_Send {
 
 }
 
-@ExperimentalCoroutinesApi
-@ObsoleteCoroutinesApi
 object MixedChannels {
 
     private suspend fun selectFizzBuzz(fizz: SendChannel<String>, buzz: ReceiveChannel<String>) {

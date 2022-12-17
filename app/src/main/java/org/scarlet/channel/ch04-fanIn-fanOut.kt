@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -7,7 +9,6 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
 import org.scarlet.util.log
 
-@ExperimentalCoroutinesApi
 object FanOut {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {

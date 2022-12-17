@@ -17,6 +17,8 @@ import kotlin.system.*
 object ConflationDemo {
 
     fun simple(): Flow<Int> = flow {
+//        log("Flow: ${currentCoroutineContext()}")
+
         for (i in 1..10) {
             log("Emitting $i")
             emit(i) // emit next value
@@ -28,8 +30,11 @@ object ConflationDemo {
     fun main(args: Array<String>) = runBlocking {
         val time = measureTimeMillis {
             simple()
-                .conflate() // conflate emissions, don't process each one
+//                .conflate() // conflate emissions, don't process each one
                 .collect { value ->
+//                    if (value == 1) {
+//                        log("Collector: ${currentCoroutineContext()}")
+//                    }
                     log("\t\tCollector: $value")
                     delay(300) // pretend we are processing it for 300 ms
                 }

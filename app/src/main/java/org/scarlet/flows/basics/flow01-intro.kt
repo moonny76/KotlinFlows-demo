@@ -5,7 +5,6 @@ import org.scarlet.util.spaces
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
-import kotlin.coroutines.coroutineContext
 import kotlin.system.measureTimeMillis
 
 /**
@@ -21,7 +20,7 @@ import kotlin.system.measureTimeMillis
 object SimpleFlow {
     private fun simple(): Flow<Int> = flow { // flow builder
         for (i in 1..3) {
-            delay(2000) // pretend we are doing something useful here
+            delay(2_000) // pretend we are doing something useful here
             log("Emitter: emit = $i")
             emit(i) // emit next value
         }
@@ -36,8 +35,19 @@ object SimpleFlow {
     }
 }
 
+/**/
+
+private fun CoroutineScope.doConcurrentWork(ms: Long) {
+    launch {
+        for (k in 1..5) {
+            log("${spaces(10)}Am I blocked? $k")
+            delay(ms)
+        }
+    }
+}
+
 @ExperimentalStdlibApi
-object List_Blocking_Build_Demo1 {
+object List_Blocking_Build_Demo {
 
     private fun compute(i: String): Result<String> {
         Thread.sleep(1000)
@@ -46,29 +56,17 @@ object List_Blocking_Build_Demo1 {
 
     // dynamically build a list
     private fun foo() = buildList {
-        var result: Result<String> = compute("A").also {
-            log("${spaces(10)}[List] compute A")
+        for (i in listOf("A", "B", "C")) {
+            add(compute(i).also {
+                log("[List] compute($it)")
+            })
         }
-        add(result)
-        result = compute("B").also {
-            log("${spaces(10)}[List] compute B")
-        }
-        add(result)
-        result = compute("C").also {
-            log("${spaces(10)}[List] compute C")
-        }
-        add(result)
     }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         // Launch a concurrent coroutine to check if the main thread is blocked
-        launch {
-            for (k in 1..3) {
-                log("Am I blocked? $k")
-                delay(500)
-            }
-        }
+        doConcurrentWork(500)
 
         var foo: List<Result<String>>
 
@@ -87,41 +85,29 @@ object List_Blocking_Build_Demo1 {
             delay(500)
         }
     }
+
 }
 
-@ExperimentalStdlibApi
 object List_NonBlocking_Build_Demo {
 
     private suspend fun compute(i: String): Result<String> {
-        delay(1000)
+        delay(1_000)
         return Result.success(i.lowercase())
     }
 
     // dynamically build a list
     private suspend fun foo() = buildList {
-        var result: Result<String> = compute("A").also {
-            log("${spaces(10)}[List] compute A")
+        for (i in listOf("A", "B", "C")) {
+            add(compute(i).also {
+                log("[List] compute($it)")
+            })
         }
-        add(result)
-        result = compute("B").also {
-            log("${spaces(10)}[List] compute B")
-        }
-        add(result)
-        result = compute("C").also {
-            log("${spaces(10)}[List] compute C")
-        }
-        add(result)
     }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         // Launch a concurrent coroutine to check if the main thread is blocked
-        launch {
-            for (k in 1..5) {
-                log("Am I blocked? $k")
-                delay(1500)
-            }
-        }
+        doConcurrentWork(1_500)
 
         var foo: List<Result<String>>
 
@@ -137,16 +123,15 @@ object List_NonBlocking_Build_Demo {
 
         foo.forEach {
             log("[Main] process next = $it")
-            delay(1000)
+            delay(1_000)
         }
     }
 }
 
-@ExperimentalStdlibApi
 object Sequence_Demo {
 
     private fun compute(i: String): Result<String> {
-        Thread.sleep(1000)
+        Thread.sleep(1_000)
         return Result.success(i.lowercase())
     }
 
@@ -155,31 +140,21 @@ object Sequence_Demo {
      * a restricted suspending function.
      */
     private fun foo() = sequence {
-        var result: Result<String> = compute("A").also {
-            log("${spaces(10)}[Sequence] compute A")
+        for (i in listOf("A", "B", "C")) {
+            log("[Sequence] before yield")
+            yield(compute(i).also {
+                log("[Sequence] compute($it)")
+            })
+            log("[Sequence] after yield ...")
         }
-        yield(result)
-        result = compute("B").also {
-            log("${spaces(10)}[Sequence] compute B")
-        }
-        yield(result)
-        result = compute("C").also {
-            log("${spaces(10)}[Sequence] compute C")
-        }
-        yield(result)
     }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         // Launch a concurrent coroutine to check if the main thread is blocked
-        launch {
-            for (k in 1..3) {
-                log("Am I blocked? $k")
-                delay(500)
-            }
-        }
+        doConcurrentWork(500)
 
-        var foo: Sequence<Result<String>>?
+        var foo: Sequence<Result<String>>
 
         val elapsedTime = measureTimeMillis {
             foo = foo()
@@ -187,48 +162,36 @@ object Sequence_Demo {
         log("time elapsed for request = $elapsedTime")
         delim()
 
-        val iterator = foo?.iterator()
+        val iterator = foo.iterator()
 
-        log("[Main] request next")
-        while (iterator?.hasNext() == true) {
+        do {
+            log("[Main] request next")
             val next = iterator.next()
             log("[Main] process next = $next")
-            delay(500)
-            log("[Main] request next")
-        }
+            delay(1_000)
+        } while (iterator.hasNext())
     }
 }
 
 object FlowDemo {
     private suspend fun compute(i: String): Result<String> {
-        delay(1000) // pretend we are doing something useful here
+        log("[Flow] compute starting ...($i)")
+        delay(1_000) // pretend we are doing something useful here
         return Result.success(i.lowercase())
     }
 
     private fun foo(): Flow<Result<String>> = flow { // flow builder
-        var result: Result<String> = compute("A").also {
-            log("${spaces(10)}[Emitter] compute A")
+        for (i in listOf("A", "B", "C")) {
+            emit(compute(i).also {
+                log("[Flow] compute($it)")
+            })
         }
-        emit(result)
-        result = compute("B").also {
-            log("${spaces(10)}[Emitter] compute B")
-        }
-        emit(result)
-        result = compute("C").also {
-            log("${spaces(10)}[Emitter] compute C")
-        }
-        emit(result)
     }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         // Launch a concurrent coroutine to check if the main thread is blocked
-        launch {
-            for (k in 1..3) {
-                log("Am I blocked? $k")
-                delay(500)
-            }
-        }
+        doConcurrentWork(500)
 
         var foo: Flow<Result<String>>
         val elapsedTime = measureTimeMillis {
@@ -240,7 +203,7 @@ object FlowDemo {
         // collect the flow
         foo.collect { value ->
             log("[Main] process next = $value")
-            delay(500)
+            delay(1_000)
         }
     }
 }

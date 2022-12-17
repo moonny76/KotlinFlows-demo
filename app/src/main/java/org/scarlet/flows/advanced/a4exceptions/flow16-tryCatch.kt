@@ -5,20 +5,20 @@ import kotlinx.coroutines.runBlocking
 import org.scarlet.util.log
 
 /**
- * Flow exceptions:
+ * ## Flow exceptions:
  *
- * Flow collection can complete with an exception when an emitter or code inside the operators
- * throw an exception. There are several ways to handle these exceptions.
- */
-
-/**
- * Everything is caught:
+ * Flow collection can complete with an exception when an emitter or code inside the flow
+ * operators throw an exception. There are several ways to handle these exceptions.
+ *
+ * <br></br>
+ *
+ * ### Everything is caught:
  *
  * The following examples actually catch any exception happening in the emitter
  * or in any intermediate or terminal operators
  */
 
-object TryCatch_Demo1 {
+object Exceptions_thrown_in_Terminal_Operator {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -33,7 +33,7 @@ object TryCatch_Demo1 {
     }
 }
 
-object TryCatch_Demo2 {
+object Exceptions_thrown_in_Intermediate_Operator {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -49,7 +49,7 @@ object TryCatch_Demo2 {
     }
 }
 
-object TryCatch_Demo3 {
+object Exceptions_thrown_in_Emitter {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {

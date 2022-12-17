@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
 
 /**
- * Exception transparency:
+ * ## Exception transparency:
  *
  * How can code of the emitter encapsulate its exception handling behavior?
  *
@@ -23,9 +23,15 @@ import org.scarlet.util.log
  * - Exceptions can be rethrown using throw.
  * - Exceptions can be turned into emission of values using emit from the body of `catch`.
  * - Exceptions can be ignored, logged, or processed by some other code.
+ *
+ * ### Transparent catch:
+ *
+ * The `catch` intermediate operator, honoring exception transparency, catches
+ * only upstream exceptions (that is an exception from all the operators above
+ * `catch`, but not below it).
  */
 
-object ExceptionTransparencyDemo1 {
+object ExceptionTransparency_Demo1 {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -39,14 +45,12 @@ object ExceptionTransparencyDemo1 {
 }
 
 /**
- * Transparent catch:
+ * ### Transparent catch (cont'd):
  *
- * The `catch` intermediate operator, honoring exception transparency, catches
- * only upstream exceptions (that is an exception from all the operators above
- * `catch`, but not below it). If the block in `collect { ... }` (placed below
- * `catch`) throws an exception then it escapes:
+ * If the block in `collect { ... }` (placed below
+ * `catch`) throws an exception then it escapes.
  */
-object CatchOperatorCatchesOnlyUpstreamExceptions {
+object CatchOperator_Catches_Only_Upstream_Exceptions {
 
     private fun <T> Flow<T>.handleErrors(): Flow<T> =
         catch { e -> showErrorMessage(e) }
@@ -60,7 +64,7 @@ object CatchOperatorCatchesOnlyUpstreamExceptions {
                     throw IllegalStateException("Failed")
                 }
         } catch (ex: Exception) {
-            log("Exception $ex caught .. outside collect")
+            log("Exception $ex caught .. outside 'collect' successfully")
         }
 
         log("Done.")
@@ -68,14 +72,14 @@ object CatchOperatorCatchesOnlyUpstreamExceptions {
 }
 
 /**
- * Catching declaratively:
+ * ### Catching declaratively:
  *
  * We can combine the declarative nature of the `catch` operator with a desire
  * to handle all the exceptions, by moving the body of the `collect` operator
  * into `onEach` and putting it before the `catch` operator. Collection of this
- * flow must be triggered by a call to `collect()` without parameters:
+ * flow must be triggered by a call to `collect()` without parameters.
  */
-object DeclarativeExceptionHandling {
+object Declarative_ExceptionHandling {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {

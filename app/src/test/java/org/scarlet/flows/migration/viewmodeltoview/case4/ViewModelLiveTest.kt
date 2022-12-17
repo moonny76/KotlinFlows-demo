@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.migration.viewmodeltoview.case4
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -19,8 +21,8 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.scarlet.flows.model.Recipe.Companion.mFavorites
+import java.util.*
 
-@ExperimentalCoroutinesApi
 class ViewModelLiveTest {
     // SUT
     private lateinit var viewModel: ViewModelLive
@@ -47,7 +49,7 @@ class ViewModelLiveTest {
         every { authManager.observeUser() } returns flowOf(User("A001", "Peter Parker", 33))
 
         coEvery {
-            delay(1000)
+            delay(1_000)
             repository.getFavoriteRecipesFlow(any())
         } returns flowOf(Resource.Success(mFavorites))
 

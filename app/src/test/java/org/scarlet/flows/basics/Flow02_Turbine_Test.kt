@@ -6,10 +6,7 @@ import org.scarlet.flows.basics.DataSource.counter
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.junit.Test
-import kotlin.time.ExperimentalTime
 
-@ExperimentalCoroutinesApi
-@ExperimentalTime
 class Flow02_Turbine_Test {
 
     @Test

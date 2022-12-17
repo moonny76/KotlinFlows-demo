@@ -15,7 +15,7 @@ interface RecipeApi {
 
     companion object {
         private const val API_KEY = ""
-        private const val BASE_URL = "https://recipesapi.herokuapp.com"
+        private const val BASE_URL = "https://unknown.com"
 
         var recipeApi: RecipeApi
 

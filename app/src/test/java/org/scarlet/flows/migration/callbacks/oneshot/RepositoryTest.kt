@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.migration.callbacks.oneshot
 
 import com.google.common.truth.Truth.assertThat
@@ -16,11 +18,10 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.IOException
 
-@ExperimentalCoroutinesApi
 class RepositoryTest {
 
     // SUT
-    lateinit var repository: Repository
+    private lateinit var repository: Repository
 
     @MockK
     lateinit var mockRecipeApi: RecipeApi

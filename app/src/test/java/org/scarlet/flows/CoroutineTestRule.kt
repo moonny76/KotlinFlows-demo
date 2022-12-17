@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows
 
 import kotlinx.coroutines.CoroutineDispatcher
@@ -8,7 +10,6 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 import org.scarlet.util.DispatchersProvider
 
-@ExperimentalCoroutinesApi
 class CoroutineTestRule(
     val testDispatcher: TestDispatcher = StandardTestDispatcher()
 ) : TestWatcher(){

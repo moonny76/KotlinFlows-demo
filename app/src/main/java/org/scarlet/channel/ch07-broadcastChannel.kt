@@ -1,3 +1,5 @@
+@file:OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
+
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -7,7 +9,6 @@ import org.scarlet.util.log
 import org.scarlet.util.onClose
 import org.scarlet.util.onCompletion
 
-@DelicateCoroutinesApi
 object Channel_FanOut_RaceCondition {
 
     private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Orange", "Pear", "Watermelon")
@@ -33,14 +34,12 @@ object Channel_FanOut_RaceCondition {
             }
         }
 
-        delay(1000)
+        delay(1_000)
         channel.close()
     }
 }
 
 // Similar to Rx PublishSubject
-@ObsoleteCoroutinesApi
-@DelicateCoroutinesApi
 object BroadcastChannel_Bufferring_Demo {
 
     private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Orange", "Pear", "Watermelon")
@@ -131,15 +130,13 @@ object BroadcastChannel_LateConsumer_Demo {
             }
         }.onCompletion("Late Consumer")
 
-        delay(1000)
+        delay(1_000)
         channel.close()
     }
 }
 
 // Similar to Rx ConflatedPublishSubject
 // Sender never blocks!
-@ExperimentalCoroutinesApi
-@ObsoleteCoroutinesApi
 object ConflatedBroadcastChannel_Demo {
 
     @JvmStatic
@@ -182,7 +179,7 @@ object ConflatedBroadcastChannel_Demo {
             }
         }.onCompletion("Late Consumer")
 
-        delay(1000)
+        delay(1_000)
         channel.close()
     }
 }

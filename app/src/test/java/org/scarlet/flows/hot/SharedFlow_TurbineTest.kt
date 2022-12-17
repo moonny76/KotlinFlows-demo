@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package org.scarlet.flows.hot
 
 import app.cash.turbine.test
@@ -10,10 +12,7 @@ import kotlinx.coroutines.test.*
 import org.junit.Test
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
-import kotlin.time.ExperimentalTime
 
-@ExperimentalCoroutinesApi
-@ExperimentalTime
 class SharedFlow_TurbineTest {
 
     /**
@@ -31,7 +30,7 @@ class SharedFlow_TurbineTest {
 
         hotFlow.emit(1)
 
-        withTimeout(1000){
+        withTimeout(1_000){
             hotFlow.test {
                 assertThat(awaitItem()).isEqualTo(1) // expectMostRecentItem() of no use
             }
@@ -92,7 +91,7 @@ class SharedFlow_TurbineTest {
             }
         }.onCompletion("fastSubscriber done")
 
-        delay(3000)
+        delay(3_000)
         slowSubscriber.cancelAndJoin()
         fastSubscriber.cancelAndJoin()
     }
