@@ -18,6 +18,7 @@ class StateFlow_NativeTest {
     fun `StateFlow test`() = runTest {
         val stateFlow = MutableStateFlow(0)
 
+        // Publisher
         launch {
             repeat(3) {
                 delay(200) // change this 200, 1000
@@ -25,6 +26,7 @@ class StateFlow_NativeTest {
             }
         }.onCompletion("Publisher")
 
+        // Subscriber
         val collector = launch {
             stateFlow.collect {
                 log("received value = $it")
@@ -54,7 +56,6 @@ class StateFlow_NativeTest {
         hotFlow.emit(1)
 
         val value = hotFlow.first()
-        assertThat(value).isNotEqualTo(42)
         assertThat(value).isEqualTo(1)
     }
 
@@ -67,9 +68,8 @@ class StateFlow_NativeTest {
             hotFlow.collect {
                 list.add(it)
             }
-        }.also {
-            runCurrent()
         }
+        runCurrent() // or use `UnconfinedDispatcher`
 
         hotFlow.emit(1)
 
@@ -80,7 +80,7 @@ class StateFlow_NativeTest {
     }
 
     @Test
-    fun `StateFlow - realistic test`() = runBlocking {
+    fun `StateFlow - realistic test`() = runTest {
         val publisher = launch {
             genToken() // infinite flow
         }.onCompletion("Publisher")
@@ -124,28 +124,7 @@ class StateFlow_NativeTest {
             emit(payload)
         }.stateIn(
             scope = this,
-            started = SharingStarted.Lazily, // What if using Early?
-            initialValue = null
-        )
-
-        val result = mutableListOf<Int?>()
-        val job = launch {
-            given.take(2).toList(result)
-        }
-
-        delay(1_000)
-        job.cancelAndJoin()
-
-        assertThat(result).containsExactly(null, 0)
-    }
-
-    @Test
-    fun `stateIn - WhileSubscribed`() = runTest {
-        val payload = 0
-        val given = flow {
-            emit(payload)
-        }.stateIn(
-            scope = this, // Oops!
+            // What if using Early or WhileSubscribed?
             started = SharingStarted.WhileSubscribed(),
             initialValue = null
         )

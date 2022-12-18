@@ -3,6 +3,7 @@ package org.scarlet.android.collect
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -20,7 +21,7 @@ class HotFlowViewModel : ViewModel() {
                     repeat(Int.MAX_VALUE) {
                         Log.v(TAG, "ViewModel: value = $it")
                         _backingFlow.value = it
-                        delay(2000)
+                        delay(2_000)
                     }
                 }
             }
@@ -31,8 +32,10 @@ class HotFlowViewModel : ViewModel() {
                         if (_backingFlow.subscriptionCount.value != 0) {
                             Log.v(TAG, "ViewModel: value = $it")
                             _backingFlow.value = it
+                        } else {
+                            Log.v(TAG, "ViewModel: looping ...")
                         }
-                        delay(2000)
+                        delay(2_000)
                     }
                 }
             }
@@ -41,11 +44,11 @@ class HotFlowViewModel : ViewModel() {
                     repeat(Int.MAX_VALUE) {
                         Log.v(TAG, "ViewModel: value = $it")
                         emit(it)
-                        delay(2000)
+                        delay(2_000)
                     }
                 }.stateIn(
                     scope = viewModelScope,
-                    started = SharingStarted.WhileSubscribed(),
+                    started = SharingStarted.WhileSubscribed(5_000),
                     initialValue = -1
                 )
             }

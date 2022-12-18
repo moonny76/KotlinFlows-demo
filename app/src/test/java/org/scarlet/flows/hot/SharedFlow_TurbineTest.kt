@@ -12,6 +12,8 @@ import kotlinx.coroutines.test.*
 import org.junit.Test
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
+import kotlin.time.Duration.Companion.INFINITE
+import kotlin.time.Duration.Companion.milliseconds
 
 class SharedFlow_TurbineTest {
 
@@ -21,19 +23,16 @@ class SharedFlow_TurbineTest {
      * It's important to call test (and therefore have an active collector)
      * on a flow before emissions to a flow are made.
      *
-     * Hot flow never completes.
+     * **Hot flow never completes**.
      */
-
     @Test(expected = TimeoutCancellationException::class)
     fun `wrongTest - SharedFlow`() = runTest {
-        val hotFlow = MutableSharedFlow<Int>(replay = 0) // if replay = 1, then OK
+        val hotFlow = MutableSharedFlow<Int>(replay = 0)
 
-        hotFlow.emit(1)
+        hotFlow.emit(1) // will be dropped
 
-        withTimeout(1_000){
-            hotFlow.test {
-                assertThat(awaitItem()).isEqualTo(1) // expectMostRecentItem() of no use
-            }
+        hotFlow.test(timeout = 1_000.milliseconds) {
+            assertThat(awaitItem()).isEqualTo(1) // expectMostRecentItem() of no use
         }
     }
 
@@ -61,8 +60,9 @@ class SharedFlow_TurbineTest {
             onBufferOverflow = BufferOverflow.SUSPEND
         )
 
+        // Publisher
         launch {
-            repeat(3) {
+            repeat(5) {
                 log("Emitting: $it (# subscribers = ${sharedFlow.subscriptionCount.value})")
                 sharedFlow.emit(it)
                 log("Emit $it done")
@@ -84,7 +84,7 @@ class SharedFlow_TurbineTest {
         val fastSubscriber = launch {
             delay(300) // start after 300ms
             log("${spaces(8)}Subscriber2 subscribes...")
-            sharedFlow.test {
+            sharedFlow.test(timeout = INFINITE) {
                 while (true) {
                     log("${spaces(8)}Subscriber2: ${awaitItem()}")
                 }

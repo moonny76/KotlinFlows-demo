@@ -11,7 +11,6 @@ import kotlinx.coroutines.test.*
 import org.junit.Test
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
-import kotlin.time.ExperimentalTime
 
 class SharedFlow_NativeTest {
     /**
@@ -20,12 +19,11 @@ class SharedFlow_NativeTest {
      * It's important to call test (and therefore have an active collector)
      * on a flow before emissions to a flow are made.
      *
-     * Hot flow never completes.
+     * **Hot flow never completes**.
      */
-
     @Test
     fun `empty SharedFlow - timeout`() = runTest {
-        val emptyFlow = MutableSharedFlow<Int>() // replay = 0 by default
+        val emptyFlow = MutableSharedFlow<Int>(replay = 0) // default
 
         val value = withTimeoutOrNull(1_000) {
             emptyFlow.first()
@@ -40,19 +38,6 @@ class SharedFlow_NativeTest {
         emptyFlow.collect {
             log("try collect ...")
         }
-
-        log("Unreachable Code")
-    }
-
-    @Test
-    fun `empty SharedFlow - collect in launch - UncompletedCoroutinesError`() = runTest {
-        val emptyFlow = MutableSharedFlow<Int>()
-
-        launch {
-            emptyFlow.collect {
-                log("try collect ...")
-            }
-        }.join()
 
         log("Unreachable Code")
     }
@@ -90,6 +75,7 @@ class SharedFlow_NativeTest {
             }
         }.onCompletion("Publisher done")
 
+        // Slow subscriber
         val slowSubscriber = launch {
             delay(100) // start after 100ms
             log("${spaces(4)}Subscriber1 subscribes...")
@@ -99,6 +85,7 @@ class SharedFlow_NativeTest {
             }
         }.onCompletion("slowSubscriber done")
 
+        // Fast subscriber
         val fastSubscriber = launch {
             delay(300) // start after 300ms
             log("${spaces(8)}Subscriber2 subscribes...")
@@ -107,7 +94,7 @@ class SharedFlow_NativeTest {
             }
         }.onCompletion("fastSubscriber done")
 
-        delay(3000)
+        delay(3_000)
         slowSubscriber.cancelAndJoin()
         fastSubscriber.cancelAndJoin()
     }

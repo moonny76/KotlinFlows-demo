@@ -4,34 +4,29 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.scarlet.flows.model.Recipe
-import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
 class SafeCollectViewModel : ViewModel() {
-    private val _recipes = MutableSharedFlow<List<Recipe>>(1)
-    val recipes = _recipes.asSharedFlow()
+    private val _numbers = MutableStateFlow(-1)
+    val numbers = _numbers.asStateFlow()
+
+    private var current = 0
 
     init {
         viewModelScope.launch {
             while (isActive) {
-                Log.d(TAG, "[ViewModel] Emitting recipes ...")
-                _recipes.emit(mRecipes)
+                Log.d(TAG, "[ViewModel] Emitting numbers ...")
+                _numbers.value = current++
                 delay(FAKE_NETWORK_DELAY)
             }
         }
     }
 
-    suspend fun searchRecipes(query: String): List<Recipe> {
-        delay(FAKE_NETWORK_DELAY)
-        return mRecipes
-    }
-
     companion object {
-        const val FAKE_NETWORK_DELAY = 5_000L
+        const val FAKE_NETWORK_DELAY = 2_000L
         const val TAG = "Flow"
     }
 }

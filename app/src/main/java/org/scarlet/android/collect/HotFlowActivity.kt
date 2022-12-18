@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.launch
 import org.scarlet.R
+import org.scarlet.android.collect.HotFlowViewModel.Companion.FlowKind
 
 class HotFlowActivity : AppCompatActivity() {
     private val viewModel by lazy { HotFlowViewModel() }
@@ -16,7 +17,8 @@ class HotFlowActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_collect_main)
 
-        viewModel.startFlow(HotFlowViewModel.Companion.FlowKind.FLOW1)
+        // FLOW1, FLOW2, FLOW3
+        viewModel.startFlow(FlowKind.FLOW1)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {

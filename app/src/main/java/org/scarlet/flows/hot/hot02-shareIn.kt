@@ -9,7 +9,7 @@ import org.scarlet.util.*
  */
 
 /**
- * sharedIn Demo
+ * ## sharedIn Demo
  */
 
 object sharedIn_Demo {
@@ -21,7 +21,7 @@ object sharedIn_Demo {
                 emit(i)
                 delim()
                 log("Emitting $i done")
-                delay(1000)
+                delay(1_000)
             }
         }
 
@@ -31,7 +31,7 @@ object sharedIn_Demo {
             replay = 0 // default
         )
 
-        delay(1500) // first subscriber joins 1500ms later
+        delay(1_500) // first subscriber joins 1500ms later
 
         val subscriber1 = launch {
             log("${spaces(4)}Subscriber1 subscribes")
@@ -40,7 +40,7 @@ object sharedIn_Demo {
             }
         }.onCompletion("Subscriber1")
 
-        delay(1000) // second subscriber joins 2500ms later
+        delay(1_000) // second subscriber joins 2500ms later
 
         val subscriber2 = launch {
             log("${spaces(8)}Subscriber2 subscribes")
@@ -49,7 +49,7 @@ object sharedIn_Demo {
             }
         }.onCompletion("Subscriber2")
 
-        delay(1000) // third subscriber joins 3500ms later
+        delay(1_000) // third subscriber joins 3500ms later
 
         val subscriber3 = launch {
             log("${spaces(12)}Subscriber3 subscribes")
@@ -58,7 +58,7 @@ object sharedIn_Demo {
             }
         }.onCompletion("Subscriber3")
 
-        delay(2000)
+        delay(2_000)
         coroutineContext.job.cancelChildren()
         joinAll(subscriber1, subscriber2, subscriber3)
     }
@@ -95,7 +95,7 @@ object sharedIn_Eager {
             }
         }
 
-        delay(1000)
+        delay(1_000)
         subscriber.cancelAndJoin()
     }
 }
@@ -131,7 +131,7 @@ object shareIn_Lazy {
             }
         }
 
-        delay(1000)
+        delay(1_000)
         collector.cancelAndJoin()
     }
 
@@ -142,7 +142,7 @@ object SharedFlow_WhileSubscribed {
     fun main(args: Array<String>) = runBlocking {
         val flow = flowOf("A", "B", "C", "D")
             .onStart { log("Flow started") }
-            .onEach { delay(1000) }
+            .onEach { log("Emitting $it"); delay(1_000) }
             .onCompletion { log("Flow finished") }
 
         val sharedFlow = flow.shareIn(
@@ -155,8 +155,9 @@ object SharedFlow_WhileSubscribed {
             replay = 0 // 1
         )
 
-        delay(3000)
+        delay(3_000)
 
+        // Subscriber 1
         val subscriber1 = launch {
             log("${spaces(4)}Subscriber1 subscribes")
             sharedFlow.collect {
@@ -164,22 +165,24 @@ object SharedFlow_WhileSubscribed {
             }
         }.onCompletion("${spaces(4)}Subscriber1 leaves")
 
+        // Subscriber 2
         launch {
-            delay(2000)
+            delay(2_000)
             log("${spaces(8)}Subscriber2 subscribes")
             log("${spaces(8)}subscriber2: ${sharedFlow.take(2).toList()}")
         }.onCompletion("${spaces(8)}Subscriber2 leaves")
 
-        delay(3000)
-//        subscriber1.cancelAndJoin() // last subscriber leaves
+        delay(3_000)
+        subscriber1.cancelAndJoin() // last subscriber leaves
 
+        // Subscriber 3
         launch {
-            delay(1000)
+            delay(1_000)
             log("${spaces(12)}Subscriber3 subscribes")
             log("${spaces(12)}subscriber3: ${sharedFlow.first()}")
         }.onCompletion("${spaces(12)}Subscriber3 leaves")
 
-        delay(5000)
+        delay(5_000)
         coroutineContext.job.cancelChildren()
     }
 }

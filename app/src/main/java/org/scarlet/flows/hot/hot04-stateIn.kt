@@ -2,14 +2,13 @@ package org.scarlet.flows.hot
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import org.scarlet.flows.hot.SharedFlow_As_StateFlow.stateFlow
 import org.scarlet.util.*
 import kotlin.random.Random
 
 /**
- * stateIn Demo
+ * ## stateIn Demo
  *
- * The stateIn operator is useful in situations when there is a cold flow that provides
+ * The `stateIn` operator is useful in situations when there is a cold flow that provides
  * updates to the value of some state and is expensive to create and/or to maintain, but
  * there are multiple subscribers that need to collect the most recent state value.
  */
@@ -35,13 +34,14 @@ object stateIn_Demo {
             initialValue = null
         )
 
+        // Subscriber 1
         val subscriber1 = launch {
             stateFlow.collect { value ->
                 log("${spaces(4)}Subscriber1: $value")
             }
         }
 
-        // Subscribe 500ms later
+        // Another later subscriber 500ms later
         val subscriber2 = launch {
             delay(500)
             stateFlow.collect { value ->
@@ -49,14 +49,14 @@ object stateIn_Demo {
             }
         }
 
-        delay(2000)
+        delay(2_000)
         subscriber1.cancelAndJoin()
         subscriber2.cancelAndJoin()
     }
 }
 
 /**
- * Suspending version of `stateIn`:
+ * ### Suspending version of `stateIn`:
  * ```
  * suspend fun <T> Flow<T>.stateIn(scope: CoroutineScope): StateFlow<T>
  * ```
@@ -64,26 +64,33 @@ object stateIn_Demo {
  * Always need a value, so wait until the first value (i.e., initial value) is available.
  * When execution happens in suspending context and you want to compute and wait for the
  * initial value of the state to arrive from the upstream flow, there is a suspending
- * variant of stateIn without initial value and with the hard-coded sharingStarted = Eagerly
+ * variant of `stateIn` without initial value and with the hard-coded `sharingStarted = Eagerly`.
  */
 
 object Suspendingfunction_StateIn {
+
+    // Cold flow
     private val greetingFlow = flow {
+        log("Cold flow started")
         val seed = Random.nextInt()
-        emit("Hello $seed")
-        log("Hello")
-        emit("Hola $seed")
-        log("Hola")
-    }.onEach { delay(3000) }
+        emit("Yellow $seed")
+        log("Yellow")
+        emit("Mellow $seed")
+        log("Mellow")
+    }.onEach { delay(3_000) }
 
     private suspend fun coldFlowDemo() = coroutineScope {
         launch {
-            log("Subscriber1 launched")
-            greetingFlow.collect { greeting -> log("subscriber1 - 1: $greeting") }
+            log("${spaces(4)}Subscriber1 launched")
+            greetingFlow.collect { greeting ->
+                log("${spaces(4)}subscriber1 - 1: $greeting")
+            }
         }
         launch {
-            log("Subscriber2 launched")
-            greetingFlow.collect { greeting -> log("subscriber2 - 2: $greeting") }
+            log("${spaces(8)}Subscriber2 launched")
+            greetingFlow.collect { greeting ->
+                log("${spaces(8)}subscriber2 - 2: $greeting")
+            }
         }
     }
 
@@ -92,15 +99,19 @@ object Suspendingfunction_StateIn {
         val greetingState = greetingFlow.stateIn(this)
 
         val subscriber1 = launch {
-            log("Subscriber1 launched")
-            greetingState.collect { greeting -> log("subscriber1 - 1: $greeting") }
+            log("${spaces(4)}Subscriber1 launched")
+            greetingState.collect { greeting ->
+                log("${spaces(4)}subscriber1 - 1: $greeting")
+            }
         }
         val subscriber2 = launch {
-            log("Subscriber2 launched")
-            greetingState.collect { greeting -> log("subscriber2 - 2: $greeting") }
+            log("${spaces(8)}Subscriber2 launched")
+            greetingState.collect { greeting ->
+                log("${spaces(8)}subscriber2 - 2: $greeting")
+            }
         }
 
-        delay(5000)
+        delay(5_000)
         subscriber1.cancelAndJoin()
         subscriber2.cancelAndJoin()
     }
@@ -117,11 +128,11 @@ object Suspendingfunction_StateIn {
 
 object stateIn_ColdToHot_Eagerly_vs_Lazily {
 
-    val coldFlow: Flow<Resource<Int>> = flow {
+    private val coldFlow: Flow<Resource<Int>> = flow {
         for (i in 0..4) {
             log("Emit: $i")
             emit(Resource.Success(i))
-            delay(1000)
+            delay(1_000)
         }
     }
 
@@ -132,36 +143,38 @@ object stateIn_ColdToHot_Eagerly_vs_Lazily {
             this,
             SharingStarted.Eagerly, // Lazily
             Resource.Empty
-        ).apply { log("Stateflow created") }
+        )
 
+        // Subscriber 1
         val subscriber1 = launch {
-            delay(2000) // start after stateflow initialize
+            delay(2_000) // start after stateflow initialize
             log("${spaces(4)}Subscriber1 subscribes ...")
             stateFlow.collect {
                 log("${spaces(4)}Subscriber1: $it")
-                delay(1500)
+                delay(1_500)
             }
         }
 
+        // Subscriber 2
         val subscriber2 = launch {
-            delay(3500)
+            delay(3_500)
             log("${spaces(8)}Subscriber2 subscribes ...")
             stateFlow.collect {
                 log("${spaces(8)}Subscriber2: $it")
             }
         }
 
-        delay(7000)
+        delay(7_000)
         subscriber1.cancelAndJoin()
         subscriber2.cancelAndJoin()
     }
 }
 
-// Note that program doesn't terminate.
+// Note that program doesn't terminate!!
 @DelicateCoroutinesApi
 object WhileSubscribed_Demo {
 
-    val coldFlow: Flow<Int> = flow {
+    private val coldFlow: Flow<Int> = flow {
         repeat(10) {
             log("Emit: $it")
             emit(it)
@@ -174,27 +187,27 @@ object WhileSubscribed_Demo {
 
         val stateFlow: StateFlow<Int?> = coldFlow.stateIn(
             scope = this,
-            started = SharingStarted.WhileSubscribed(replayExpirationMillis = 1000),
+            started = SharingStarted.WhileSubscribed(replayExpirationMillis = 1_000),
             initialValue = null
-        ).apply { log("Stateflow created")}
+        )
 
         // First subscriber
         val subscriber1 = launch {
-            delay(3000)
+            delay(3_000)
             log("${spaces(4)}Subscriber1 subscribes ...")
             stateFlow.collect { value ->
                 log("${spaces(4)}Subscriber1: $value")
             }
         }
 
-        delay(5000)
+        delay(5_000)
         subscriber1.cancelAndJoin()
         log("${spaces(4)}Subscriber1 cancelled")
 
         delim()
 
         // Second subscriber joined later
-        delay(500) // Change 500, 1500 to see the effect of `replayExpirationMillis`
+        delay(1_500) // Change 500, 1500 to see the effect of `replayExpirationMillis`
         val subscriber2 = launch {
             log("${spaces(8)}Subscriber2 subscribes ...")
             stateFlow.collect { value ->
@@ -202,10 +215,10 @@ object WhileSubscribed_Demo {
             }
         }
 
-        delay(5000)
+        delay(5_000)
         subscriber2.cancelAndJoin()
 
-//        log(coroutineContext.job.children.toList())
+//        log(coroutineContext.job.children.toList())  // Check to see who is the culprit.
 //        coroutineContext.job.cancelChildren()
     }
 }

@@ -7,14 +7,14 @@ import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
 
 /**
- * StateFlow:
+ * ## StateFlow:
  *  - conflation
  *
  *  Not suitable for tracing locations (due to conflation) and event processing (due to uniqueness)
  *  Slow subscribers may miss intermediate values.
  */
 
-object StateFlow_Hot_and_Conflation {
+object StateFlow_and_Conflation {
 
     // State flow must have an initial value.
     private val stateFlow = MutableStateFlow<Resource<Int>>(Resource.Empty)
@@ -25,6 +25,7 @@ object StateFlow_Hot_and_Conflation {
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
 
+        // Subscriber
         val subscriber = launch {
 //            delay(450) // 1. Uncomment to check to see whether initial value collected or not
             log("${spaces(4)}Subscriber: subscribe to stateflow")
@@ -34,9 +35,9 @@ object StateFlow_Hot_and_Conflation {
             }
         }
 
-        // Populate state flow
+        // Publisher
         launch {
-            log("Publisher: starts")
+            log("Publisher: started")
             for (i in 0..4) {
                 log("Emit $i")
                 stateFlow.value = Resource.Success(i)
@@ -44,7 +45,7 @@ object StateFlow_Hot_and_Conflation {
             }
         }
 
-        delay(2000)
+        delay(2_000)
         subscriber.cancelAndJoin()
     }
 }
@@ -52,22 +53,23 @@ object StateFlow_Hot_and_Conflation {
 /**
  *  Check whether initial value delivered to late collector.
  */
-object StateFlow_Hot_and_Late_Collector {
+object StateFlow_Late_Collector {
 
     private val stateFlow = MutableStateFlow<Resource<Int>>(Resource.Empty)
 
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
 
-        // Populate state flow
+        // Publisher
         launch {
             for (i in 0..4) {
-                log("Emit $i (#subscribers = ${stateFlow.subscriptionCount.value})")
                 stateFlow.value = Resource.Success(i)
+                log("Emit $i (#subscribers = ${stateFlow.subscriptionCount.value})")
                 delay(100)
             }
         }
 
+        // A late subscriber
         val subscriber = launch {
             // To delay subscriber subscription
             delay(300)
@@ -77,7 +79,7 @@ object StateFlow_Hot_and_Late_Collector {
             }
         }
 
-        delay(1000)
+        delay(1_000)
         subscriber.cancelAndJoin()
     }
 }
@@ -88,6 +90,7 @@ object StateFlow_Multiple_Subscribers {
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
 
+        // Subscriber 1
         val subscriber1 = launch {
             log("${spaces(4)}Subscriber1 subscribes")
             stateFlow.collect {
@@ -96,6 +99,7 @@ object StateFlow_Multiple_Subscribers {
             }
         }
 
+        // Subscriber 2
         val subscriber2 = launch {
             delay(250)
             log("${spaces(12)}Subscriber2 subscribes")
@@ -105,7 +109,7 @@ object StateFlow_Multiple_Subscribers {
             }
         }
 
-        // Populate stateflow
+        // Publisher
         launch {
             for (i in 0..4) {
                 log("Emitter: $i")
@@ -114,9 +118,9 @@ object StateFlow_Multiple_Subscribers {
             }
         }
 
-        delay(2000)
-        subscriber1.cancel()
-        subscriber2.cancel()
+        delay(2_000)
+        coroutineContext.job.cancelChildren()
+        joinAll(subscriber1, subscriber2)
     }
 }
 
@@ -126,6 +130,7 @@ object StateFlow_Squash_Duplication {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
 
+        // Subscriber
         val subscriber = launch {
             log("${spaces(4)}Subscriber: subscribe to stateflow")
             stateFlow.collect {
@@ -133,7 +138,7 @@ object StateFlow_Squash_Duplication {
             }
         }
 
-        // Populate state flow
+        // Publisher
         launch {
             for (i in listOf(1, 1, 2, 2, 3, 3, 3)) {
                 log("Emit $i")
@@ -142,7 +147,7 @@ object StateFlow_Squash_Duplication {
             }
         }
 
-        delay(1000)
+        delay(1_000)
         subscriber.cancelAndJoin()
     }
 }

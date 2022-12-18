@@ -9,7 +9,7 @@ import org.scarlet.util.delim
 import org.scarlet.util.log
 
 /**
- * Make SharedFlow as StateFLow
+ * ## Make SharedFlow as StateFLow
  */
 object SharedFlow_As_StateFlow {
 
@@ -25,7 +25,7 @@ object SharedFlow_As_StateFlow {
         distinctUntilChanged()
     }
 
-    val sharedFlow: SharedFlow<Resource<Int>> = _sharedFlow
+    private val sharedFlow: SharedFlow<Resource<Int>> = _sharedFlow
 
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
@@ -34,7 +34,7 @@ object SharedFlow_As_StateFlow {
         sharedFlow_case()
     }
 
-    suspend fun stateFlow_case() = coroutineScope{
+    private suspend fun stateFlow_case() = coroutineScope{
         val subscriber1 = launch {
             log("Subscriber1 subscribes")
             stateFlow.collect {
@@ -44,7 +44,7 @@ object SharedFlow_As_StateFlow {
         }
 
         val subscriber2 = launch {
-            delay(1000)
+            delay(1_000)
             log("${spaces(8)}Subscriber2 subscribes after 1000ms")
             stateFlow.collect {
                 log("${spaces(8)}Subscriber2: $it")
@@ -52,6 +52,7 @@ object SharedFlow_As_StateFlow {
             }
         }
 
+        // Publisher
         launch {
             for (i in 0..5) {
                 _stateFlow.value = Resource.Success(i)
@@ -59,12 +60,12 @@ object SharedFlow_As_StateFlow {
             }
         }
 
-        delay(2000)
+        delay(2_000)
         subscriber1.cancelAndJoin()
         subscriber2.cancelAndJoin()
     }
 
-    suspend fun sharedFlow_case() = coroutineScope{
+    private suspend fun sharedFlow_case() = coroutineScope{
         val subscriber1 = launch {
             log("Subscriber1 subscribes")
             sharedFlow.collect {
@@ -74,7 +75,7 @@ object SharedFlow_As_StateFlow {
         }
 
         val subscriber2 = launch {
-            delay(1000)
+            delay(1_000)
             log("${spaces(8)}Subscriber2 subscribes after 1000ms")
             sharedFlow.collect {
                 log("${spaces(8)}Subscriber2: $it")
@@ -82,6 +83,7 @@ object SharedFlow_As_StateFlow {
             }
         }
 
+        // Publisher
         launch {
             for (i in 0..5) {
                 _sharedFlow.emit(Resource.Success(i))
@@ -89,7 +91,7 @@ object SharedFlow_As_StateFlow {
             }
         }
 
-        delay(2000)
+        delay(2_000)
         subscriber1.cancelAndJoin()
         subscriber2.cancelAndJoin()
     }

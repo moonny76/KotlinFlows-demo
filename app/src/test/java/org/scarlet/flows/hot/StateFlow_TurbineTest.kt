@@ -19,6 +19,7 @@ class StateFlow_TurbineTest {
     fun `StateFlow test`() = runTest {
         val stateFlow = MutableStateFlow(0)
 
+        // Publisher
         launch {
             repeat(3) {
                 stateFlow.value = it + 1
@@ -51,7 +52,6 @@ class StateFlow_TurbineTest {
 
         hotFlow.test {
             val value = awaitItem()
-            assertThat(value).isNotEqualTo(42)
             assertThat(value).isEqualTo(1)
         }
     }
@@ -66,8 +66,9 @@ class StateFlow_TurbineTest {
 
             list.add(awaitItem())
             list.add(awaitItem())
-            log(list)
         }
+
+        assertThat(list).isEqualTo(listOf(42, 1))
     }
 
     @Test
@@ -100,7 +101,6 @@ class StateFlow_TurbineTest {
         launch {
             given.test {
                 log(awaitItem())
-                delay(1_000)
                 log(awaitItem())
             }
         }
@@ -113,8 +113,8 @@ class StateFlow_TurbineTest {
             emit(payload)
         }.stateIn(
             scope = this,
-//            started = SharingStarted.Lazily, // try Eagerly
-            started = SharingStarted.WhileSubscribed(),
+            // What if using Early or WhileSubscribed?
+            started = SharingStarted.Lazily,
             initialValue = null
         )
 
