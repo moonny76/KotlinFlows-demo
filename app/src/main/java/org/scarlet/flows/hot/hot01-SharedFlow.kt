@@ -17,7 +17,7 @@ import org.scarlet.util.*
 object SharedFlow_behaves_like_a_broadcast_channel {
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking<Unit> {
+    fun main(args: Array<String>) = runBlocking {
         // default configuration
         val mutableSharedFlow = MutableSharedFlow<String>(
             replay = 0,

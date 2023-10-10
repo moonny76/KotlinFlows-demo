@@ -8,5 +8,6 @@ interface Repository {
     suspend fun getRecipes(query: String): Resource<List<Recipe>>
 
     suspend fun getFavoriteRecipes(userId: String): Resource<List<Recipe>>
+
     fun getFavoriteRecipesFlow(userId: String): Flow<Resource<List<Recipe>>>
 }

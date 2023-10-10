@@ -114,11 +114,9 @@ class StateFlow_TurbineTest {
         }.stateIn(
             scope = this,
             // What if using Early or WhileSubscribed?
-            started = SharingStarted.Lazily,
+            started = SharingStarted.WhileSubscribed(),
             initialValue = null
         )
-
-        delay(500)
 
         given.test {
             log(awaitItem())

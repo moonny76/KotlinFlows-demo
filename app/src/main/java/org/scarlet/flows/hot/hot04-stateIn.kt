@@ -18,9 +18,12 @@ object stateIn_Demo {
 
     // Cold flow
     private val countingFlow: Flow<Int> = flow {
+        currentCoroutineContext().job.onCompletion("countingFlow")
+
         repeat(10) {
-            log("Emitter: $it")
+            log("Emitting: $it")
             emit(it)
+            log("Emitting: $it done")
             delay(100)
         }
     }
@@ -39,7 +42,7 @@ object stateIn_Demo {
             stateFlow.collect { value ->
                 log("${spaces(4)}Subscriber1: $value")
             }
-        }
+        }.onCompletion("Subscriber1")
 
         // Another later subscriber 500ms later
         val subscriber2 = launch {
@@ -47,9 +50,10 @@ object stateIn_Demo {
             stateFlow.collect { value ->
                 log("${spaces(8)}Subscriber2: $value")
             }
-        }
+        }.onCompletion("Subscriber2")
 
         delay(2_000)
+        log("Cancelling all subscribers ...")
         subscriber1.cancelAndJoin()
         subscriber2.cancelAndJoin()
     }
@@ -130,8 +134,9 @@ object stateIn_ColdToHot_Eagerly_vs_Lazily {
 
     private val coldFlow: Flow<Resource<Int>> = flow {
         for (i in 0..4) {
-            log("Emit: $i")
+            log("Emitting: $i")
             emit(Resource.Success(i))
+            log("Emitting: $i done")
             delay(1_000)
         }
     }
@@ -153,7 +158,7 @@ object stateIn_ColdToHot_Eagerly_vs_Lazily {
                 log("${spaces(4)}Subscriber1: $it")
                 delay(1_500)
             }
-        }
+        }.onCompletion("Subscriber1")
 
         // Subscriber 2
         val subscriber2 = launch {
@@ -162,7 +167,7 @@ object stateIn_ColdToHot_Eagerly_vs_Lazily {
             stateFlow.collect {
                 log("${spaces(8)}Subscriber2: $it")
             }
-        }
+        }.onCompletion("Subscriber2")
 
         delay(7_000)
         subscriber1.cancelAndJoin()
@@ -175,15 +180,21 @@ object stateIn_ColdToHot_Eagerly_vs_Lazily {
 object WhileSubscribed_Demo {
 
     private val coldFlow: Flow<Int> = flow {
+        currentCoroutineContext().job.onCompletion("coldFlow")
+
+        log("Flow started ...")
         repeat(10) {
-            log("Emit: $it")
+            log("Emitting: $it")
             emit(it)
+            log("Emit: $it done")
             delay(500)
         }
+        log("Flow completed ...")
     }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
+        log("Program started ...")
 
         val stateFlow: StateFlow<Int?> = coldFlow.stateIn(
             scope = this,
@@ -198,11 +209,11 @@ object WhileSubscribed_Demo {
             stateFlow.collect { value ->
                 log("${spaces(4)}Subscriber1: $value")
             }
-        }
+        }.onCompletion("Subscriber1")
 
         delay(5_000)
+        log("Cancel subscriber1 ...")
         subscriber1.cancelAndJoin()
-        log("${spaces(4)}Subscriber1 cancelled")
 
         delim()
 
@@ -213,9 +224,10 @@ object WhileSubscribed_Demo {
             stateFlow.collect { value ->
                 log("${spaces(8)}Subscriber2: $value")
             }
-        }
+        }.onCompletion("Subscriber2")
 
-        delay(5_000)
+        delay(6_000)
+        log("Cancel subscriber2 ...")
         subscriber2.cancelAndJoin()
 
 //        log(coroutineContext.job.children.toList())  // Check to see who is the culprit.

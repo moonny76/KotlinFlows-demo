@@ -26,7 +26,6 @@ class ViewModelFlow(
 
     // Version 2: stateIn
 //    val recipes: StateFlow<Resource<List<Recipe>>> = flow {
-//        emit(Resource.Loading)
 //        emit(repository.getRecipes(query))
 //    }.stateIn(
 //        scope = viewModelScope,

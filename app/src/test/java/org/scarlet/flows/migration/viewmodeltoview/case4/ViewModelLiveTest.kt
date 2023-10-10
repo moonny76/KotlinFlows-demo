@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.migration.viewmodeltoview.case4
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -21,11 +19,11 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.*
 import org.scarlet.flows.model.Recipe.Companion.mFavorites
-import java.util.*
 
+@ExperimentalCoroutinesApi
 class ViewModelLiveTest {
     // SUT
-    private lateinit var viewModel: ViewModelLive
+    lateinit var viewModel: ViewModelLive
 
     @get:Rule
     val rule = InstantTaskExecutorRule()
@@ -77,7 +75,6 @@ class ViewModelLiveTest {
     @Test
     fun `testLiveData - with captureValues`() = runTest {
         // Arrange (Given)
-
         // Act (When)
         viewModel.favorites.captureValues {
             advanceUntilIdle()

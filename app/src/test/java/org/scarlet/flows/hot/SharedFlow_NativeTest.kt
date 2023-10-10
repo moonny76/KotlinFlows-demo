@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.hot
 
 import com.google.common.truth.Truth.assertThat
@@ -31,6 +29,7 @@ class SharedFlow_NativeTest {
         assertThat(value).isNull()
     }
 
+    @Suppress("UNREACHABLE_CODE")
     @Test
     fun `empty SharedFlow - collect - UncompletedCoroutinesError`() = runTest {
         val emptyFlow = MutableSharedFlow<Int>()
@@ -66,8 +65,8 @@ class SharedFlow_NativeTest {
         )
 
         // Publisher
-        launch {
-            repeat(5) {
+        val publisher = launch {
+            repeat(10) {
                 log("Emitting: $it (# subscribers = ${sharedFlow.subscriptionCount.value})")
                 sharedFlow.emit(it)
                 log("Emit: $it done")
@@ -94,8 +93,11 @@ class SharedFlow_NativeTest {
             }
         }.onCompletion("fastSubscriber done")
 
-        delay(3_000)
+        delay(2_000)
         slowSubscriber.cancelAndJoin()
         fastSubscriber.cancelAndJoin()
+
+        delay(1_000)
+        publisher.cancelAndJoin()
     }
 }

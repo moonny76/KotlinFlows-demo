@@ -5,6 +5,7 @@ package org.scarlet.channel
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.actor
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.scarlet.util.log
 
@@ -29,6 +30,11 @@ object ActorDemo {
 
         repeat(10) { i ->
             printActor.send(i.toString())
+            log("$i sent")
+            delay(1000)
+            if (i == 1) {
+                printActor.close()
+            }
         }
 
         printActor.close()

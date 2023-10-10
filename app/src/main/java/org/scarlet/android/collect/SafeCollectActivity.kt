@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import org.scarlet.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
 @ExperimentalCoroutinesApi
@@ -20,15 +21,15 @@ class SafeCollectActivity : AppCompatActivity() {
 
         Log.w(TAG, "onCreate: ")
 
-        lifecycleScope.launch {
-            Log.e(TAG, "[launch] launch started")
-            viewModel.numbers.collect {
-                Log.e(TAG, "[launch] collecting numbers: $it")
-            }
-        }.invokeOnCompletion {
-            Log.e(TAG, "[launch] completed: $it")
-        }
-
+//        lifecycleScope.launch {
+//            Log.e(TAG, "[launch] launch started")
+//            viewModel.numbers.collect {
+//                Log.e(TAG, "[launch] collecting numbers: $it")
+//            }
+//        }.invokeOnCompletion {
+//            Log.e(TAG, "[launch] completed: $it")
+//        }
+//
 //        lifecycleScope.launchWhenCreated {
 //            Log.v(TAG, "[launchWhenCreated] launchWhenCreated started")
 //            viewModel.numbers.collect {
@@ -56,18 +57,19 @@ class SafeCollectActivity : AppCompatActivity() {
 //            Log.d(TAG, "\t\t[launchWhenResumed] completed: $it")
 //        }
 //
-//        lifecycleScope.launch {
-//            Log.i(TAG, "[repeatOnLifeCycle] launch for repeatOnLifecycle")
-//            lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-//                Log.i(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle body started")
-//                viewModel.numbers.collect {
-//                    Log.i(TAG, "[repeatOnLifeCycle] collecting numbers: $it")
-//                }
-//            }
-//            Log.i(TAG, "[repeatOnLifeCycle] Printed only when `lifecycle` is destroyed ...")
-//        }.invokeOnCompletion {
-//            Log.i(TAG, "[repeatOnLifeCycle] completed: $it")
-//        }
+        lifecycleScope.launch {
+            Log.i(TAG, "[repeatOnLifeCycle] launch for repeatOnLifecycle")
+            lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                Log.i(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle body started")
+                Log.i(TAG, "[repeatOnLifeCycle] coroutineContext = ${currentCoroutineContext()}")
+                viewModel.numbers.collect {
+                    Log.i(TAG, "[repeatOnLifeCycle] collecting numbers: $it")
+                }
+            }
+            Log.i(TAG, "[repeatOnLifeCycle] Printed only when `lifecycle` is destroyed ...")
+        }.invokeOnCompletion {
+            Log.i(TAG, "[repeatOnLifeCycle] completed: $it")
+        }
 
     }
 

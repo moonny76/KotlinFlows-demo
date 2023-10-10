@@ -4,7 +4,6 @@ import androidx.lifecycle.*
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
-import org.scarlet.util.log
 
 /**
  * ###2: Expose the result of a one-shot operation without a mutable backing property

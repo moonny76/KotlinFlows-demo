@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.migration.viewmodeltoview.case1
 
 import org.scarlet.flows.CoroutineTestRule
@@ -8,7 +6,6 @@ import org.scarlet.util.Resource
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -18,7 +15,7 @@ import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
 class ViewModelFlowTest {
     // SUT
-    private lateinit var viewModel: ViewModelFlow
+    lateinit var viewModel: ViewModelFlow
 
     @get:Rule
     val coroutineRule = CoroutineTestRule()

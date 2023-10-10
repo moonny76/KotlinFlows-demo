@@ -17,10 +17,13 @@ object sharedIn_Demo {
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
         val coldFlow: Flow<Int> = flow {
+            currentCoroutineContext().job.onCompletion("ColdFlow")
+
             for (i in 0..5) {
+                log("Emitting $i")
                 emit(i)
-                delim()
                 log("Emitting $i done")
+                delim()
                 delay(1_000)
             }
         }
@@ -68,11 +71,16 @@ object sharedIn_Eager {
 
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
+
         val coldFlow: Flow<Int> = flow {
+            currentCoroutineContext().job.onCompletion("ColdFlow")
+
             for (i in 0..5) {
-                emit(i)
-                delim()
-                log("Emitting $i done")
+                log("Emitting $i")
+                emit(i).also {
+                    log("Emitting $i done")
+                    delim()
+                }
                 delay(50)
             }
         }
@@ -87,13 +95,13 @@ object sharedIn_Eager {
         )
 
         val subscriber = launch {
-            delay(150) // subscribes after delay
+            delay(100) // subscribes after delay
             log("${spaces(4)}Subscriber subscribes")
             sharedFlow.collect {
                 log("${spaces(4)}Subscriber: $it")
                 delay(100)
             }
-        }
+        }.onCompletion("Subscriber")
 
         delay(1_000)
         subscriber.cancelAndJoin()
@@ -104,12 +112,17 @@ object shareIn_Lazy {
 
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
+
         val coldFlow: Flow<Int> = flow {
+            currentCoroutineContext().job.onCompletion("ColdFlow")
+
             for (i in 0..5) {
-                emit(i)
-                delim()
-                log("Emitting $i done")
-                delay(20)
+                log("Emitting $i")
+                emit(i).also {
+                    log("Emitting $i done")
+                    delim()
+                }
+                delay(50)
             }
         }
 
@@ -123,13 +136,13 @@ object shareIn_Lazy {
         )
 
         val collector = launch {
-            delay(150) // subscribes after delay
+            delay(100) // subscribes after delay
             log("${spaces(4)}Subscriber subscribes")
             sharedFlow.collect {
                 log("${spaces(4)}Subscriber: $it")
                 delay(100)
             }
-        }
+        }.onCompletion("Subscriber")
 
         delay(1_000)
         collector.cancelAndJoin()
@@ -137,9 +150,11 @@ object shareIn_Lazy {
 
 }
 
+// Program does not terminate.
 object SharedFlow_WhileSubscribed {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
+
         val flow = flowOf("A", "B", "C", "D")
             .onStart { log("Flow started") }
             .onEach { log("Emitting $it"); delay(1_000) }
@@ -153,7 +168,9 @@ object SharedFlow_WhileSubscribed {
              */
             started = SharingStarted.WhileSubscribed(),
             replay = 0 // 1
-        )
+        ).also {
+            log("SharedFlow created")
+        }
 
         delay(3_000)
 
@@ -175,7 +192,7 @@ object SharedFlow_WhileSubscribed {
         delay(3_000)
         subscriber1.cancelAndJoin() // last subscriber leaves
 
-        // Subscriber 3
+        // New Subscriber 3
         launch {
             delay(1_000)
             log("${spaces(12)}Subscriber3 subscribes")
@@ -183,6 +200,8 @@ object SharedFlow_WhileSubscribed {
         }.onCompletion("${spaces(12)}Subscriber3 leaves")
 
         delay(5_000)
-        coroutineContext.job.cancelChildren()
+
+//        log(coroutineContext.job.children.toList())  // Check to see who is the culprit.
+//        coroutineContext.job.cancelChildren()
     }
 }

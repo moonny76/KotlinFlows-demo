@@ -5,6 +5,7 @@ import org.scarlet.util.spaces
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.scarlet.util.log
+import org.scarlet.util.onCompletion
 
 /**
  * ## StateFlow:
@@ -33,7 +34,7 @@ object StateFlow_and_Conflation {
                 log("${spaces(4)}Subscriber: $it")
                 delay(100) // 2. change to 100 (fast subscriber), 400 (slow subscriber)
             }
-        }
+        }.onCompletion("Subscriber")
 
         // Publisher
         launch {
@@ -43,7 +44,7 @@ object StateFlow_and_Conflation {
                 stateFlow.value = Resource.Success(i)
                 delay(200)
             }
-        }
+        }.onCompletion("Publisher")
 
         delay(2_000)
         subscriber.cancelAndJoin()
@@ -67,7 +68,7 @@ object StateFlow_Late_Collector {
                 log("Emit $i (#subscribers = ${stateFlow.subscriptionCount.value})")
                 delay(100)
             }
-        }
+        }.onCompletion("Publisher")
 
         // A late subscriber
         val subscriber = launch {
@@ -77,7 +78,7 @@ object StateFlow_Late_Collector {
             stateFlow.collect {
                 log("${spaces(4)}subscriber: $it")
             }
-        }
+        }.onCompletion("Subscriber")
 
         delay(1_000)
         subscriber.cancelAndJoin()
@@ -97,7 +98,7 @@ object StateFlow_Multiple_Subscribers {
                 log("${spaces(4)}Subscriber1: $it")
                 delay(100)
             }
-        }
+        }.onCompletion("Subscriber1")
 
         // Subscriber 2
         val subscriber2 = launch {
@@ -107,20 +108,21 @@ object StateFlow_Multiple_Subscribers {
                 log("${spaces(12)}subscriber2: $it")
                 delay(100) // Change 100, 400
             }
-        }
+        }.onCompletion("Subscriber2")
 
         // Publisher
-        launch {
+        val publisher = launch {
             for (i in 0..4) {
                 log("Emitter: $i")
                 stateFlow.value = Resource.Success(i)
                 delay(200)
             }
-        }
+        }.onCompletion("Publisher")
 
         delay(2_000)
+        log("Cancelling children")
         coroutineContext.job.cancelChildren()
-        joinAll(subscriber1, subscriber2)
+        joinAll(subscriber1, subscriber2, publisher)
     }
 }
 
@@ -143,11 +145,11 @@ object StateFlow_Squash_Duplication {
             for (i in listOf(1, 1, 2, 2, 3, 3, 3)) {
                 log("Emit $i")
                 stateFlow.value = Resource.Success(i)
-                delay(100)
+                delay(200)
             }
         }
 
-        delay(1_000)
+        delay(2_000)
         subscriber.cancelAndJoin()
     }
 }

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.migration.viewmodeltoview.case2
 
 import app.cash.turbine.test
@@ -10,7 +8,6 @@ import org.scarlet.util.Resource
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -21,9 +18,8 @@ import org.junit.Test
 import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
 class ViewModelFlowTest {
-
     // SUT
-    private lateinit var viewModel: ViewModelFlow
+    lateinit var viewModel: ViewModelFlow
 
     @get:Rule
     val coroutineRule = CoroutineTestRule()
@@ -48,7 +44,6 @@ class ViewModelFlowTest {
     @Test
     fun `test flow without turbine`() = runTest {
         // Arrange (Given)
-
         // Act (When)
         val resource = viewModel.recipes.take(2).toList()
 
@@ -61,8 +56,6 @@ class ViewModelFlowTest {
     @Test
     fun `test flow wih turbine`() = runTest {
         // Arrange (Given)
-        viewModel = ViewModelFlow("eggs", repository)
-
         // Act (When)
         viewModel.recipes.test {
             // Assert (Then)

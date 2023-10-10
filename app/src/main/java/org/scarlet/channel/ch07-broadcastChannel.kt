@@ -48,7 +48,7 @@ object BroadcastChannel_Bufferring_Demo {
     fun main(args: Array<String>) = runBlocking<Unit> {
         // Note: this channel looses all items that are send to it until
         // the first subscriber appears, unless specified as CONFLATED
-        val channel = BroadcastChannel<String>(1) // vary capacity 1, 2, 3
+            val channel = BroadcastChannel<String>(1) // vary capacity 1, 2, 3
 
         // Producer
         repeat(fruitArray.size) {

@@ -1,7 +1,9 @@
 package org.scarlet.flows.migration.viewmodeltoview.case1
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
@@ -27,6 +29,7 @@ class ViewModelFlow(
 
     // Version 1: StateFlow
     private val _recipes = MutableStateFlow<Resource<List<Recipe>>>(Resource.Loading)
+
     val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
 
     init {
@@ -37,19 +40,19 @@ class ViewModelFlow(
 //    val recipes: StateFlow<Resource<List<Recipe>>> = flow {
 //        emit(repository.getRecipes(query))
 //    }.stateIn(
-//        TODO(),
-//        TODO(),
-//        TODO()
+////        TODO(),
+////        TODO(),
+////        TODO()
 //    )
 
     // Version 3: SharedFlow
 //    private val _recipes = MutableSharedFlow<Resource<List<Recipe>>>(replay = 1)
 //    val recipes: SharedFlow<Resource<List<Recipe>>> = TODO()
-//
-//    init {
-//        viewModelScope.launch {
-//            TODO()
-//        }
-//    }
+
+    init {
+        viewModelScope.launch {
+            TODO()
+        }
+    }
 
 }

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.migration.viewmodeltoview.case3
 
 import app.cash.turbine.test
@@ -22,9 +20,10 @@ import org.junit.Rule
 import org.junit.Test
 import org.scarlet.flows.model.Recipe.Companion.mFavorites
 
+@ExperimentalCoroutinesApi
 class ViewModelFlowTest {
     // SUT
-    private lateinit var viewModel: ViewModelFlow
+    lateinit var viewModel: ViewModelFlow
 
     @get:Rule
     val coroutineRule = CoroutineTestRule()
@@ -54,7 +53,6 @@ class ViewModelFlowTest {
     @Test
     fun `test flow without turbine`() = runTest {
         // Arrange (Given)
-
         // Act (When)
         val resource = viewModel.favorites.take(2).toList()
 
@@ -68,7 +66,6 @@ class ViewModelFlowTest {
     @Test
     fun `test flow wih turbine`() = runTest {
         // Arrange (Given)
-
         // Act (When)
         viewModel.favorites.test {
             // Assert (Then)

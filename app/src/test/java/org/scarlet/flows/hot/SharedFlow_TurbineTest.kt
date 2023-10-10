@@ -1,8 +1,7 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.hot
 
 import app.cash.turbine.test
+import app.cash.turbine.withTurbineTimeout
 import com.google.common.truth.Truth.assertThat
 import org.scarlet.util.spaces
 import kotlinx.coroutines.*
@@ -25,16 +24,17 @@ class SharedFlow_TurbineTest {
      *
      * **Hot flow never completes**.
      */
-    @Test(expected = TimeoutCancellationException::class)
-    fun `wrongTest - SharedFlow`() = runTest {
+    @Test
+    fun `wrongTest - SharedFlow`() = runBlocking {
         val hotFlow = MutableSharedFlow<Int>(replay = 0)
 
         hotFlow.emit(1) // will be dropped
 
-        hotFlow.test(timeout = 1_000.milliseconds) {
-            assertThat(awaitItem()).isEqualTo(1) // expectMostRecentItem() of no use
+        hotFlow.test(timeout = 1_000.milliseconds) { // default == 3 secs
+            assertThat(awaitItem()).isEqualTo(1)
         }
     }
+
 
     @Test
     fun `rightTest - SharedFlow`() = runTest {
@@ -53,7 +53,7 @@ class SharedFlow_TurbineTest {
      * `emit` is suspended if there exist any subscribed subscribers which are not ready to collect yet.
      */
     @Test
-    fun `subscribers start to receive data after subscription`() = runBlocking {
+    fun `subscribers start to receive data after subscription - wrong`() = runBlocking {
         val sharedFlow = MutableSharedFlow<Int>( // default config.
             replay = 0,
             extraBufferCapacity = 0,
@@ -61,8 +61,8 @@ class SharedFlow_TurbineTest {
         )
 
         // Publisher
-        launch {
-            repeat(5) {
+        val publisher = launch {
+            repeat(10) {
                 log("Emitting: $it (# subscribers = ${sharedFlow.subscriptionCount.value})")
                 sharedFlow.emit(it)
                 log("Emit $it done")
@@ -74,7 +74,7 @@ class SharedFlow_TurbineTest {
             delay(100) // start after 100ms
             log("${spaces(4)}Subscriber1 subscribes...")
             sharedFlow.test {
-                while (true) {
+                while (isActive) {
                     log("${spaces(4)}Subscriber1: ${awaitItem()}")
                     delay(500)
                 }
@@ -85,14 +85,17 @@ class SharedFlow_TurbineTest {
             delay(300) // start after 300ms
             log("${spaces(8)}Subscriber2 subscribes...")
             sharedFlow.test(timeout = INFINITE) {
-                while (true) {
+                while (isActive) {
                     log("${spaces(8)}Subscriber2: ${awaitItem()}")
                 }
             }
         }.onCompletion("fastSubscriber done")
 
-        delay(3_000)
+        delay(2_000)
         slowSubscriber.cancelAndJoin()
         fastSubscriber.cancelAndJoin()
+
+        delay(1_000)
+        publisher.cancelAndJoin()
     }
 }

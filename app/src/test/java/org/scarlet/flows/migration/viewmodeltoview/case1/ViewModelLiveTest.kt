@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.migration.viewmodeltoview.case1
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -9,7 +7,6 @@ import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
 import io.mockk.impl.annotations.MockK
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -34,7 +31,6 @@ class ViewModelLiveTest {
     @Before
     fun init() {
         // TODO
-
     }
 
     @Test

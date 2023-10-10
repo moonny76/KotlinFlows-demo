@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.hot
 
 import com.google.common.truth.Truth.assertThat
@@ -15,7 +13,7 @@ import org.scarlet.util.onCompletion
 class StateFlow_NativeTest {
 
     @Test
-    fun `StateFlow test`() = runTest {
+    fun `StateFlow conflates test`() = runTest {
         val stateFlow = MutableStateFlow(0)
 
         // Publisher
@@ -39,7 +37,7 @@ class StateFlow_NativeTest {
     }
 
     @Test
-    fun `stateFlow never completes`() = runTest {
+    fun `stateFlow never completes`() = runBlocking { // Change to runTest and see what happens
         val stateFlow = MutableStateFlow(0)
 
         stateFlow
@@ -59,6 +57,7 @@ class StateFlow_NativeTest {
         assertThat(value).isEqualTo(1)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun `StateFlow - init value collected`() = runTest {
         val hotFlow = MutableStateFlow(42)
@@ -69,7 +68,7 @@ class StateFlow_NativeTest {
                 list.add(it)
             }
         }
-        runCurrent() // or use `UnconfinedDispatcher`
+//        runCurrent() // or use `UnconfinedDispatcher`
 
         hotFlow.emit(1)
 
@@ -98,7 +97,7 @@ class StateFlow_NativeTest {
     }
 
     @Test
-    fun `suspending function version of stateIn`() = runTest {
+    fun `suspending function version of stateIn`() = runBlocking<Unit> {
         val payload = 0
         val given: StateFlow<Int> = flow {
             log("started ...")
@@ -108,14 +107,19 @@ class StateFlow_NativeTest {
             log("finished ...")
         }.stateIn(scope = this)
 
-        launch {
-            log(given.first())
-            delay(1_000)
-            log(given.first())
-        }
+        val subscriber = launch {
+            log("collecting started ...")
+
+            given.collect {
+                log("received value = $it")
+            }
+        }.onCompletion("Subscriber")
+
+        delay(3_000)
+        subscriber.cancelAndJoin()
     }
 
-/**/
+    /**/
 
     @Test
     fun `stateIn - Early vs Lazily`() = runTest {
@@ -125,7 +129,7 @@ class StateFlow_NativeTest {
         }.stateIn(
             scope = this,
             // What if using Early or WhileSubscribed?
-            started = SharingStarted.WhileSubscribed(),
+            started = SharingStarted.Lazily,
             initialValue = null
         )
 

@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.migration.viewmodeltoview.case2
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -12,7 +10,6 @@ import org.scarlet.util.Resource
 import org.scarlet.util.captureValues
 import io.mockk.*
 import io.mockk.impl.annotations.MockK
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -22,7 +19,7 @@ import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
 class ViewModelLiveTest {
     //SUT
-    private lateinit var viewModel: ViewModelLive
+    lateinit var viewModel: ViewModelLive
 
     @get:Rule
     val rule = InstantTaskExecutorRule()

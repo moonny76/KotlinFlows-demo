@@ -21,6 +21,8 @@ import org.scarlet.flows.model.Recipe.Companion.mFavorites
 
 @ExperimentalCoroutinesApi
 class ViewModelLiveTest {
+    // SUT
+    lateinit var viewModel: ViewModelLive
 
     @get:Rule
     val rule = InstantTaskExecutorRule()
@@ -34,9 +36,6 @@ class ViewModelLiveTest {
     @MockK
     lateinit var authManager: AuthManager
 
-    // SUT
-    lateinit var viewModel: ViewModelLive
-
     @MockK(relaxed = true)
     lateinit var mockObserver: Observer<Resource<List<Recipe>>>
 
@@ -49,7 +48,7 @@ class ViewModelLiveTest {
         coEvery {
             repository.getFavoriteRecipes(any())
         } coAnswers {
-            delay(1000)
+            delay(1_000)
             Resource.Success(mFavorites)
         }
 
@@ -59,7 +58,6 @@ class ViewModelLiveTest {
     @Test
     fun `testLiveData - with mock observer`() = runTest {
         // Arrange (Given)
-
         val liveData = viewModel.favorites
         liveData.observeForever(mockObserver)
 
@@ -78,7 +76,6 @@ class ViewModelLiveTest {
     @Test
     fun `testLiveData - with captureValues`() = runTest {
         // Arrange (Given)
-
         // Act (Then)
         viewModel.favorites.captureValues {
             advanceUntilIdle()
