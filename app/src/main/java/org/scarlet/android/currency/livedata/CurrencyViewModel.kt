@@ -6,7 +6,6 @@ import kotlinx.coroutines.*
 import java.math.BigDecimal
 import kotlin.collections.mutableMapOf
 
-@ExperimentalCoroutinesApi
 class CurrencyViewModel(
     private val currencyApi: CurrencyApi
 ) : ViewModel() {
@@ -45,16 +44,4 @@ class CurrencyViewModel(
         _amountEntered.value = amount
     }
 
-}
-
-@ExperimentalCoroutinesApi
-@Suppress("UNCHECKED_CAST")
-class CurrencyViewModelFactory(
-    private val currencyApi: CurrencyApi
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (!modelClass.isAssignableFrom(CurrencyViewModel::class.java))
-            throw IllegalArgumentException("No such viewmodel")
-        return CurrencyViewModel(currencyApi) as T
-    }
 }

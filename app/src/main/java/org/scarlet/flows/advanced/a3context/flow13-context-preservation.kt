@@ -41,39 +41,38 @@ object ContextPreservation_Demo {
         }.join()
     }
 
-    /**
-     * ### Flow invariant is violated
-     */
-    object Why_Context_Preservation {
+}
 
-        private fun dataFlow(): Flow<Int> = flow {
-            withContext(Dispatchers.Default) {
-                while (currentCoroutineContext().isActive) {
-                    delay(1_000) // fake long delay
-                    emit(42)
-                }
+/**
+ * ### Flow invariant is violated
+ */
+object Why_Context_Preservation {
+
+    private fun dataFlow(): Flow<Int> = flow {
+        withContext(Dispatchers.Default) {
+            while (currentCoroutineContext().isActive) {
+                delay(1_000) // fake long delay
+                emit(42)
             }
-        }
-
-        @JvmStatic
-        fun main(args: Array<String>) = runBlocking<Unit> {
-            launch {
-                initDisplay() // prepare ui
-                dataFlow().collect {
-                    updateDisplay(it) // update ui
-                }
-            }
-        }
-
-        private fun initDisplay() {
-            log("Init Display")
-        }
-
-        private fun updateDisplay(value: Int) {
-            log("display updated with = $value")
         }
     }
 
-}
+    @JvmStatic
+    fun main(args: Array<String>) = runBlocking<Unit> {
+        launch {
+            initDisplay() // prepare ui
+            dataFlow().collect {
+                updateDisplay(it) // update ui
+            }
+        }
+    }
 
+    private fun initDisplay() {
+        log("Init Display")
+    }
+
+    private fun updateDisplay(value: Int) {
+        log("display updated with = $value")
+    }
+}
 

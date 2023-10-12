@@ -9,6 +9,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import org.scarlet.R
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 
 @ExperimentalCoroutinesApi
@@ -29,7 +30,7 @@ class SafeCollectActivity : AppCompatActivity() {
 //        }.invokeOnCompletion {
 //            Log.e(TAG, "[launch] completed: $it")
 //        }
-//
+
 //        lifecycleScope.launchWhenCreated {
 //            Log.v(TAG, "[launchWhenCreated] launchWhenCreated started")
 //            viewModel.numbers.collect {
@@ -38,7 +39,7 @@ class SafeCollectActivity : AppCompatActivity() {
 //        }.invokeOnCompletion {
 //            Log.v(TAG, "[launchWhenCreated] completed: $it")
 //        }
-//
+
 //        lifecycleScope.launchWhenStarted {
 //            Log.d(TAG, "\t[launchWhenStarted] launchWhenStarted started")
 //            viewModel.numbers.collect {
@@ -56,17 +57,20 @@ class SafeCollectActivity : AppCompatActivity() {
 //        }.invokeOnCompletion {
 //            Log.d(TAG, "\t\t[launchWhenResumed] completed: $it")
 //        }
-//
+
         lifecycleScope.launch {
             Log.i(TAG, "[repeatOnLifeCycle] launch for repeatOnLifecycle")
             lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                Log.i(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle body started")
-                Log.i(TAG, "[repeatOnLifeCycle] coroutineContext = ${currentCoroutineContext()}")
+//                Log.i(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle body started")
+                coroutineContext.job.invokeOnCompletion {
+                    Log.v(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle job completed: $it")
+                }
+//                Log.i(TAG, "[repeatOnLifeCycle] coroutineContext = ${currentCoroutineContext()}")
                 viewModel.numbers.collect {
                     Log.i(TAG, "[repeatOnLifeCycle] collecting numbers: $it")
                 }
             }
-            Log.i(TAG, "[repeatOnLifeCycle] Printed only when `lifecycle` is destroyed ...")
+            Log.e(TAG, "[repeatOnLifeCycle] Printed only when `lifecycle` is destroyed ...")
         }.invokeOnCompletion {
             Log.i(TAG, "[repeatOnLifeCycle] completed: $it")
         }
@@ -75,27 +79,27 @@ class SafeCollectActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        Log.w(TAG, "onStart: ")
+        Log.d(TAG, "onStart: ")
     }
 
     override fun onStop() {
         super.onStop()
-        Log.w(TAG, "onStop: ")
+        Log.d(TAG, "onStop: ")
     }
 
     override fun onPause() {
         super.onPause()
-        Log.w(TAG, "onPause: ")
+        Log.d(TAG, "onPause: ")
     }
 
     override fun onResume() {
         super.onResume()
-        Log.w(TAG, "onResume: ")
+        Log.d(TAG, "onResume: ")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.w(TAG, "onDestroy:")
+        Log.d(TAG, "onDestroy:")
     }
 
     companion object {

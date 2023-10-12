@@ -20,8 +20,8 @@ import org.scarlet.util.log
  * of the `catch` operator can analyze an exception and react to it in different
  * ways depending on which exception was caught:
  *
- * - Exceptions can be rethrown using throw.
- * - Exceptions can be turned into emission of values using emit from the body of `catch`.
+ * - Exceptions can be rethrown using `throw`.
+ * - Exceptions can be turned into emission of values using `emit` from the body of `catch`.
  * - Exceptions can be ignored, logged, or processed by some other code.
  *
  * ### Transparent catch:
@@ -102,7 +102,7 @@ object Declarative_ExceptionHandling {
 object ExceptionHandling_together_with_launchIn {
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
 
         /**
          * Combine `launch` and `collect()` using `launchIn()`
@@ -119,5 +119,3 @@ object ExceptionHandling_together_with_launchIn {
         log("Done.")
     }
 }
-
-

@@ -1,8 +1,8 @@
 package org.scarlet.android.password
 
 sealed class LoginUiState {
-    object Success : LoginUiState()
+    data object Success : LoginUiState()
     data class Error(val message: String) : LoginUiState()
-    object Loading : LoginUiState()
-    object Empty : LoginUiState()
+    data object Loading : LoginUiState()
+    data object Empty : LoginUiState()
 }

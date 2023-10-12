@@ -6,10 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.google.android.material.snackbar.Snackbar
 import org.scarlet.databinding.ActivityPasswordMainBinding
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.scarlet.android.password.LoginUiState
 
-@ExperimentalCoroutinesApi
 class PasswordActivity : AppCompatActivity() {
 
     private var _binding: ActivityPasswordMainBinding? = null
@@ -28,8 +26,6 @@ class PasswordActivity : AppCompatActivity() {
                 binding.password.text.toString()
             )
         }
-
-        /**/
 
         binding.flowSource.setOnClickListener {
             viewModel.increment()
@@ -58,13 +54,16 @@ class PasswordActivity : AppCompatActivity() {
                 Snackbar.make(binding.root, "Successfully logged in", Snackbar.LENGTH_LONG).show()
                 binding.progressBar.isVisible = false
             }
+
             is LoginUiState.Error -> {
                 Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG).show()
                 binding.progressBar.isVisible = false
             }
+
             is LoginUiState.Loading -> {
                 binding.progressBar.isVisible = true
             }
+
             else -> Unit
         }
     }
@@ -73,5 +72,5 @@ class PasswordActivity : AppCompatActivity() {
         super.onDestroy()
         _binding = null
     }
-    
+
 }

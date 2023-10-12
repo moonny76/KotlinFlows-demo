@@ -25,10 +25,12 @@ object FlowCancellation {
     fun main(args: Array<String>) = runBlocking {
         coroutineContext.job.onCompletion("runBlocking")
 
-        foo().collect { value ->
-            if (value == 3) cancel()
-            log("$value collected")
-        }
+        foo()
+//            .catch { e -> log("Caught $e") } // Does not catch downstream exceptions
+            .collect { value ->
+                if (value == 3) cancel()
+                log("$value collected")
+            }
 
     }
 }
@@ -52,7 +54,7 @@ object Failed_Cancellation_due_to_Uncooperative_Flow {
 
         (1..5).asFlow().collect { value ->
             if (value == 3) cancel()
-//            delay(100)
+//            delay(100) // This will make the flow cancellable
             log(value)
         }
     }
@@ -78,7 +80,7 @@ object Cooperative_Flow_makes_Flow_Cancellable_Demo1 {
         coroutineContext.job.onCompletion("runBlocking")
 
         (1..5).asFlow()
-//            .onEach { currentCoroutineContext().ensureActive() }
+            .onEach { currentCoroutineContext().ensureActive() }
             .collect { value ->
                 if (value == 3) cancel()
                 log(value)

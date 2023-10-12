@@ -1,5 +1,6 @@
 package org.scarlet.android.currency.flow
 
+import android.util.Log
 import androidx.lifecycle.*
 import org.scarlet.android.currency.CurrencyApi
 import kotlinx.coroutines.*
@@ -28,6 +29,7 @@ class CurrencyViewModel(
             while (true) {
                 val rate = currencyApi.getExchangeRate(currency)
                 emit(rate)
+                Log.d(TAG, "exchange rate = $rate")
                 delay(1000)
             }
         }
@@ -40,27 +42,22 @@ class CurrencyViewModel(
     private val _amount = MutableStateFlow<BigDecimal>(BigDecimal.ZERO)
     val totalAmount: StateFlow<BigDecimal> = _amount.combine(exchangeRate) { amount, rate ->
         amount * rate.toBigDecimal()
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = BigDecimal.ZERO
-    )
+    }
+        .onEach { Log.i(TAG, "total amount = $it") }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = BigDecimal.ZERO
+        )
 
     fun onOrderSubmit(amount: BigDecimal, currency: String) {
         _currencySymbol.value = currencySymbolMap[currency]!!
         _currency.value = currency
         _amount.value = amount
     }
-}
 
-@ExperimentalCoroutinesApi
-@Suppress("UNCHECKED_CAST")
-class CurrencyViewModelFactory(
-    private val currencyApi: CurrencyApi
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (!modelClass.isAssignableFrom(CurrencyViewModel::class.java))
-            throw IllegalArgumentException("No such viewmodel")
-        return CurrencyViewModel(currencyApi) as T
+    companion object {
+        private const val TAG = "Currency"
     }
 }
+

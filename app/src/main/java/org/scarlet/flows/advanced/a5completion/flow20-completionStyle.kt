@@ -40,7 +40,7 @@ object Declarative_Flow_Completion2 {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         dataFlowThrow() // `onCompletion` and `catch` order is SIGNIFICANT!
-            .onCompletion { cause -> if (cause != null) log("Flow completed exceptionally") }
+            .onCompletion { cause -> cause?.let { log("Flow completed exceptionally by $it") } }
             .catch { exception -> log("Caught exception $exception") }
             .collect { log(it) }
     }
@@ -73,8 +73,8 @@ object Declarative_Flow_Completion3 {
 /**
  * ### Imperative finally block:
  *
- * In addition to try/catch, a collector can also use a finally block to
- * execute an action upon collect completion.
+ * In addition to `try/catch`, a collector can also use a `finally` block to
+ * execute an action upon `collect` completion.
  */
 
 object Imperative_Flow_Completion {

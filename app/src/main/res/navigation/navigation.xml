@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation"
+    app:startDestination="@id/movieSearchFragment">
+
+    <fragment
+        android:id="@+id/movieSearchFragment"
+        android:name="org.scarlet.android.movies.features.MovieSearchFragment"
+        android:label="TMDB Movies"
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_movieSearchFragment_to_movieListFragment"
+            app:destination="@id/movieListFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/movieListFragment"
+        android:name="org.scarlet.android.movies.features.MovieListFragment"
+        android:label="MovieListFragment">
+        <argument
+            android:name="query"
+            app:argType="string" />
+        <argument
+            android:name="style"
+            app:argType="org.scarlet.android.movies.OpStyle" />
+    </fragment>
+</navigation>

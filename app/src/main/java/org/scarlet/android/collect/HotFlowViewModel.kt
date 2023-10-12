@@ -3,10 +3,12 @@ package org.scarlet.android.collect
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import org.scarlet.util.onCompletion
 
 class HotFlowViewModel : ViewModel() {
 
@@ -23,8 +25,9 @@ class HotFlowViewModel : ViewModel() {
                         _backingFlow.value = it
                         delay(2_000)
                     }
-                }
+                }.onCompletion("viewModelScope's top-level coroutine")
             }
+
             FlowKind.FLOW2 -> {
                 flow = _backingFlow.asStateFlow()
                 viewModelScope.launch {
@@ -37,10 +40,17 @@ class HotFlowViewModel : ViewModel() {
                         }
                         delay(2_000)
                     }
-                }
+                }.onCompletion("viewModelScope's top-level coroutine")
             }
+
             FlowKind.FLOW3 -> {
                 flow = flow {
+                    currentCoroutineContext().job.apply {
+                        invokeOnCompletion {
+                            Log.w(TAG, "ViewModel: invokeOnCompletion, isCancelled = $isCancelled")
+                        }
+                    }
+
                     repeat(Int.MAX_VALUE) {
                         Log.v(TAG, "ViewModel: value = $it")
                         emit(it)

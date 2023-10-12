@@ -46,7 +46,7 @@ object ViolationOfContextPreservation {
 
     private fun wrongFlow(): Flow<Int> = flow {
         // The WRONG way to change context for CPU-consuming code in flow builder
-//         GlobalScope.launch { // is prohibited
+//        GlobalScope.launch { // is prohibited
         withContext(Dispatchers.Default) {
             log("Flow: ${currentCoroutineContext()}")
             delay(1_000) // pretend we are computing it in CPU-consuming way
@@ -56,7 +56,7 @@ object ViolationOfContextPreservation {
 }
 
 // Emitting inside a newly launched coroutine is also prohibited!!
-object Strange {
+object StrangeOrNot {
     val flow = flow {
         emit(1)
         coroutineScope {
@@ -73,5 +73,3 @@ object Strange {
         flow.collect { log(it) }
     }
 }
-
-

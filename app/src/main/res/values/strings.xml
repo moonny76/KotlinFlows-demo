@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Kotlin Flows</string>
 
+    <string name="search_header">Search Movie</string>
+    <string name="search_hint">resident evil</string>
+    <string name="search">Search</string>
+
+    <string name="livedata">LiveData</string>
+    <string name="flow">Flow</string>
+    <string name="flowV2">Flow V2</string>
+    <string name="backdrop_image">Backdrop image</string>
 </resources>

@@ -9,12 +9,10 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import org.scarlet.R
 import org.scarlet.android.currency.FakeCurrencyApi
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.scarlet.util.hideKeyboard
 import java.math.BigDecimal
 import java.text.DecimalFormat
 
-@ExperimentalCoroutinesApi
 class CurrencyActivity : AppCompatActivity() {
     private lateinit var currencySymbol: TextView
     private lateinit var exchangeRate: TextView
@@ -42,6 +40,7 @@ class CurrencyActivity : AppCompatActivity() {
                     hideKeyboard()
                     true
                 }
+
                 else -> false
             }
         }
@@ -99,5 +98,4 @@ class CurrencyActivity : AppCompatActivity() {
         }
         onOrderSubmit()
     }
-
 }

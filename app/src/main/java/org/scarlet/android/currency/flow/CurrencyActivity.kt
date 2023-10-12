@@ -7,10 +7,14 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import org.scarlet.R
 import org.scarlet.android.currency.FakeCurrencyApi
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.scarlet.util.hideKeyboard
 import java.math.BigDecimal
 import java.text.DecimalFormat
@@ -43,6 +47,7 @@ class CurrencyActivity : AppCompatActivity() {
                     hideKeyboard()
                     true
                 }
+
                 else -> false
             }
         }
@@ -67,24 +72,53 @@ class CurrencyActivity : AppCompatActivity() {
     }
 
     private fun subscribeObservers() {
-        lifecycleScope.launchWhenStarted {
-            viewModel.currencySymbol.collect { symbol ->
-                currencySymbol.text = symbol
-            }
+//        lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+//                viewModel.currencySymbol.collect { symbol ->
+//                    currencySymbol.text = symbol
+//                }
+//            }
+//        }
+
+        repeatOn(viewModel.currencySymbol) { symbol ->
+            currencySymbol.text = symbol
         }
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.exchangeRate.collect { rate ->
-                exchangeRate.text = rate.toString()
-            }
+        repeatOn(viewModel.exchangeRate) { rate ->
+            exchangeRate.text = rate.toString()
         }
 
-        lifecycleScope.launchWhenStarted {
-            viewModel.totalAmount.collect { total ->
-                totalAmount.text = format(total)
-            }
+        repeatOn(viewModel.totalAmount) { total ->
+            totalAmount.text = format(total)
         }
 
+//        lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+//                viewModel.exchangeRate.collect { rate ->
+//                    exchangeRate.text = rate.toString()
+//                }
+//            }
+//        }
+//
+//        lifecycleScope.launch {
+//            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+//                viewModel.totalAmount.collect { total ->
+//                    totalAmount.text = format(total)
+//                }
+//            }
+//        }
+    }
+
+    private fun <T> repeatOn(
+        flow: Flow<T>,
+        state: Lifecycle.State = Lifecycle.State.RESUMED,
+        action: (T) -> Unit
+    ) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(state) {
+                flow.collect(action)
+            }
+        }
     }
 
     private fun format(total: BigDecimal): String {

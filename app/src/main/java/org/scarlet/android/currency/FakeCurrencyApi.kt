@@ -1,13 +1,7 @@
 package org.scarlet.android.currency
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.liveData
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.NonCancellable.isActive
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
 import java.lang.IllegalArgumentException
-import kotlin.coroutines.coroutineContext
 import kotlin.random.Random
 
 class FakeCurrencyApi : CurrencyApi {

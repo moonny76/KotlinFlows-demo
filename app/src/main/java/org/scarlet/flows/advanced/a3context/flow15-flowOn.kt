@@ -32,7 +32,7 @@ object FlowOn_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         simple()
-//            .flowOn(Dispatchers.Default)
+            .flowOn(Dispatchers.Default)
             .collect { value ->
                 log("Collector: ${currentCoroutineContext()}")
                 log("Collected $value")
@@ -48,6 +48,7 @@ object FlowOn_Demo {
 object ChannelFlow_Demo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
+        log("runBlocking: $coroutineContext")
 
         myFlow().collect { value ->
             log("Collector: ${currentCoroutineContext()}")

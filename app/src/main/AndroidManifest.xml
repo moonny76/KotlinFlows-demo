@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name="org.scarlet.android.movies.MovieApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -11,24 +12,29 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Movies">
 
-        <activity android:name="org.scarlet.android.currency.livedata.CurrencyActivity"
+        <activity
+            android:name="org.scarlet.android.currency.livedata.CurrencyActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:exported="true"/>
-        <activity android:name="org.scarlet.android.currency.flow.CurrencyActivity"
+            android:exported="true" />
+        <activity
+            android:name="org.scarlet.android.currency.flow.CurrencyActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:exported="true"/>
-        <activity android:name="org.scarlet.android.password.livedata.PasswordActivity"
-            android:theme="@style/Theme.StateFlow"
-            android:exported="true"/>
-        <activity android:name="org.scarlet.android.password.flow.PasswordActivity"
-            android:theme="@style/Theme.StateFlow"
-            android:exported="true"/>
-        <activity android:name="org.scarlet.android.collect.SafeCollectActivity"
-            android:theme="@style/Theme.StateFlow"
-            android:exported="true"/>
-        <activity android:name="org.scarlet.android.collect.HotFlowActivity"
-            android:theme="@style/Theme.StateFlow"
-            android:exported="true"/>
+            android:exported="true" />
+        <activity
+            android:name="org.scarlet.android.password.livedata.PasswordActivity"
+            android:exported="true" />
+        <activity
+            android:name="org.scarlet.android.password.flow.PasswordActivity"
+            android:exported="true" />
+        <activity
+            android:name="org.scarlet.android.collect.SafeCollectActivity"
+            android:exported="true" />
+        <activity
+            android:name="org.scarlet.android.collect.HotFlowActivity"
+            android:exported="true" />
+        <activity
+            android:name="org.scarlet.android.movies.ui.MovieActivity"
+            android:exported="true" />
     </application>
 
 </manifest>
