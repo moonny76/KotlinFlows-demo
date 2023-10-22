@@ -1,4 +1,4 @@
-@file:OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+@file:OptIn(ExperimentalCoroutinesApi::class)
 
 package org.scarlet.flows.advanced.a2flattening
 
@@ -76,9 +76,9 @@ object flatMapConcat_Demo {
 
         log(
             (1..3).asFlow()
-            .onEach { delay(100) } // a number every 100 ms.
-            .flatMapConcat { requestFlow(it, 200) }
-            .toList()
+                .onEach { delay(100) } // a number every 100 ms.
+                .flatMapConcat { requestFlow(it, 200) }
+                .toList()
         )
 
         delim()
