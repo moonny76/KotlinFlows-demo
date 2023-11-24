@@ -78,11 +78,11 @@ dependencies {
     testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutines_version"
 
     // androidx.fragment
-    def androidxFragment_version = '1.6.1'
+    def androidxFragment_version = '1.6.2'
     implementation "androidx.fragment:fragment-ktx:$androidxFragment_version"
 
     // androidx.activity
-    def androidxActivity_version = '1.8.0'
+    def androidxActivity_version = '1.8.1'
     implementation "androidx.activity:activity-ktx:$androidxActivity_version"
 
     // ViewModelScope

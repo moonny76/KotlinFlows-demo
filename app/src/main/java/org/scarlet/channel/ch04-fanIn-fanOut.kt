@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -9,6 +7,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.produce
 import org.scarlet.util.log
 
+@ExperimentalCoroutinesApi
 object FanOut {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -16,11 +15,11 @@ object FanOut {
         val producer: ReceiveChannel<Int> = produceNumbers()
 
         // Multiple consumers
-        repeat(5) {
-            launchProcessor(it, producer)
+        repeat(5) { id ->
+            launchProcessor(id, producer)
         }
 
-        delay(950)
+        delay(2_000)
         producer.cancel() // cancel producer coroutine and thus kill them all
     }
 

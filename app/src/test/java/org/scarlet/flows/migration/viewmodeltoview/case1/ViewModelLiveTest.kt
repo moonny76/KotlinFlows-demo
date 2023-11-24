@@ -7,11 +7,13 @@ import org.scarlet.flows.migration.viewmodeltoview.Repository
 import org.scarlet.flows.model.Recipe
 import org.scarlet.util.Resource
 import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+@ExperimentalCoroutinesApi
 class ViewModelLiveTest {
     // SUT
     lateinit var viewModel: ViewModelLive

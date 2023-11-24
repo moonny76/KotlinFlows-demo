@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -13,8 +11,8 @@ import org.scarlet.util.onCompletion
 object ProduceDemo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-//        demoWithPlain()
-        demoWithProduce()
+        demoWithPlain()
+//        demoWithProduce()
     }
 
     private suspend fun demoWithPlain() = coroutineScope {
@@ -59,7 +57,7 @@ object ProduceDemo {
 }
 
 /**
- * All functions that create coroutines are defined as extensions on CoroutineScope,
+ * All functions that create coroutines are defined as extensions on `CoroutineScope`,
  * so that we can rely on structured concurrency to make sure that we don't have
  * lingering global coroutines in our application.
  */

@@ -11,15 +11,15 @@ import org.scarlet.util.log
 import kotlin.coroutines.coroutineContext
 
 suspend fun accept(block: suspend () -> Unit) {
-    log("coroutineContext3 = $coroutineContext")
-    log("currentCoroutineContext3 = ${currentCoroutineContext()}")
+    log("coroutineContext2 = $coroutineContext")
+    log("currentCoroutineContext2 = ${currentCoroutineContext()}")
 
     delim()
 
     val scope = CoroutineScope(Job())
     scope.launch {
-        log("coroutineContext4 = $coroutineContext")
-        log("currentCoroutineContext4 = ${currentCoroutineContext()}")
+        log("coroutineContext3 = $coroutineContext")
+        log("currentCoroutineContext3 = ${currentCoroutineContext()}")
 
         delim()
 
@@ -38,8 +38,8 @@ object WhichContext {
             delim()
 
             accept {
-                log("coroutineContext2 = $coroutineContext")
-                log("currentCoroutineContext2 = ${currentCoroutineContext()}")
+                log("coroutineContext4 = $coroutineContext")
+                log("currentCoroutineContext4 = ${currentCoroutineContext()}")
                 delim()
             }
             delay(1000)

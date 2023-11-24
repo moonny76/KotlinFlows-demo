@@ -1,4 +1,4 @@
-package org.scarlet.android.collect
+package org.scarlet.android.hotflow
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -17,6 +17,7 @@ class HotFlowViewModel : ViewModel() {
 
     fun startFlow(kind: FlowKind) {
         when (kind) {
+            // Plain StateFlow
             FlowKind.FLOW1 -> {
                 flow = _backingFlow.asStateFlow()
                 viewModelScope.launch {
@@ -28,6 +29,7 @@ class HotFlowViewModel : ViewModel() {
                 }.onCompletion("viewModelScope's top-level coroutine")
             }
 
+            // Take advantage of `subscriptionCount` to avoid unnecessary work
             FlowKind.FLOW2 -> {
                 flow = _backingFlow.asStateFlow()
                 viewModelScope.launch {
@@ -43,6 +45,7 @@ class HotFlowViewModel : ViewModel() {
                 }.onCompletion("viewModelScope's top-level coroutine")
             }
 
+            // Using `stateIn`
             FlowKind.FLOW3 -> {
                 flow = flow {
                     currentCoroutineContext().job.apply {

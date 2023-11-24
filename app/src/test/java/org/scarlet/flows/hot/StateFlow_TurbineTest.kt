@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.hot
 
 import app.cash.turbine.test
@@ -34,7 +32,7 @@ class StateFlow_TurbineTest {
     }
 
     @Test
-    fun `stateFlow never completes but - turbine behavior`() = runTest {
+    fun `stateFlow never completes but - turbine behavior`() = runBlocking {
         val stateFlow = MutableStateFlow(0)
 
         stateFlow
@@ -110,19 +108,20 @@ class StateFlow_TurbineTest {
     fun `stateIn demo`() = runTest {
         val payload = 0
         val given: StateFlow<Int?> = flow {
+            log("started ...")
             emit(payload)
         }.stateIn(
             scope = this,
             // What if using Early or WhileSubscribed?
-            started = SharingStarted.WhileSubscribed(),
+            started = SharingStarted.Eagerly,
             initialValue = null
         )
 
         given.test {
+            log("Testing started ...")
             log(awaitItem())
             log(awaitItem())
         }
-
     }
 
 }

@@ -22,8 +22,8 @@ object Channels_Fair_PingPong {
 
         val table = Channel<Ball>() // a shared table
 
-        launch { player("ping", table) }
-        launch { player("pong", table) }
+        launch { player("Harry(\uD83D\uDC66):", table) }
+        launch { player("Sally(\uD83D\uDC67):", table) }
 
         table.send(Ball(0)) // serve the ball
 

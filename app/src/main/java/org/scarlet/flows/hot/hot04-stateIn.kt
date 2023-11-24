@@ -198,7 +198,7 @@ object WhileSubscribed_Demo {
 
         val stateFlow: StateFlow<Int?> = coldFlow.stateIn(
             scope = this,
-            started = SharingStarted.WhileSubscribed(replayExpirationMillis = 1_000),
+            started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 1_000),
             initialValue = null
         )
 

@@ -16,6 +16,9 @@ object ServiceGenerator {
      */
     private const val BASE_URL = "https://api.themoviedb.org/"
 
+    //    const val API_KEY = "your private API_KEY"
+    const val API_KEY = "your private API_KEY"
+
     suspend fun fetchPopularMovies(): TMDBMoviesResponse =
         movieApi.fetchPopularMovies(API_KEY)
 

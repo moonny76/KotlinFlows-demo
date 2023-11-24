@@ -22,7 +22,7 @@ object Buffering {
     fun main(args: Array<String>) = runBlocking {
         val time = measureTimeMillis {
             simple()
-//                .buffer()
+                .buffer() // default bufferSize = 64
                 .collect { value ->
                     if (value == 1) {
                         log("Collector: ${currentCoroutineContext()}")

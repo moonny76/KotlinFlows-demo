@@ -30,9 +30,9 @@ object ViolationOfContextPreservation {
 
         delim()
 
-        wrongFlow().collect { value ->
-            log("$value, ${currentCoroutineContext()}")
-        }
+//        wrongFlow().collect { value ->
+//            log("$value, ${currentCoroutineContext()}")
+//        }
     }
 
     // `coroutineScope` is OK to use here

@@ -77,7 +77,7 @@ class MovieListFragment : Fragment() {
         when (args.style) {
             OpStyle.LIVEDATA -> {
                 Log.d(TAG, "[MovieListFragment] onViewCreated: observe movies")
-                viewModel.moviesFlow.asLiveData().observe(viewLifecycleOwner) { resource ->
+                viewModel.moviesLiveData.observe(viewLifecycleOwner) { resource ->
                     handleResource(resource)
                 }
             }

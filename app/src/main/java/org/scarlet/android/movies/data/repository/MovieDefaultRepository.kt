@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ConflatedBroadcastChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.*
+import org.jetbrains.annotations.VisibleForTesting
 import org.scarlet.android.movies.TAG
 import org.scarlet.android.movies.data.LocalDataSource
 import org.scarlet.android.movies.data.MovieRepository
@@ -22,37 +23,29 @@ class MovieDefaultRepository private constructor(
     private val queryChannel = ConflatedBroadcastChannel<String>()
 
     override fun searchMovies(query: String) {
-        Log.d(TAG, "[Repository] searchMovies: query = $query")
         queryChannel.trySend(query)
     }
 
+    private suspend fun loadFromCache(query: String): List<Movie> =
+        when {
+            query.isEmpty() -> localDataSource.getAllMovies()
+            else -> localDataSource.searchMovies(query)
+        }
+
+    private suspend fun loadFromApi(query: String): Resource<List<Movie>> =
+        when {
+            query.isEmpty() -> remoteDataSource.getPopularMovies()
+            else -> remoteDataSource.searchMovies(query)
+        }
+
     override fun getMovies(): Flow<Resource<List<Movie>>> = flow {
-        Log.e(TAG, "[Repository] getMovies flow")
-
         queryChannel.openSubscription().consumeEach { query ->
-            Log.d(TAG, "[Repository] getMovies: emit Resource.Loading")
-            emit(Resource.Loading)
+            // Load from cache first
+            emit(Resource.Success(loadFromCache(query)))
 
-            val cachedMovies = when {
-                query.isEmpty() -> localDataSource.getAllMovies()
-                else -> localDataSource.searchMovies(query)
-            }
-            Log.d(
-                TAG,
-                "[Repository] getMovies(cached movies): emit Resource.Success(cachedMovies): $cachedMovies"
-            )
-            emit(Resource.Success(cachedMovies))
-
-            val newMovies = when {
-                query.isEmpty() -> remoteDataSource.getPopularMovies()
-                else -> remoteDataSource.searchMovies(query)
-            }
-            Log.d(
-                TAG,
-                "[Repository] getMovies(new movies): emit Resource.Success(newMovies): $newMovies"
-            )
+            // Load from API
+            val newMovies = loadFromApi(query)
             emit(newMovies)
-
             saveToDB(newMovies)
         }
     }.catch { ex ->
@@ -60,16 +53,21 @@ class MovieDefaultRepository private constructor(
     }
 
     private suspend fun saveToDB(resource: Resource<List<Movie>>) {
-        Log.d(TAG, "[MovieDefaultRepository] saveToDB: called")
         when (resource) {
             is Resource.Success -> localDataSource.insertAll(resource.data!!)
-            else -> Log.d(TAG, "[MovieDefaultRepository] saveToDB(Loading or Fail)")
+            else -> Log.d(TAG, "[MovieDefaultRepository] saveToDB(Fail)")
         }
     }
 
-    override fun getMoviesV2(): Flow<Resource<List<Movie>>> = flow {
-        emit(Resource.Loading)
+    /* Another Version: Always read from cache */
 
+    private fun loadFlowFromCache(query: String): Flow<List<Movie>> =
+        when {
+            query.isEmpty() -> localDataSource.getAllMoviesFlow()
+            else -> localDataSource.searchMoviesFlow(query)
+        }
+
+    override fun getMoviesV2(): Flow<Resource<List<Movie>>> = flow {
         // Do concurrently
         // - Fetch movies from local DB and emit it:
         //     if query is empty, call localDataSource.getAllMoviesFlow()
@@ -81,18 +79,7 @@ class MovieDefaultRepository private constructor(
         TODO()
     }
 
-    private suspend fun loadFromApi() {
-        queryChannel.openSubscription().consumeEach { query ->
-            Log.d(TAG, "loadFromApi: processing ....")
-
-            val newMovies = when {
-                query.isEmpty() -> remoteDataSource.getPopularMovies()
-                else -> remoteDataSource.searchMovies(query)
-            }
-            saveToDB(newMovies)
-        }
-    }
-
+    @VisibleForTesting
     override fun reset() {
         INSTANCE = null
     }
@@ -107,9 +94,5 @@ class MovieDefaultRepository private constructor(
                     INSTANCE = it
                 }
             }
-
-        fun reset() {
-            INSTANCE = null
-        }
     }
 }

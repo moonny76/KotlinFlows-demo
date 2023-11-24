@@ -17,7 +17,7 @@ class PasswordViewModel : ViewModel() {
         _loginUiState.value = LoginUiState.Loading
         viewModelScope.launch {
             delay(1000L)
-            if (username == "android" && password == "topsecret") {
+            if (username == "android" && password == "abc") {
                 _loginUiState.value = LoginUiState.Success
             } else {
                 _loginUiState.value = LoginUiState.Error("Wrong credentials")

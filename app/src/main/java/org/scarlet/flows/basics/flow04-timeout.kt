@@ -94,7 +94,7 @@ object Explicit_Collector_Cancellation {
 
 }
 
-object Cancellation_when_Separate_Coroutines_Also_Works {
+object Cancellation_when_Run_on_Separate_Coroutines_Also_Works {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         val collector = launch {

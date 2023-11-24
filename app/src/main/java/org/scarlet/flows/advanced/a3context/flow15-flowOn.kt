@@ -81,7 +81,6 @@ object ChannelFlow_Demo {
             delay(1_000)
             send(777)
         }
-
     }
 
 }

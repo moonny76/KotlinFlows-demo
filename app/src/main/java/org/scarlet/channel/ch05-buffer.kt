@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.channel
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,9 +18,9 @@ object Buffering {
 
         val sender = launch { // launch sender coroutine
             repeat(10) {
-                log("Sending $it") // print before sending each element
+                log("Sending $it")
                 channel.send(it) // will suspend when buffer is full
-                log("$it sent") // print after sending each element
+                log("$it sent")
             }
         }.onCompletion("Sender")
 
@@ -32,9 +30,10 @@ object Buffering {
     }
 }
 
+@ExperimentalCoroutinesApi
 object Closing_SendChannel_Guarantees_All_Sent_Data_Received {
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
 
         // create buffered channel
         val channel = Channel<Int>(4).onClose()
@@ -50,7 +49,7 @@ object Closing_SendChannel_Guarantees_All_Sent_Data_Received {
         }
 
         for (value in channel) {
-            log("$value received")
+            log("Receiver: $value received")
             delay(500)
         }
 

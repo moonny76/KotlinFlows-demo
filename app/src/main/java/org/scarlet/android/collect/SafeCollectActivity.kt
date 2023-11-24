@@ -2,6 +2,7 @@ package org.scarlet.android.collect
 
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -14,7 +15,7 @@ import kotlinx.coroutines.launch
 
 @ExperimentalCoroutinesApi
 class SafeCollectActivity : AppCompatActivity() {
-    val viewModel by lazy { SafeCollectViewModel() }
+    private val viewModel: SafeCollectViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,57 +23,43 @@ class SafeCollectActivity : AppCompatActivity() {
 
         Log.w(TAG, "onCreate: ")
 
-//        lifecycleScope.launch {
-//            Log.e(TAG, "[launch] launch started")
-//            viewModel.numbers.collect {
-//                Log.e(TAG, "[launch] collecting numbers: $it")
-//            }
-//        }.invokeOnCompletion {
-//            Log.e(TAG, "[launch] completed: $it")
-//        }
+        lifecycleScope.launch {
+            Log.e(TAG, "[launch] launch started")
+            viewModel.numbers.collect {
+                Log.e(TAG, "[launch] collecting numbers: $it")
+            }
+        }.invokeOnCompletion {
+            Log.e(TAG, "[launch] completed: $it")
+        }
 
 //        lifecycleScope.launchWhenCreated {
-//            Log.v(TAG, "[launchWhenCreated] launchWhenCreated started")
-//            viewModel.numbers.collect {
-//                Log.v(TAG, "[launchWhenCreated] collecting numbers: $it")
-//            }
-//        }.invokeOnCompletion {
-//            Log.v(TAG, "[launchWhenCreated] completed: $it")
-//        }
-
 //        lifecycleScope.launchWhenStarted {
-//            Log.d(TAG, "\t[launchWhenStarted] launchWhenStarted started")
-//            viewModel.numbers.collect {
-//                Log.d(TAG, "\t[launchWhenStarted] collecting numbers: $it")
-//            }
-//        }.invokeOnCompletion {
-//            Log.d(TAG, "\t[launchWhenStarted] completed: $it")
-//        }
-//
-//        lifecycleScope.launchWhenResumed {
-//            Log.d(TAG, "\t\t[launchWhenResumed] launchWhenResumed started")
-//            viewModel.numbers.collect {
-//                Log.d(TAG, "\t\t[launchWhenResumed] collecting numbers: $it")
-//            }
-//        }.invokeOnCompletion {
-//            Log.d(TAG, "\t\t[launchWhenResumed] completed: $it")
-//        }
+        lifecycleScope.launchWhenResumed {
+            Log.d(TAG, "[launchWhenResumed] launchWhenResumed started")
+            viewModel.numbers.collect {
+                Log.d(TAG, "[launchWhenResumed] collecting numbers: $it")
+            }
+        }.invokeOnCompletion {
+            Log.d(TAG, "[launchWhenResumed] completed: $it")
+        }
 
         lifecycleScope.launch {
-            Log.i(TAG, "[repeatOnLifeCycle] launch for repeatOnLifecycle")
+            Log.v(TAG, "[repeatOnLifeCycle] launch for repeatOnLifecycle")
+
             lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-//                Log.i(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle body started")
+                Log.e(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle body started")
                 coroutineContext.job.invokeOnCompletion {
                     Log.v(TAG, "[repeatOnLifeCycle] repeatOnLifeCycle job completed: $it")
                 }
-//                Log.i(TAG, "[repeatOnLifeCycle] coroutineContext = ${currentCoroutineContext()}")
+
                 viewModel.numbers.collect {
-                    Log.i(TAG, "[repeatOnLifeCycle] collecting numbers: $it")
+                    Log.v(TAG, "[repeatOnLifeCycle] collecting numbers: $it")
                 }
             }
+
             Log.e(TAG, "[repeatOnLifeCycle] Printed only when `lifecycle` is destroyed ...")
         }.invokeOnCompletion {
-            Log.i(TAG, "[repeatOnLifeCycle] completed: $it")
+            Log.v(TAG, "[repeatOnLifeCycle] completed: $it")
         }
 
     }

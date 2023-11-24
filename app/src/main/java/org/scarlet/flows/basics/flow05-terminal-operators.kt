@@ -40,7 +40,7 @@ object ToList_first_last_Operators {
         delim()
 
         log("myFlow = ${myFlow.toList()}")
-        log("first() = ${myFlow.first()}")
+        log("first() = ${myFlow.first()}") // notice AbortFlowException
         log("last() = ${myFlow.last()}")
 
         delim()
@@ -60,7 +60,7 @@ object FirstOrNull_LastOrNull_Operators {
 
         delim()
 
-        log(myFlow.first { it % 5 == 0 })
+        log(myFlow.first { it % 5 == 0 }) // notice AbortFlowException
         log(myFlow.firstOrNull { it % 13 == 0 })
         log(myFlow.first { it % 13 == 0 }) // NoSuchElementException
     }

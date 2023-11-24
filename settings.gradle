@@ -1,2 +1,3 @@
 rootProject.name = "KotlinFlows-demo"
 include ':app'
+//enableFeaturePreview "STABLE_CONFIGURATION_CACHE"

@@ -1,12 +1,7 @@
 package org.scarlet.flows.migration.viewmodeltoview.case1
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import org.scarlet.flows.migration.viewmodeltoview.Repository
-import org.scarlet.flows.model.Recipe
-import org.scarlet.util.Resource
 
 /**
  * ###1: Expose the result of a one-shot operation with a Mutable data holder
@@ -28,13 +23,14 @@ class ViewModelFlow(
     */
 
     // Version 1: StateFlow
-    private val _recipes = MutableStateFlow<Resource<List<Recipe>>>(Resource.Loading)
+//    private val _recipes = MutableStateFlow<Resource<List<Recipe>>>(Resource.Loading)
+//
+//    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
+//
+//    init {
+//        TODO()
+//    }
 
-    val recipes: StateFlow<Resource<List<Recipe>>> = TODO()
-
-    init {
-        TODO()
-    }
 
     // Version 2: stateIn
 //    val recipes: StateFlow<Resource<List<Recipe>>> = flow {
@@ -49,10 +45,10 @@ class ViewModelFlow(
 //    private val _recipes = MutableSharedFlow<Resource<List<Recipe>>>(replay = 1)
 //    val recipes: SharedFlow<Resource<List<Recipe>>> = TODO()
 
-    init {
-        viewModelScope.launch {
-            TODO()
-        }
-    }
+//    init {
+//        viewModelScope.launch {
+//            TODO()
+//        }
+//    }
 
 }

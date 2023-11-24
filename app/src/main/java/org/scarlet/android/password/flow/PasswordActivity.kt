@@ -5,9 +5,7 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.launch
 import org.scarlet.databinding.ActivityPasswordMainBinding
 import org.scarlet.android.password.LoginUiState
 
@@ -46,49 +44,22 @@ class PasswordActivity : AppCompatActivity() {
         /**
          * TODO - handle `loginUiState`
          */
-        lifecycleScope.launch {
-            viewModel.loginUiState.collect { state ->
-                state?.let {
-                    handleState(state)
-                }
-            }
-        }
 
         /**
          * TODO - subscribe to `counterFlow`
          */
-        lifecycleScope.launch {
-            viewModel.counterFlow.collect { counter ->
-                counter?.let {
-                    binding.counts.text = counter.toString()
-                }
-            }
-        }
-
-        /**
-         * TODO - subscribe to `isError`
-         */
-        lifecycleScope.launch {
-            viewModel.isError.collect { isError ->
-                if (isError)
-                    Snackbar.make(binding.root, "Wrong credentials", Snackbar.LENGTH_LONG).show()
-                else
-                    Snackbar.make(binding.root, "Successfully logged in", Snackbar.LENGTH_LONG)
-                        .show()
-            }
-        }
 
     }
 
     private fun handleState(state: LoginUiState) {
         when (state) {
             is LoginUiState.Success -> {
-//                Snackbar.make(binding.root, "Successfully logged in", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, "Successfully logged in", Snackbar.LENGTH_LONG).show()
                 binding.progressBar.isVisible = false
             }
 
             is LoginUiState.Error -> {
-//                Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding.root, state.message, Snackbar.LENGTH_LONG).show()
                 binding.progressBar.isVisible = false
             }
 

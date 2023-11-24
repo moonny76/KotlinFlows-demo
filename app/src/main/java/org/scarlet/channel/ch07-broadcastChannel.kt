@@ -1,5 +1,3 @@
-@file:OptIn(ObsoleteCoroutinesApi::class, ExperimentalCoroutinesApi::class)
-
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -11,7 +9,7 @@ import org.scarlet.util.onCompletion
 
 object Channel_FanOut_RaceCondition {
 
-    private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Orange", "Pear", "Watermelon")
+    private val fruits = arrayOf("Apple", "Banana", "Kiwi", "Orange", "Pear", "Watermelon")
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
@@ -19,9 +17,9 @@ object Channel_FanOut_RaceCondition {
 
         // Producer
         launch {
-            repeat(fruitArray.size) {
+            repeat(fruits.size) {
                 // Send data in channel
-                channel.send(fruitArray[it])
+                channel.send(fruits[it])
             }
         }
 
@@ -40,23 +38,25 @@ object Channel_FanOut_RaceCondition {
 }
 
 // Similar to Rx PublishSubject
+@ObsoleteCoroutinesApi
 object BroadcastChannel_Bufferring_Demo {
 
-    private val fruitArray = arrayOf("Apple", "Banana", "Kiwi", "Orange", "Pear", "Watermelon")
+    private val fruits = arrayOf("Apple", "Banana", "Kiwi", "Orange", "Pear", "Watermelon")
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
-        // Note: this channel looses all items that are send to it until
+        // Note: this channel looses all items that has been sent to it until
         // the first subscriber appears, unless specified as CONFLATED
-            val channel = BroadcastChannel<String>(1) // vary capacity 1, 2, 3
+        val channel = BroadcastChannel<String>(1) // vary capacity 1, 2, 3
 
         // Producer
-        repeat(fruitArray.size) {
+        repeat(fruits.size) {
             // Send data in channel
-            channel.send(fruitArray[it])
-            log("${fruitArray[it]} sent")
+            channel.send(fruits[it])
+            log("${fruits[it]} sent")
         } // Loses all before subscription
 
+        delay(10) // Sender never blocks if no receivers
         delim()
 
         // Two Consumers
@@ -72,13 +72,13 @@ object BroadcastChannel_Bufferring_Demo {
             }.onCompletion("Consumer $it")
         }
 
-        delay(100)
+        delay(10)
 
         // Producer again
-        with (channel) {
-            repeat(fruitArray.size) {
-                send(fruitArray[it])
-                log("${fruitArray[it]} sent")
+        with(channel) {
+            repeat(fruits.size) {
+                send(fruits[it])
+                log("${fruits[it]} sent")
             }
             close() // Even if channel closed, all sent items are still received
         }
@@ -106,6 +106,7 @@ object BroadcastChannel_LateConsumer_Demo {
             channel.consumeEach { value ->
                 log("\t\t\t\t\t\t\tConsumer 1: $value")
                 delay(300)
+                delim()
             }
         }.onCompletion("Consumer 1")
 
@@ -115,14 +116,13 @@ object BroadcastChannel_LateConsumer_Demo {
         repeat(10) {
             channel.send(it)
             log("Sent $it")
-            delim()
             delay(50)
         }
 
         launch {
             val result = channel.openSubscription().tryReceive()
             if (result.isFailure) {
-                log("Late Consumer: empty result received")
+                log("Late Consumer: channel is empty")
             } else if (result.isClosed) {
                 log("Late Consumer: channel already closed")
             } else {
@@ -137,6 +137,7 @@ object BroadcastChannel_LateConsumer_Demo {
 
 // Similar to Rx ConflatedPublishSubject
 // Sender never blocks!
+@ObsoleteCoroutinesApi
 object ConflatedBroadcastChannel_Demo {
 
     @JvmStatic
@@ -155,6 +156,7 @@ object ConflatedBroadcastChannel_Demo {
             channel.consumeEach { value ->
                 log("\t\t\t\t\t\t\tConsumer 1: $value")
                 delay(300)
+                delim()
             }
         }.onCompletion("Consumer 1")
 
@@ -164,14 +166,13 @@ object ConflatedBroadcastChannel_Demo {
         repeat(10) {
             channel.send(it)
             log("Sent $it")
-            delim()
             delay(50)
         }
 
         launch {
             val result = channel.openSubscription().tryReceive()
             if (result.isFailure) {
-                log("Late Consumer: empty result received")
+                log("Late Consumer: channel is empty")
             } else if (result.isClosed) {
                 log("Late Consumer: channel already closed")
             } else {

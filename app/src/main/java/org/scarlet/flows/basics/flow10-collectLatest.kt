@@ -18,12 +18,13 @@ import kotlin.system.*
 object CollectLatestDemo {
 
     fun simple(): Flow<Int> = flow {
+//        log("Flow: coroutineContext = ${currentCoroutineContext()}")
         emit(1)
-        delay(30)
+        delay(500)
         emit(2)
-        delay(30)
+        delay(500)
         emit(3)
-        delay(100)
+        delay(500)
         emit(4)
     }
 
@@ -35,7 +36,7 @@ object CollectLatestDemo {
                     currentCoroutineContext().job.onCompletion("collectLatest: value = $value")
                     log("\t$value received")
 
-                    delay(50)  // pretend we are processing it for 50 ms
+                    delay(1000)  // pretend we are processing it for 100 ms
                     log("\t$value processing done")
                 }
         }

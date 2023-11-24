@@ -8,6 +8,7 @@ import org.scarlet.util.Resource
 import io.mockk.MockKAnnotations
 import io.mockk.coEvery
 import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
@@ -17,6 +18,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.scarlet.flows.model.Recipe.Companion.mRecipes
 
+@ExperimentalCoroutinesApi
 class ViewModelFlowTest {
     // SUT
     lateinit var viewModel: ViewModelFlow

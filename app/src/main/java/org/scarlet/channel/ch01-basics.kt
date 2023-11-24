@@ -1,16 +1,14 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.consumeEach
+import org.scarlet.util.delim
 import org.scarlet.util.log
 import org.scarlet.util.onClose
 import org.scarlet.util.onCompletion
 import kotlin.random.Random
-import kotlin.system.measureTimeMillis
 
 @JvmInline
 value class Item(val value: Int)
@@ -42,27 +40,33 @@ object Motivations {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
         // List is an eager data structure.
-        consumeItems(getItems())
+        val list = getItems()
+
+        delim()
+
+        consumeItems(list)
     }
 }
 
+@DelicateCoroutinesApi
 object Basics {
-    private suspend fun getItems(channel: Channel<Item>) {
+    private suspend fun produceItems(channel: Channel<Item>) {
         channel.send(getItem())
-        log("First sent")
+        log("Sender: First sent")
         channel.send(getItem())
-        log("Second sent")
+        log("Sender: Second sent")
         channel.send(getItem())
-        log("Third sent")
+        log("Sender: Third sent")
         channel.close()
     }
 
     private suspend fun consumeItems(channel: Channel<Item>) {
         // Other style of channel consumption will be shown later...
         while (!channel.isClosedForReceive) {
-            log("receive: asking for next item")
+            log("Receiver: asking for next item")
             val item = channel.receive()
-            log("Do something with $item")
+            log("Receiver: do something with $item")
+            delim()
         }
     }
 
@@ -74,7 +78,7 @@ object Basics {
         coroutineScope {
             // Sender
             launch {
-                getItems(channel)
+                produceItems(channel)
             }
 
             // Receiver
@@ -110,7 +114,7 @@ object Receiver_Suspends_If_No_Senders {
         // Receiver
         launch {
             withTimeout(3_000) {
-                log("Waiting for senders to send data")
+                log("Waiting for sender to send data")
                 log("${channel.receive()} received")
                 log("unreachable code")
             }
@@ -118,6 +122,7 @@ object Receiver_Suspends_If_No_Senders {
     }
 }
 
+@DelicateCoroutinesApi
 object Different_Ways_to_Receive_and_Close_a_Channel {
     private val data = listOf(1, 2, 3, 4, 5)
 
@@ -131,26 +136,35 @@ object Different_Ways_to_Receive_and_Close_a_Channel {
                 delay(50)
             }
 
-            log("Sender closing channel")
+            log("Sender: closing channel")
             channel.close() // comment this out to see what happen?
-            log("Is channel closed for send? ${channel.isClosedForSend}")
-            log("Is channel closed for receive? ${channel.isClosedForReceive}")
+            log("Sender: is channel closed for send? ${channel.isClosedForSend}")
+            log("Sender: is channel closed for receive? ${channel.isClosedForReceive}")
         }.onCompletion("Sender")
 
         launch {
             receiveOneByOne(channel)
-//            receiveByIterable(channel)
 //            receiveByConsumeEach(channel)
+//            receiveByIterable(channel)
         }.onCompletion("Receiver")
     }
 
     private suspend fun receiveOneByOne(channel: ReceiveChannel<Int>) {
         while (!channel.isClosedForReceive) {
-            log("Received ${channel.receive()}")
+            log("Receiver: received ${channel.receive()}")
             delay(100)
 //            channel.cancel() // Cancel the channel and see what happen?
+            // `cancel()` closes the channel and removes all buffered sent elements from it
         }
-        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
+        log("Receiver: *is channel closed for receive? ${channel.isClosedForReceive}")
+    }
+
+    private suspend fun receiveByConsumeEach(channel: ReceiveChannel<Int>) {
+        channel.consumeEach {
+            log("Received $it")
+            delay(100)
+        }
+        log("Receiver: *is channel closed for receive? ${channel.isClosedForReceive}")
     }
 
     private suspend fun receiveByIterable(channel: ReceiveChannel<Int>) {
@@ -159,19 +173,12 @@ object Different_Ways_to_Receive_and_Close_a_Channel {
             log("Received $value")
             delay(100)
         }
-        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
-    }
-
-    private suspend fun receiveByConsumeEach(channel: ReceiveChannel<Int>) {
-        channel.consumeEach {
-            log("Received $it")
-            delay(100)
-        }
-        log("*Is channel closed for receive? ${channel.isClosedForReceive}")
+        log("Receiver: *is channel closed for receive? ${channel.isClosedForReceive}")
     }
 }
 
-object OneOfReceivers_Cancell_RendezvousChannel {
+@DelicateCoroutinesApi
+object One_Of_Receivers_Cancels_Rendezvous_Channel {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
         val channel = Channel<Int>().onClose()
@@ -183,13 +190,13 @@ object OneOfReceivers_Cancell_RendezvousChannel {
                 channel.send(i++)
                 delay(100)
             }
-            log("Is channel closed for send? ${channel.isClosedForSend}")
+            log("Sender: is channel closed for send? ${channel.isClosedForSend}")
         }.onCompletion("Sender")
 
         // Receiver 1
         launch {
             while (!channel.isClosedForReceive) {
-                log("Receiver 1:received = " + channel.receive())
+                log("Receiver 1: received = " + channel.receive())
                 delay(50)
             }
         }.onCompletion("Receiver 1")

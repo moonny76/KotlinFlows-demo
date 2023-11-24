@@ -30,10 +30,13 @@
             android:name="org.scarlet.android.collect.SafeCollectActivity"
             android:exported="true" />
         <activity
-            android:name="org.scarlet.android.collect.HotFlowActivity"
+            android:name="org.scarlet.android.hotflow.HotFlowActivity"
             android:exported="true" />
         <activity
             android:name="org.scarlet.android.movies.ui.MovieActivity"
+            android:exported="true" />
+        <activity
+            android:name="org.scarlet.android.channel_vs_flow.ChannelVsFlowActivity"
             android:exported="true" />
     </application>
 

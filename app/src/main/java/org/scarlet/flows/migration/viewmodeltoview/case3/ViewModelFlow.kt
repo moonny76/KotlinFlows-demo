@@ -18,7 +18,8 @@ class ViewModelFlow(
 
     /* TODO:
      1. Change user from LiveData to Flow.
-     2. Change favorites from LiveData to StateFlow. Hint: use `mapLatest` and `stateIn`
+     2. Change favorites from LiveData to StateFlow.
+        Hint: use either `flatMapLatest` or `mapLatest`, and `stateIn`
 
     private val user: LiveData<User> = authManager.observeUser().asLiveData()
 

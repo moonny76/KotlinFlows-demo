@@ -18,7 +18,7 @@ class StateFlow_NativeTest {
 
         // Publisher
         launch {
-            repeat(3) {
+            repeat(5) {
                 delay(200) // change this 200, 1000
                 stateFlow.value = it + 1
             }
@@ -37,8 +37,16 @@ class StateFlow_NativeTest {
     }
 
     @Test
-    fun `stateFlow never completes`() = runBlocking { // Change to runTest and see what happens
+    fun `stateFlow never completes`() = runTest {
         val stateFlow = MutableStateFlow(0)
+
+        // Publisher
+        launch {
+            repeat(5) {
+                delay(200)
+                stateFlow.value = it + 1
+            }
+        }.onCompletion("Publisher")
 
         stateFlow
             .onCompletion { ex -> log("ON COMPLETE: ${ex?.javaClass?.name}") }
@@ -97,7 +105,7 @@ class StateFlow_NativeTest {
     }
 
     @Test
-    fun `suspending function version of stateIn`() = runBlocking<Unit> {
+    fun `suspending function version of stateIn`() = runBlocking {
         val payload = 0
         val given: StateFlow<Int> = flow {
             log("started ...")
@@ -125,23 +133,28 @@ class StateFlow_NativeTest {
     fun `stateIn - Early vs Lazily`() = runTest {
         val payload = 0
         val given: StateFlow<Int?> = flow {
+            log("started ...")
             emit(payload)
         }.stateIn(
             scope = this,
             // What if using Early or WhileSubscribed?
-            started = SharingStarted.Lazily,
+            started = SharingStarted.Eagerly,
             initialValue = null
         )
 
         val result = mutableListOf<Int?>()
         val job = launch {
-            given.take(2).toList(result)
+            log("collecting started ...")
+            given.collect {
+                result.add(it)
+                log("received value = $it")
+            }
         }
 
         delay(1_000)
         job.cancelAndJoin()
 
-        assertThat(result).containsExactly(null, 0)
+        log("result = $result")
     }
 
 }

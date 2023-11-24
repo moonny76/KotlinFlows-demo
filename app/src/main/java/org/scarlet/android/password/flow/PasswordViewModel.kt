@@ -16,14 +16,16 @@ class PasswordViewModel : ViewModel() {
         _loginUiState.value = LoginUiState.Loading
         viewModelScope.launch {
             delay(1000L)
-            if (username == "android" && password == "topsecret") {
+            if (username == "android" && password == "abc") {
                 _loginUiState.value = LoginUiState.Success
-//                _isError.emit(false)
             } else {
                 _loginUiState.value = LoginUiState.Error("Wrong credentials")
-//                _isError.emit(true)
             }
         }
+    }
+
+    fun done() {
+        _loginUiState.value = LoginUiState.Empty
     }
 
     private val _counterFlow = MutableStateFlow(0)
@@ -33,19 +35,4 @@ class PasswordViewModel : ViewModel() {
         _counterFlow.value += 1
     }
 
-//    private val _isError = MutableSharedFlow<Boolean>()
-//    val isError = _isError.asSharedFlow()
-
-    val isError: SharedFlow<Boolean> = (loginUiState as Flow<LoginUiState>)
-        .filter { it is LoginUiState.Error || it is LoginUiState.Success }
-        .map {
-            when (it) {
-                is LoginUiState.Error -> true
-                else -> false
-            }
-        }.shareIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            replay = 0
-        )
 }

@@ -1,6 +1,5 @@
 package org.scarlet.android.collect
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -18,7 +17,6 @@ class SafeCollectViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             while (isActive) {
-                Log.d(TAG, "[ViewModel] Emitting numbers ...")
                 _numbers.value = current++
                 delay(FAKE_NETWORK_DELAY)
             }

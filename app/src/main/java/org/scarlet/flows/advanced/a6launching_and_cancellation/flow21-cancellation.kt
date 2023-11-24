@@ -14,10 +14,13 @@ import org.scarlet.util.onCompletion
  */
 
 object FlowCancellation {
+
+    private fun fib(n: Int): Int = if (n < 2) n else fib(n - 1) + fib(n - 2)
+
     private fun foo() = flow {
-        for (i in 1..5) {
-            log("emitting $i...")
-            emit(i)
+        for (i in 38..43) {
+            log("emitting fib($i)...")
+            emit(fib(i))
         }
     }
 
@@ -25,13 +28,17 @@ object FlowCancellation {
     fun main(args: Array<String>) = runBlocking {
         coroutineContext.job.onCompletion("runBlocking")
 
-        foo()
-//            .catch { e -> log("Caught $e") } // Does not catch downstream exceptions
-            .collect { value ->
-                if (value == 3) cancel()
-                log("$value collected")
-            }
+        val collector = launch(Dispatchers.Default) {
+            foo()
+                .catch { e -> log("Caught $e") } // Does not catch downstream exceptions
+                .collect { value ->
+                    log("$value collected")
+                }
+        }
 
+        delay(2000)
+        log("Cancelling collector ...")
+        collector.cancelAndJoin()
     }
 }
 

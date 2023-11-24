@@ -1,5 +1,3 @@
-@file:OptIn(ObsoleteCoroutinesApi::class)
-
 package org.scarlet.channel
 
 import kotlinx.coroutines.ObsoleteCoroutinesApi
@@ -14,6 +12,7 @@ import org.scarlet.util.log
  * every message sent to it.
  */
 
+@ObsoleteCoroutinesApi
 object ActorDemo {
     @JvmStatic
     fun main(args: Array<String>) = runBlocking<Unit> {
@@ -28,13 +27,14 @@ object ActorDemo {
             log(messages.joinToString(", "))
         }
 
-        repeat(10) { i ->
+        for (i in 1..10) {
             printActor.send(i.toString())
             log("$i sent")
             delay(1000)
-            if (i == 1) {
-                printActor.close()
-            }
+//            if (i == 5) {
+//                printActor.close()
+//                break
+//            }
         }
 
         printActor.close()

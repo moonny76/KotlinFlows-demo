@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class, ObsoleteCoroutinesApi::class)
-
 package org.scarlet.channel
 
 import kotlinx.coroutines.*
@@ -12,6 +10,7 @@ import org.scarlet.util.log
  * simultaneously and select the first one that becomes available.
  */
 
+@ExperimentalCoroutinesApi
 object Selecting_from_channels {
 
     private fun CoroutineScope.fizz(): ReceiveChannel<String> = produce {
@@ -154,17 +153,19 @@ object Selecting_to_Send_Demo {
     }
 }
 
+@ExperimentalCoroutinesApi
 object Selecting_to_Send {
 
-    private fun CoroutineScope.produceNumbers(side: SendChannel<Int>): ReceiveChannel<Int> = produce {
-        for (num in 1..10) { // produce 10 numbers from 1 to 10
-            delay(100)
-            select {
-                onSend(num) {} // Send to the primary channel
-                side.onSend(num) {} // or to the side channel
+    private fun CoroutineScope.produceNumbers(side: SendChannel<Int>): ReceiveChannel<Int> =
+        produce {
+            for (num in 1..10) { // produce 10 numbers from 1 to 10
+                delay(100)
+                select {
+                    onSend(num) {} // Send to the primary channel
+                    side.onSend(num) {} // or to the side channel
+                }
             }
         }
-    }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -185,6 +186,8 @@ object Selecting_to_Send {
 
 }
 
+@ExperimentalCoroutinesApi
+@ObsoleteCoroutinesApi
 object MixedChannels {
 
     private suspend fun selectFizzBuzz(fizz: SendChannel<String>, buzz: ReceiveChannel<String>) {
@@ -215,7 +218,7 @@ object MixedChannels {
     }
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking{
+    fun main(args: Array<String>) = runBlocking {
         val fizz: SendChannel<String> = fizz()
         val buzz: ReceiveChannel<String> = buzz()
 

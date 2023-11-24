@@ -7,6 +7,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.test.*
 import org.junit.Test
+import org.scarlet.util.delim
 import org.scarlet.util.log
 import org.scarlet.util.onCompletion
 
@@ -30,7 +31,7 @@ class SharedFlow_NativeTest {
     }
 
     @Suppress("UNREACHABLE_CODE")
-    @Test
+    @Test // wait for 10 seconds to complete
     fun `empty SharedFlow - collect - UncompletedCoroutinesError`() = runTest {
         val emptyFlow = MutableSharedFlow<Int>()
 
@@ -43,9 +44,9 @@ class SharedFlow_NativeTest {
 
     @Test
     fun `replay - SharedFlow`() = runTest {
-        val sharedFlow = MutableSharedFlow<Int>(replay = 1) // replay = 1, then OK
+        val sharedFlow = MutableSharedFlow<Int>(replay = 0) // replay = 1, then OK
 
-        sharedFlow.emit(1)  // will be replayed
+        sharedFlow.emit(1)
 
         val value = sharedFlow.first()
         assertThat(value).isEqualTo(1)
@@ -66,7 +67,7 @@ class SharedFlow_NativeTest {
 
         // Publisher
         val publisher = launch {
-            repeat(10) {
+            repeat(15) {
                 log("Emitting: $it (# subscribers = ${sharedFlow.subscriptionCount.value})")
                 sharedFlow.emit(it)
                 log("Emit: $it done")
@@ -77,24 +78,25 @@ class SharedFlow_NativeTest {
         // Slow subscriber
         val slowSubscriber = launch {
             delay(100) // start after 100ms
-            log("${spaces(4)}Subscriber1 subscribes...")
+            log("${spaces(4)}Slow Subscriber subscribes...").also { delim() }
             sharedFlow.collect {
-                log("${spaces(4)}Subscriber1: $it")
+                log("${spaces(4)}Slow Subscriber: $it")
                 delay(500) // <----------------- Slow!!!!!!!!!!!
             }
-        }.onCompletion("slowSubscriber done")
+        }.onCompletion("Slow Subscriber done")
 
         // Fast subscriber
         val fastSubscriber = launch {
             delay(300) // start after 300ms
-            log("${spaces(8)}Subscriber2 subscribes...")
+            log("${spaces(8)}Fast Subscriber subscribes...")
             sharedFlow.collect {
-                log("${spaces(8)}Subscriber2: $it")
+                log("${spaces(8)}Fast Subscriber: $it")
             }
-        }.onCompletion("fastSubscriber done")
+        }.onCompletion("Fast Subscriber done")
 
         delay(2_000)
         slowSubscriber.cancelAndJoin()
+        delay(1_000)
         fastSubscriber.cancelAndJoin()
 
         delay(1_000)

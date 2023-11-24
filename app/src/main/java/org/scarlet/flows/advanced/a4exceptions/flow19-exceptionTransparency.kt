@@ -39,7 +39,7 @@ object ExceptionTransparency_Demo1 {
             check(value <= 1) { "Crashed on $value" }
             "string $value"
         }
-            .catch { exception -> emit("Caught ... $exception") } // emit on exception
+            .catch { exception -> emit("Caught ... $exception from upstream") } // emit on exception
             .collect { value -> log(value) }
     }
 }
@@ -102,20 +102,16 @@ object Declarative_ExceptionHandling {
 object ExceptionHandling_together_with_launchIn {
 
     @JvmStatic
-    fun main(args: Array<String>) = runBlocking {
+    fun main(args: Array<String>) = runBlocking<Unit> {
 
         /**
          * Combine `launch` and `collect()` using `launchIn()`
          */
-        val job = launch {
+        launch {
             dataFlowThrow()
                 .onEach { value -> updateUI(value) }
                 .catch { e -> showErrorMessage(e) }
                 .collect()
         }
-
-        job.join()
-
-        log("Done.")
     }
 }

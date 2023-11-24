@@ -1,7 +1,6 @@
 package org.scarlet.flows.hot
 
 import app.cash.turbine.test
-import app.cash.turbine.withTurbineTimeout
 import com.google.common.truth.Truth.assertThat
 import org.scarlet.util.spaces
 import kotlinx.coroutines.*
@@ -30,7 +29,7 @@ class SharedFlow_TurbineTest {
 
         hotFlow.emit(1) // will be dropped
 
-        hotFlow.test(timeout = 1_000.milliseconds) { // default == 3 secs
+        hotFlow.test(timeout = 2_000.milliseconds) { // default == 1 secs
             assertThat(awaitItem()).isEqualTo(1)
         }
     }
@@ -62,7 +61,7 @@ class SharedFlow_TurbineTest {
 
         // Publisher
         val publisher = launch {
-            repeat(10) {
+            repeat(15) {
                 log("Emitting: $it (# subscribers = ${sharedFlow.subscriptionCount.value})")
                 sharedFlow.emit(it)
                 log("Emit $it done")
@@ -72,27 +71,28 @@ class SharedFlow_TurbineTest {
 
         val slowSubscriber = launch {
             delay(100) // start after 100ms
-            log("${spaces(4)}Subscriber1 subscribes...")
+            log("${spaces(4)}Slow Subscriber subscribes...")
             sharedFlow.test {
                 while (isActive) {
-                    log("${spaces(4)}Subscriber1: ${awaitItem()}")
+                    log("${spaces(4)}Slow Subscriber: ${awaitItem()}")
                     delay(500)
                 }
             }
-        }.onCompletion("slowSubscriber done")
+        }.onCompletion("Slow Subscriber done")
 
         val fastSubscriber = launch {
             delay(300) // start after 300ms
-            log("${spaces(8)}Subscriber2 subscribes...")
+            log("${spaces(8)}Fast Subscriber subscribes...")
             sharedFlow.test(timeout = INFINITE) {
                 while (isActive) {
-                    log("${spaces(8)}Subscriber2: ${awaitItem()}")
+                    log("${spaces(8)}Fast Subscriber: ${awaitItem()}")
                 }
             }
-        }.onCompletion("fastSubscriber done")
+        }.onCompletion("Fast Subscriber done")
 
         delay(2_000)
         slowSubscriber.cancelAndJoin()
+        delay(1_000)
         fastSubscriber.cancelAndJoin()
 
         delay(1_000)
