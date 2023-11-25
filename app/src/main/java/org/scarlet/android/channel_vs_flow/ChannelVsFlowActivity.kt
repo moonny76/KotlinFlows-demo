@@ -16,7 +16,7 @@ class ChannelVsFlowActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_collect_main)
+        setContentView(R.layout.activity_main)
 
         // SharedFlow
         lifecycleScope.launch {

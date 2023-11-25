@@ -9,7 +9,6 @@ import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.navArgs
@@ -22,7 +21,6 @@ import org.scarlet.util.TopSpacingItemDecoration
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.ObsoleteCoroutinesApi
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.scarlet.android.movies.MovieApplication
@@ -30,9 +28,9 @@ import org.scarlet.android.movies.OpStyle
 import org.scarlet.android.movies.adapter.MoviesListAdapter
 import org.scarlet.android.movies.model.Movie
 
+@ExperimentalCoroutinesApi
 @DelicateCoroutinesApi
 @ObsoleteCoroutinesApi
-@ExperimentalCoroutinesApi
 class MovieListFragment : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var listAdapter: MoviesListAdapter
@@ -46,17 +44,12 @@ class MovieListFragment : Fragment() {
         MovieListViewModelFactory(app.injection.repository!!)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        Log.d(TAG, "onCreate: MovieListFragment created .....")
-    }
-
     override fun onCreateView(
         layoutInflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        super.onCreateView(layoutInflater, container, savedInstanceState)
         root = layoutInflater.inflate(R.layout.fragment_movie_list, container, false)
 
         getViews(root)
@@ -76,20 +69,15 @@ class MovieListFragment : Fragment() {
 
         when (args.style) {
             OpStyle.LIVEDATA -> {
-                Log.d(TAG, "[MovieListFragment] onViewCreated: observe movies")
                 viewModel.moviesLiveData.observe(viewLifecycleOwner) { resource ->
                     handleResource(resource)
                 }
             }
 
             OpStyle.FLOW -> {
-                Log.d(TAG, "[MovieListFragment] onViewCreated: collect moviesFlow")
                 lifecycleScope.launch {
-                    Log.w(TAG, "onViewCreated launch: $coroutineContext")
                     viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                         viewModel.moviesFlow.collect { resource ->
-                            Log.w(TAG, "onViewCreated : $coroutineContext")
-                            Log.w(TAG, "onViewCreated : ${currentCoroutineContext()}")
                             handleResource(resource)
                         }
                     }
@@ -97,13 +85,9 @@ class MovieListFragment : Fragment() {
             }
 
             OpStyle.FLOW_V2 -> {
-                Log.d(TAG, "[MovieListFragment] onViewCreated: collect moviesFlowV2")
                 val job = lifecycleScope.launch {
-                    Log.w(TAG, "onViewCreated launch: $coroutineContext")
                     viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                         viewModel.moviesFlowV2.collect { resource ->
-                            Log.w(TAG, "onViewCreated : $coroutineContext")
-                            Log.w(TAG, "onViewCreated : ${currentCoroutineContext()}")
                             handleResource(resource)
                         }
                     }
@@ -137,7 +121,6 @@ class MovieListFragment : Fragment() {
         listAdapter = MoviesListAdapter(object : MoviesListAdapter.Interaction {
             override fun onClickItem(movie: Movie) {
                 showSnackBar("${movie.title} is selected")
-                Log.d(TAG, "[MovieListFragment] onClickItem: move to movie details screen")
             }
         })
 
