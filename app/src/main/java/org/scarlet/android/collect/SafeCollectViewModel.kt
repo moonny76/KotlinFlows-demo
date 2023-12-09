@@ -25,6 +25,6 @@ class SafeCollectViewModel : ViewModel() {
 
     companion object {
         const val FAKE_NETWORK_DELAY = 2_000L
-        const val TAG = "Flow"
+        const val TAG = "Collect"
     }
 }

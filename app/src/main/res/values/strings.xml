@@ -9,4 +9,12 @@
     <string name="flow">Flow</string>
     <string name="flowV2">Flow V2</string>
     <string name="backdrop_image">Backdrop image</string>
+
+    <string name="launch_header">Launch Modes</string>
+    <string name="launch_label1">launch</string>
+    <string name="launch_label2">launchWhenResumed</string>
+    <string name="launch_label3">repeatOnLifeCycle</string>
+    <string name="flow_label1">Hot Flow 1</string>
+    <string name="flow_label2">Hot Flow 2 (subscription)</string>
+    <string name="flow_label3">Hot Flow 3 (stateIn)</string>
 </resources>

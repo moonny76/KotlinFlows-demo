@@ -9,15 +9,12 @@ import org.scarlet.databinding.ActivityPasswordMainBinding
 import org.scarlet.android.password.LoginUiState
 
 class PasswordActivity : AppCompatActivity() {
-
-    private var _binding: ActivityPasswordMainBinding? = null
-    private val binding get() = _binding!!
-
     private val viewModel: PasswordViewModel by viewModels()
+    private lateinit var binding: ActivityPasswordMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        _binding = ActivityPasswordMainBinding.inflate(layoutInflater)
+        binding = ActivityPasswordMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         binding.btnLogin.setOnClickListener {
@@ -67,10 +64,4 @@ class PasswordActivity : AppCompatActivity() {
             else -> Unit
         }
     }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        _binding = null
-    }
-
 }

@@ -7,22 +7,45 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
-import org.scarlet.R
 import org.scarlet.android.hotflow.HotFlowViewModel.Companion.FlowKind
+import org.scarlet.databinding.ActivityHotflowMainBinding
 
+
+@ExperimentalCoroutinesApi
 class HotFlowActivity : AppCompatActivity() {
     private val viewModel: HotFlowViewModel by viewModels()
+    private lateinit var binding: ActivityHotflowMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityHotflowMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        Log.d(TAG, "startFlow: ")
-        // FLOW1, FLOW2, FLOW3
-        viewModel.startFlow(FlowKind.FLOW3)
+        var job: Job? = null
+        binding.flowButton1.setOnClickListener {
+            job = doIt(FlowKind.FLOW1, job)
+        }
 
+        binding.flowButton2.setOnClickListener {
+            job = doIt(FlowKind.FLOW2, job)
+        }
+
+        binding.flowButton3.setOnClickListener {
+            job = doIt(FlowKind.FLOW3, job)
+        }
+    }
+
+    private fun doIt(kind: FlowKind, job: Job?): Job {
+        job?.cancel()
+        viewModel.startFlow(kind)
+        return startCollection()
+    }
+
+    private fun startCollection(): Job =
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 coroutineContext.job.apply {
@@ -40,7 +63,6 @@ class HotFlowActivity : AppCompatActivity() {
                 Log.w(TAG, "View: lifecycleScope, isCancelled = $isCancelled")
             }
         }
-    }
 
     override fun onStart() {
         super.onStart()

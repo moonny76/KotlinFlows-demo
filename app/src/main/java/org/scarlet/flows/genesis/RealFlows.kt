@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
 package org.scarlet.flows.genesis
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,6 +10,7 @@ import kotlinx.coroutines.runBlocking
 import org.scarlet.util.delim
 import org.scarlet.util.log
 
+@ExperimentalCoroutinesApi
 object RealFlowTypes {
 
     @JvmStatic
