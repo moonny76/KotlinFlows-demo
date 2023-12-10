@@ -35,7 +35,6 @@
 > #### Currency Conversion Demo
 
 - [android/currency/CurrencyApi.kt](app/src/main/java/org/scarlet/android/currency/CurrencyApi.kt)
-- [android/currency/CurrencyViewModel.kt](app/src/main/java/org/scarlet/android/currency/CurrencyViewModel.kt)
 - LiveData
     - [android/currency/livedata/CurrencyActivity.kt](app/src/main/java/org/scarlet/android/currency/livedata/CurrencyActivity.kt)
     - [android/currency/livedata/CurrencyViewModel.kt](app/src/main/java/org/scarlet/android/currency/livedata/CurrencyViewModel.kt)
